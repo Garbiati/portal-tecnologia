@@ -12,8 +12,8 @@ empresa: **método, padrões, governança de IA, LGPD/segurança e o catálogo d
 |---|---|---|---|---|
 | **portal-platform** | governança | active | self | `PortalTelemedicina/portal-platform` ✅ |
 | **teleconsulta** | hub (monorepo, ~30 services) | production | self | `PortalTelemedicina/teleconsulta` ✅ |
-| **doctor-hub-api** | service (doctor-hub) | build | `products/doctor-hub` | a publicar |
-| **doctor-hub-web** | service (doctor-hub) | build | `products/doctor-hub` | a publicar |
+| **doctor-hub-api** | service (doctor-hub) | build | `products/doctor-hub` | `PortalTelemedicina/doctor-hub-api` ✅ |
+| **doctor-hub-web** | service (doctor-hub) | build | `products/doctor-hub` | `PortalTelemedicina/doctor-hub-web` ✅ |
 | _dados_ | produto | candidato | — | a confirmar |
 | _telediagnostico_ | produto | candidato | — | a confirmar |
 

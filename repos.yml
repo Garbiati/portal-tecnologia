@@ -29,8 +29,7 @@ repos:
     path: workspace/teleconsulta
 
   - name: doctor-hub-api
-    url: ~                    # confirmar (ainda sem remote — a publicar)
-    confirmar: true
+    url: git@github.com:PortalTelemedicina/doctor-hub-api.git     # verificado (remote configurado)
     kind: service
     product: doctor-hub
     owner: Alessandro
@@ -40,8 +39,7 @@ repos:
     path: services/doctor-hub-api
 
   - name: doctor-hub-web
-    url: ~                    # confirmar (ainda sem remote — a publicar)
-    confirmar: true
+    url: git@github.com:PortalTelemedicina/doctor-hub-web.git     # verificado (remote configurado)
     kind: service
     product: doctor-hub
     owner: Alessandro
