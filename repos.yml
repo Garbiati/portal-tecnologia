@@ -4,7 +4,12 @@
 # `scripts/workspace.sh` (make workspace) clona/atualiza os que têm `url` confirmada em ./workspace/.
 #
 # Diretriz Suprema: NÃO inventar URL/dono/stack. O que não foi verificado leva `confirmar: true`.
-# Campos: name, url, kind (governance|product|service|hub|lib), owner, stack, status, docs (self|<path>), path.
+# Campos: name, url, kind (governance|product|service|hub|lib), owner, stack, status, docs (self|<path>), path, local.
+#
+# Migração LÓGICA (P-002): os repos NÃO moram fisicamente dentro do portal-platform — são só referenciados.
+# `path:` = onde o clone de DEV ficaria em ./workspace/. `local:` = onde o repo JÁ existe na máquina hoje
+# (ex.: o hub teleconsulta segue vivo em ~/ptm/teleconsulta com seus worktrees/helpers — NÃO re-clonar nem mover).
+# Quando `local:` existe, `make workspace` faz um SYMLINK em ./workspace/<name> em vez de clonar (sem duplicar).
 
 version: 1
 org: PortalTelemedicina
@@ -27,6 +32,7 @@ repos:
     status: production
     docs: self                # docs/specs vivem no próprio repo
     path: workspace/teleconsulta
+    local: ../ptm/teleconsulta   # hub vivo (worktrees + helpers tcc/tcwt) — symlink, não clonar/mover
 
   - name: doctor-hub-api
     url: git@github.com:PortalTelemedicina/doctor-hub-api.git     # verificado (remote configurado)
@@ -58,6 +64,7 @@ repos:
     status: candidate
     docs: ~
     path: workspace/dados
+    local: ../ptm/dados          # diretório já existe em ~/ptm/dados
 
   - name: telediagnostico        # diretório local: ~/ptm/td
     url: ~
@@ -68,3 +75,4 @@ repos:
     status: candidate
     docs: ~
     path: workspace/td
+    local: ../ptm/td             # diretório já existe em ~/ptm/td

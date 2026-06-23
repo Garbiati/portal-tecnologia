@@ -11,6 +11,9 @@
 .secrets/
 infrastructure/envs/*.env
 
+# Handoff descartável entre sessões (autoexclui — nunca commitar)
+_SESSION-START.md
+
 # Sistema operacional / editores
 .DS_Store
 *.swp
