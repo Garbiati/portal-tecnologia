@@ -1,0 +1,80 @@
+/* =============================================================================
+   Saúde Digital · Demandas — Design Tokens (fonte da verdade do visual)
+   Estilo: neutro (slate) + 1 acento (blue). Acessibilidade: WCAG 2.2 AA.
+   Estes tokens são consumidos pelo código E espelhados nas Figma Variables.
+   NÃO usar hex/valores soltos no código — sempre referenciar var(--token).
+   ============================================================================= */
+:root {
+  /* ---- Primitivos: Neutros (slate) ---- */
+  --slate-50:#F8FAFC; --slate-100:#F1F5F9; --slate-200:#E2E8F0; --slate-300:#CBD5E1;
+  --slate-400:#94A3B8; --slate-500:#64748B; --slate-600:#475569; --slate-700:#334155;
+  --slate-800:#1E293B; --slate-900:#0F172A;
+  /* ---- Primitivos: Acento (blue) ---- */
+  --blue-50:#EFF6FF; --blue-100:#DBEAFE; --blue-200:#BFDBFE; --blue-500:#3B82F6;
+  --blue-600:#2563EB; --blue-700:#1D4ED8; --blue-800:#1E40AF;
+  /* ---- Primitivos: Status ---- */
+  --green-50:#ECFDF5; --green-600:#059669; --green-700:#047857;
+  --red-50:#FEF2F2;   --red-600:#DC2626;   --red-700:#B91C1C;
+  --amber-50:#FFFBEB; --amber-600:#D97706; --amber-700:#B45309;
+
+  /* ---- Semânticos: Superfície & texto (light) ----
+     Contrastes sobre branco (AA exige 4.5:1 texto normal, 3:1 UI/large): */
+  --color-bg:               var(--slate-100);  /* fundo da app */
+  --color-surface:          #FFFFFF;           /* cards */
+  --color-surface-muted:    var(--slate-50);   /* inputs, header de tabela */
+  --color-border:           var(--slate-200);
+  --color-border-strong:    var(--slate-300);
+  --color-text:             var(--slate-900);  /* 17.4:1  AA/AAA */
+  --color-text-secondary:   var(--slate-600);  /*  7.5:1  AA/AAA */
+  --color-text-muted:       var(--slate-500);  /*  4.8:1  AA      */
+  --color-text-on-accent:   #FFFFFF;           /*  5.2:1 sobre --color-accent */
+  /* ---- Semânticos: Acento ---- */
+  --color-accent:           var(--blue-600);   /* fills/botões; texto branco 5.2:1 AA */
+  --color-accent-hover:     var(--blue-700);
+  --color-accent-text:      var(--blue-700);   /* links/texto pequeno sobre branco 6.4:1 AA */
+  --color-accent-subtle:    var(--blue-50);    /* fundo de destaque (nav ativo, notes) */
+  /* ---- Semânticos: Status (texto sobre o *-50 correspondente) ---- */
+  --color-success:var(--green-700); --color-success-bg:var(--green-50);
+  --color-danger: var(--red-700);   --color-danger-bg: var(--red-50);
+  --color-warning:var(--amber-700); --color-warning-bg:var(--amber-50);
+  /* foco visível (AA 2.4.7) */
+  --color-focus-ring:var(--blue-600);
+
+  /* ---- Tipografia (Inter) ---- */
+  --font-family:"Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --fw-regular:400; --fw-medium:500; --fw-semibold:600;
+  --text-xs:12px;   --lh-xs:16px;
+  --text-sm:13px;   --lh-sm:18px;
+  --text-base:14px; --lh-base:20px;   /* corpo padrão */
+  --text-md:15px;   --lh-md:22px;
+  --text-lg:18px;   --lh-lg:26px;
+  --text-xl:22px;   --lh-xl:30px;
+  --text-2xl:26px;  --lh-2xl:34px;
+
+  /* ---- Espaçamento (base 4px) ---- */
+  --space-1:4px; --space-2:8px; --space-3:12px; --space-4:16px; --space-5:20px;
+  --space-6:24px; --space-8:32px; --space-10:40px; --space-12:48px; --space-16:64px;
+
+  /* ---- Raio ---- */
+  --radius-sm:6px; --radius-md:8px; --radius-lg:10px; --radius-xl:12px; --radius-2xl:16px; --radius-full:9999px;
+
+  /* ---- Sombra ---- */
+  --shadow-sm:0 1px 2px rgba(15,23,42,.06);
+  --shadow-md:0 4px 12px rgba(15,23,42,.08);
+  --shadow-lg:0 8px 24px rgba(15,23,42,.10);
+
+  /* ---- Tokens de componente (medidas fixas p/ consistência e alvo ≥44px) ---- */
+  --control-height:44px;          /* inputs, botões — alvo de toque AA 2.5.8 */
+  --control-height-sm:36px;
+  --sidebar-width:248px;
+  --topbar-height:64px;
+  --focus-ring-width:2px;
+  --transition-fast:120ms ease;   /* hover/focus */
+  --transition-base:200ms ease;   /* toasts, drawers */
+
+  /* ---- Breakpoints (referência; usar em @media) ---- */
+  --bp-sm:640px; --bp-md:768px; --bp-lg:1024px; --bp-xl:1280px; --bp-2xl:1440px;
+}
+
+/* Reservado para modo escuro futuro (tokens já preparados):
+[data-theme="dark"] { --color-bg:var(--slate-900); --color-surface:var(--slate-800); ... } */

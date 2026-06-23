@@ -1,0 +1,160 @@
+# .gitleaks.toml — PTM Teleconsulta
+# Configuração do gitleaks para detecção de secrets.
+# Healthcare system (LGPD/HIPAA) — inclui regras para dados de paciente.
+
+title = "PTM Teleconsulta Gitleaks Config"
+
+[extend]
+# Usa as regras padrão do gitleaks como base
+useDefault = true
+
+# ─── Allowlists ──────────────────────────────────────────────────────────────
+
+[allowlist]
+description = "Global allowlist"
+paths = [
+  '''\.env\.example$''',
+  '''infrastructure/envs/.*\.env\.example$''',
+  '''tmp/''',
+  '''node_modules/''',
+  '''\.secrets\.baseline$''',
+  '''docs/analises/''',
+  # Security tooling — files contain regex *patterns* describing how
+  # we detect secrets/PII. The patterns are not real values.
+  '''^\.claude/hooks/.*\.sh$''',
+  '''^\.claude/rules/permissions\.md$''',
+  '''^\.claude/settings\.json$''',
+  '''^scripts/git-hooks/pre-commit$''',
+  '''^\.github/workflows/security\.ya?ml$''',
+  '''^\.gitleaks\.toml$''',
+  # History-purge runbook — documents detection/replacement PATTERNS
+  # (`password='...'`, `Password=<env>`, reCAPTCHA site key) as examples,
+  # not real values.
+  '''^docs/runbooks/history-purge\.md$''',
+  # Specs and discovery docs — sanitized but use synthetic CPF
+  # placeholders (e.g. 000.000.000-00) as illustrative examples.
+  # Bug/incident docs (BUG.md, CONTEXT.md, evidence/) usam exemplos
+  # sintéticos e placeholders (`password='<ver arquivo>'`).
+  '''^specs/bugs/''',
+  '''^docs/discovery/''',
+  # Service reference docs — connection-string TEMPLATES (RabbitMQ
+  # guest/guest, OIDC `password` grant `password={password}`) — não são
+  # credenciais reais.
+  '''^docs/services/''',
+  # Docs top-level dentro de pastas PRD (PRD.md, README.md, guias de
+  # integração frontend, monitoring-log) — payloads de EXEMPLO com tokens
+  # e senhas sintéticos (`"password": "senha123"`, `event_token`, UUID
+  # canônico 550e8400-…). Subpastas plans/technical/discovery/runbooks/
+  # audits já cobertas abaixo. PII/secret real em docs é barrado por review
+  # humano + post-write-pii hook (consistente: o hook permite CPF em .md).
+  '''^specs/PRD-[^/]+/[^/]+\.(md|json)$''',
+  # PRD discovery folders — POC scaffolds + FINDINGS docs that
+  # reference example CPFs and read credentials at runtime via
+  # variables (e.g. `password=senha` — not a real secret, just a
+  # Python parameter name for the runtime-loaded credential file).
+  # Real secrets in this folder are read at runtime from
+  # tmp/<prd>/secrets.env (gitignored).
+  '''^specs/PRD-.*/discovery/''',
+  # Audit toolkit — usage docs and pull_db_stats.py reference
+  # PGPASSWORD as an env var name (not a value). Secrets always
+  # injected at runtime; the script never embeds credentials.
+  '''^docs/audits/''',
+  '''^scripts/audit/''',
+  # DB tooling — vault-to-env.sh emits PGPASSWORD lines, query-prod-ro.sh
+  # checks env-file presence; .secrets/README.md documents the pattern.
+  # The actual secret values come from Vault at runtime.
+  '''^scripts/db/''',
+  '''^\.secrets/README\.md$''',
+  # Infrastructure helpers fetch secrets from Vault → env vars; never
+  # embed values. The variable names match the connection-string-password
+  # rule (PTM_NUGET_PASSWORD=, etc.) but RHS is a $(…) substitution.
+  '''^infrastructure/fetch-secrets\.sh$''',
+  # PRD plans + technical docs + audits reference connection string
+  # TEMPLATES (`Password=<env>`, `DB_PASSWORD=regulahub_dev`), CPFs
+  # sintéticos, e regex *patterns* de detecção (em audits, descrevendo
+  # como detectar secrets — ex: `password\s*=\s*"[^"]{12,}"` no
+  # próprio bash code block dispara falso positivo no gitleaks).
+  # Nenhum contém credenciais reais.
+  '''^specs/PRD-.*/plans/''',
+  '''^specs/PRD-.*/technical/''',
+  '''^specs/PRD-.*/audits/''',
+  # PRD runbooks + env templates for ad-hoc compose files reference
+  # connection-string TEMPLATES with var expansions (e.g.
+  # `Password=${REGULA_DB_PASSWORD:-regula}`) — placeholders only,
+  # real values come from gitignored .env at compose time.
+  '''^specs/PRD-.*/runbooks/''',
+  '''^infrastructure/envs/.*\.example$''',
+  '''^infrastructure/docker-compose\..*\.yml$''',
+]
+# Synthetic CPF placeholders used across docs and tests as obvious
+# examples — never real PII.
+regexes = [
+  '''000\.111\.222-33''',
+  '''000\.000\.000-00''',
+  '''XXX\.XXX\.XXX-XX''',
+]
+
+# ─── Custom Rules (Healthcare) ──────────────────────────────────────────────
+
+[[rules]]
+id = "cpf-pattern"
+description = "Brazilian CPF (LGPD sensitive)"
+regex = '''\b\d{3}\.\d{3}\.\d{3}-\d{2}\b'''
+tags = ["lgpd", "pii"]
+keywords = ["cpf"]
+
+[[rules]]
+id = "cnpj-pattern"
+description = "Brazilian CNPJ"
+regex = '''\b\d{2}\.\d{3}\.\d{3}/\d{4}-\d{2}\b'''
+tags = ["lgpd", "pii"]
+keywords = ["cnpj"]
+
+[[rules]]
+id = "agora-credentials"
+description = "Agora.io App ID or Certificate"
+regex = '''(?i)(agora[_-]?(?:app[_-]?id|app[_-]?certificate|token))\s*[=:]\s*['"]?([a-f0-9]{32,})['"]?'''
+tags = ["credential"]
+
+[[rules]]
+id = "nuget-cleartext"
+description = "NuGet ClearTextPassword"
+regex = '''ClearTextPassword\s*=\s*"[^"]{8,}"'''
+tags = ["credential"]
+keywords = ["ClearTextPassword"]
+
+[[rules]]
+id = "gcp-service-account"
+description = "GCP Service Account Key"
+regex = '''"type"\s*:\s*"service_account"'''
+tags = ["credential"]
+keywords = ["service_account"]
+
+[[rules]]
+id = "rabbitmq-credentials"
+description = "RabbitMQ connection with password"
+regex = '''amqp://[^:]+:[^@]+@'''
+tags = ["credential"]
+keywords = ["amqp"]
+
+[[rules]]
+id = "connection-string-password"
+description = "Connection string with embedded password"
+regex = '''(?i)(password|pwd)\s*=\s*[^;]{8,}'''
+tags = ["credential"]
+keywords = ["password", "pwd"]
+
+  [rules.allowlist]
+  paths = ['''\.env\.example$''', '''appsettings.*\.json$''']
+  regexTarget = "line"
+  regexes = [
+    '''placeholder''',
+    '''your[-_]''',
+    '''change[-_]me''',
+    '''CHANGE_ME''',
+    '''xxx''',
+    # Marcador deixado pelo git filter-repo ao purgar credenciais do
+    # histórico (ver docs/runbooks/history-purge.md). Commits antigos ficam
+    # com `password='__REDACTED_CREDENTIAL__'` — não é credencial, é a redação.
+    '''__REDACTED_CREDENTIAL__''',
+  ]

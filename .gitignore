@@ -1,0 +1,14 @@
+# Services são repos git PRÓPRIOS (D-110) — não versionar aqui.
+/services/
+
+# Segredos (nunca versionar) — usar .env.example + Secret Manager (GCP)
+.env
+*.env.local
+.secrets/
+infrastructure/envs/*.env
+
+# Sistema operacional / editores
+.DS_Store
+*.swp
+.idea/
+.vscode/

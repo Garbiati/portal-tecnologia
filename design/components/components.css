@@ -1,0 +1,954 @@
+/* =============================================================================
+   Saúde Digital · Demandas — Biblioteca de Componentes (HTML + CSS puro)
+   -----------------------------------------------------------------------------
+   FONTE DA VERDADE: ../tokens.css + ../design-system.md (board Figma "UI Kit").
+   REGRA DE OURO: nunca usar hex/medidas soltas — SEMPRE var(--token).
+   Acessibilidade: WCAG 2.2 AA → foco visível (2.4.7), alvos ≥44px (2.5.8),
+   contraste garantido pelos tokens. Mobile-first com breakpoints do tokens.
+   Sem JavaScript: estados via :hover/:focus-visible/[disabled] e classes utilitárias
+   (.is-active, .is-error, .is-loading, .is-on, .is-empty) que o app aplica.
+   ============================================================================= */
+@import "../tokens.css";
+
+/* -----------------------------------------------------------------------------
+   0. Base / reset mínimo de elementos usados pelos componentes
+   --------------------------------------------------------------------------- */
+*,
+*::before,
+*::after { box-sizing: border-box; }
+
+:root {
+  /* Curva e duração de transição padrão (derivadas, sem cor hardcoded) */
+  --transition-fast: 120ms ease;
+  --transition-base: 160ms ease;
+}
+
+/* Tipografia base do corpo — herdada pelos componentes */
+body {
+  margin: 0;
+  font-family: var(--font-family);
+  font-size: var(--text-base);
+  line-height: var(--lh-base);
+  color: var(--color-text);
+  background: var(--color-bg);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+/* Anel de foco AA reutilizável — aplicado via :focus-visible em cada componente.
+   2px sólido + offset 2px garante contraste ≥3:1 sobre superfícies claras. */
+.focus-ring,
+:where(.btn, .input, .select, .textarea, .chip, .nav-item, .checkbox input,
+       .radio input, .switch input):focus-visible {
+  outline: var(--focus-ring-width) solid var(--color-focus-ring);
+  outline-offset: 2px;
+}
+
+/* Respeita usuários que pedem menos animação (a11y / vestibular) */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+}
+
+/* =============================================================================
+   1. BUTTON  — .btn  +  --primary / --secondary / --danger / --subtle / --sm
+   Estados: :hover, :focus-visible, [disabled]/.is-disabled, .is-loading
+   ============================================================================= */
+.btn {
+  /* Layout */
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  min-height: var(--control-height);          /* alvo de toque ≥44px (AA 2.5.8) */
+  padding: 0 var(--space-5);
+  /* Tipografia */
+  font-family: var(--font-family);
+  font-size: var(--text-base);
+  font-weight: var(--fw-medium);
+  line-height: 1;
+  white-space: nowrap;
+  /* Forma */
+  border: 1px solid transparent;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  user-select: none;
+  text-decoration: none;                       /* funciona também como <a class="btn"> */
+  transition: background var(--transition-fast),
+              border-color var(--transition-fast),
+              color var(--transition-fast),
+              box-shadow var(--transition-fast);
+  /* Padrão = secondary, para que .btn sozinho ainda seja legível */
+  background: var(--color-surface);
+  color: var(--color-text);
+  border-color: var(--color-border-strong);
+}
+
+/* Variante PRIMARY — fill de acento, texto branco (5.2:1 AA) */
+.btn--primary {
+  background: var(--color-accent);
+  color: var(--color-text-on-accent);
+  border-color: var(--color-accent);
+}
+.btn--primary:hover { background: var(--color-accent-hover); border-color: var(--color-accent-hover); }
+
+/* Variante SECONDARY — superfície clara, contorno (ghost com borda) */
+.btn--secondary {
+  background: var(--color-surface);
+  color: var(--color-text);
+  border-color: var(--color-border-strong);
+}
+.btn--secondary:hover { background: var(--color-surface-muted); border-color: var(--color-border-strong); }
+
+/* Variante DANGER — ações destrutivas (excluir, cancelar emissão) */
+.btn--danger {
+  background: var(--color-danger);
+  color: var(--color-text-on-accent);
+  border-color: var(--color-danger);
+}
+.btn--danger:hover { background: var(--red-700); border-color: var(--red-700); }
+
+/* Variante SUBTLE — link/ação terciária sem borda (acento sobre fundo claro) */
+.btn--subtle {
+  background: transparent;
+  color: var(--color-accent-text);
+  border-color: transparent;
+}
+.btn--subtle:hover { background: var(--color-accent-subtle); }
+
+/* Tamanho SM — altura compacta porém ainda ≥36px (uso desktop denso) */
+.btn--sm {
+  min-height: var(--control-height-sm);
+  padding: 0 var(--space-4);
+  font-size: var(--text-sm);
+  border-radius: var(--radius-sm);
+}
+
+/* Estado DISABLED — atributo nativo OU classe (para <a>) */
+.btn[disabled],
+.btn.is-disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+/* Estado LOADING — spinner antes do rótulo; rótulo fica semi-oculto */
+.btn.is-loading {
+  position: relative;
+  color: transparent !important;              /* esconde o texto, mantém largura */
+  pointer-events: none;
+}
+.btn.is-loading::after {
+  content: "";
+  position: absolute;
+  width: 16px;
+  height: 16px;
+  border: 2px solid currentColor;
+  border-top-color: transparent;
+  border-radius: var(--radius-full);
+  /* currentColor de transparent não aparece; força a cor do conteúdo original: */
+  color: var(--color-text-on-accent);
+  animation: btn-spin 600ms linear infinite;
+}
+/* Para variantes claras, o spinner usa o acento */
+.btn--secondary.is-loading::after,
+.btn--subtle.is-loading::after { color: var(--color-accent); }
+
+@keyframes btn-spin { to { transform: rotate(360deg); } }
+
+/* =============================================================================
+   2. FORM FIELDS — .field-label · .input · .select · .textarea · .field-error
+   Estados: :focus, :disabled, .is-error
+   ============================================================================= */
+
+/* Wrapper opcional de campo (rótulo + controle + mensagem) */
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+/* Rótulo — sm/medium, texto secundário (7.5:1 AAA) */
+.field-label {
+  font-size: var(--text-sm);
+  font-weight: var(--fw-medium);
+  color: var(--color-text-secondary);
+}
+.field-label .req { color: var(--color-danger); }   /* asterisco de obrigatório */
+
+/* Controles base compartilham aparência */
+.input,
+.select,
+.textarea {
+  width: 100%;
+  min-height: var(--control-height);           /* alvo ≥44px */
+  padding: 0 var(--space-3);
+  font-family: var(--font-family);
+  font-size: var(--text-base);
+  line-height: var(--lh-base);
+  color: var(--color-text);
+  background: var(--color-surface-muted);
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-md);
+  transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.textarea {
+  min-height: calc(var(--control-height) * 2);
+  padding: var(--space-3);
+  line-height: var(--lh-md);
+  resize: vertical;
+}
+
+/* Placeholder — muted (4.8:1 AA) */
+.input::placeholder,
+.textarea::placeholder { color: var(--color-text-muted); }
+
+/* Select nativo: seta custom desenhada com gradientes de borda (sem asset) */
+.select {
+  appearance: none;
+  -webkit-appearance: none;
+  padding-right: var(--space-8);
+  /* Chevron desenhado com conic/linear não polui tokens de cor: usamos border-strong */
+  background-image:
+    linear-gradient(45deg, transparent 50%, var(--color-text-secondary) 50%),
+    linear-gradient(135deg, var(--color-text-secondary) 50%, transparent 50%);
+  background-position:
+    calc(100% - 18px) calc(50% - 2px),
+    calc(100% - 12px) calc(50% - 2px);
+  background-size: 6px 6px, 6px 6px;
+  background-repeat: no-repeat;
+}
+
+/* Foco — anel AA + borda de acento (reforço visual além do outline) */
+.input:focus,
+.select:focus,
+.textarea:focus {
+  outline: none;                               /* substituído por :focus-visible abaixo */
+  border-color: var(--color-accent);
+  background: var(--color-surface);
+}
+.input:focus-visible,
+.select:focus-visible,
+.textarea:focus-visible {
+  outline: var(--focus-ring-width) solid var(--color-focus-ring);
+  outline-offset: 2px;
+  border-color: var(--color-accent);
+}
+
+/* Disabled / read-only */
+.input:disabled,
+.select:disabled,
+.textarea:disabled,
+.input[readonly],
+.textarea[readonly] {
+  background: var(--slate-100);
+  color: var(--color-text-muted);
+  border-color: var(--color-border);
+  cursor: not-allowed;
+}
+
+/* Estado de ERRO — borda + foco vermelhos; pareia com .field-error */
+.input.is-error,
+.select.is-error,
+.textarea.is-error {
+  border-color: var(--color-danger);
+  background: var(--color-danger-bg);
+}
+.input.is-error:focus-visible,
+.select.is-error:focus-visible,
+.textarea.is-error:focus-visible {
+  outline-color: var(--color-danger);
+  border-color: var(--color-danger);
+}
+
+/* Mensagem de erro — xs em danger, com ícone via ::before */
+.field-error {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  font-size: var(--text-xs);
+  line-height: var(--lh-xs);
+  color: var(--color-danger);
+}
+.field-error::before {
+  content: "⚠";
+  font-size: var(--text-sm);
+  line-height: 1;
+}
+
+/* Dica de campo (texto auxiliar neutro) */
+.field-hint {
+  font-size: var(--text-xs);
+  line-height: var(--lh-xs);
+  color: var(--color-text-muted);
+}
+
+/* Input com ícone (lupa de busca) — wrapper .input-group */
+.input-group { position: relative; }
+.input-group .input { padding-left: var(--space-10); }
+.input-group .input-icon {
+  position: absolute;
+  left: var(--space-3);
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--color-text-muted);
+  pointer-events: none;
+  display: inline-flex;
+}
+
+/* No mobile, inputs em 16px evitam zoom automático do iOS */
+@media (max-width: 767px) {
+  .input,
+  .select,
+  .textarea { font-size: 16px; }
+}
+
+/* =============================================================================
+   3. CHECKBOX · RADIO · SWITCH
+   Estados: default, checked, focus, disabled
+   ============================================================================= */
+
+/* Linha clicável: controle + rótulo. Padding garante alvo ≥44px de altura. */
+.checkbox,
+.radio,
+.switch {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: var(--control-height);
+  cursor: pointer;
+  font-size: var(--text-base);
+  color: var(--color-text);
+  user-select: none;
+}
+
+/* Input nativo estilizado (mantém acessibilidade/foco do elemento real) */
+.checkbox input,
+.radio input {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 20px;
+  height: 20px;
+  margin: 0;
+  flex: 0 0 auto;
+  background: var(--color-surface);
+  border: 1.5px solid var(--color-border-strong);
+  cursor: pointer;
+  transition: background var(--transition-fast), border-color var(--transition-fast);
+}
+.checkbox input { border-radius: var(--radius-sm); }
+.radio input { border-radius: var(--radius-full); }
+
+/* Checked — fill de acento + marca branca */
+.checkbox input:checked,
+.radio input:checked {
+  background: var(--color-accent);
+  border-color: var(--color-accent);
+}
+.checkbox input:checked::after {
+  content: "";
+  display: block;
+  width: 6px;
+  height: 10px;
+  margin: 1px auto;
+  border: solid var(--color-text-on-accent);
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg);
+}
+.radio input:checked::after {
+  content: "";
+  display: block;
+  width: 8px;
+  height: 8px;
+  margin: 4px auto;
+  background: var(--color-text-on-accent);
+  border-radius: var(--radius-full);
+}
+
+/* Foco visível */
+.checkbox input:focus-visible,
+.radio input:focus-visible {
+  outline: var(--focus-ring-width) solid var(--color-focus-ring);
+  outline-offset: 2px;
+}
+
+/* Disabled */
+.checkbox input:disabled,
+.radio input:disabled,
+.checkbox.is-disabled,
+.radio.is-disabled,
+.switch.is-disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* SWITCH — trilho + thumb deslizante */
+.switch input {
+  appearance: none;
+  -webkit-appearance: none;
+  position: relative;
+  width: 40px;
+  height: 24px;
+  margin: 0;
+  flex: 0 0 auto;
+  background: var(--color-border-strong);
+  border-radius: var(--radius-full);
+  cursor: pointer;
+  transition: background var(--transition-base);
+}
+.switch input::after {
+  content: "";
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 20px;
+  height: 20px;
+  background: var(--color-surface);
+  border-radius: var(--radius-full);
+  box-shadow: var(--shadow-sm);
+  transition: transform var(--transition-base);
+}
+.switch input:checked { background: var(--color-accent); }
+.switch input:checked::after { transform: translateX(16px); }
+.switch input:focus-visible {
+  outline: var(--focus-ring-width) solid var(--color-focus-ring);
+  outline-offset: 2px;
+}
+
+/* =============================================================================
+   4. BADGE / TAG  — .badge  +  --neutral / --info / --success / --warning / --danger
+   ============================================================================= */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  padding: 2px var(--space-2);
+  font-size: var(--text-xs);
+  line-height: var(--lh-xs);
+  font-weight: var(--fw-medium);
+  border-radius: var(--radius-full);
+  white-space: nowrap;
+  /* Padrão = neutral */
+  color: var(--color-text-secondary);
+  background: var(--slate-100);
+  border: 1px solid var(--color-border);
+}
+.badge--neutral {
+  color: var(--color-text-secondary);
+  background: var(--slate-100);
+  border-color: var(--color-border);
+}
+.badge--info {
+  color: var(--color-accent-text);
+  background: var(--color-accent-subtle);
+  border-color: var(--blue-200);
+}
+.badge--success {
+  color: var(--color-success);
+  background: var(--color-success-bg);
+  border-color: var(--green-600);
+}
+.badge--warning {
+  color: var(--color-warning);
+  background: var(--color-warning-bg);
+  border-color: var(--amber-600);
+}
+.badge--danger {
+  color: var(--color-danger);
+  background: var(--color-danger-bg);
+  border-color: var(--red-600);
+}
+
+/* Ponto de status opcional dentro do badge */
+.badge .dot {
+  width: 6px;
+  height: 6px;
+  border-radius: var(--radius-full);
+  background: currentColor;
+}
+
+/* =============================================================================
+   5. CARD  — .card  (+ .card--interactive para itens clicáveis)
+   ============================================================================= */
+.card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-xl);
+  padding: var(--space-5);
+  box-shadow: var(--shadow-sm);
+}
+.card__title {
+  margin: 0 0 var(--space-1);
+  font-size: var(--text-md);
+  font-weight: var(--fw-semibold);
+  color: var(--color-text);
+}
+.card__body {
+  font-size: var(--text-base);
+  color: var(--color-text-secondary);
+}
+.card__footer {
+  margin-top: var(--space-4);
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--color-border);
+  display: flex;
+  gap: var(--space-2);
+}
+
+/* Variante interativa — eleva no hover/focus, vira alvo clicável inteiro */
+.card--interactive {
+  cursor: pointer;
+  transition: box-shadow var(--transition-base), border-color var(--transition-base),
+              transform var(--transition-base);
+}
+.card--interactive:hover {
+  box-shadow: var(--shadow-md);
+  border-color: var(--color-border-strong);
+}
+.card--interactive:focus-visible {
+  outline: var(--focus-ring-width) solid var(--color-focus-ring);
+  outline-offset: 2px;
+}
+
+/* =============================================================================
+   6. TABLE  — .table  (thead/tbody, .row:hover, .is-empty)
+   ============================================================================= */
+.table-wrap {
+  width: 100%;
+  overflow-x: auto;                            /* scroll horizontal em telas estreitas */
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-xl);
+  background: var(--color-surface);
+}
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--text-base);
+}
+.table thead th {
+  position: sticky;
+  top: 0;
+  text-align: left;
+  padding: var(--space-3) var(--space-4);
+  font-size: var(--text-sm);
+  font-weight: var(--fw-semibold);
+  color: var(--color-text-secondary);
+  background: var(--color-surface-muted);
+  border-bottom: 1px solid var(--color-border);
+  white-space: nowrap;
+}
+.table tbody td {
+  padding: var(--space-3) var(--space-4);
+  color: var(--color-text);
+  border-bottom: 1px solid var(--color-border);
+  vertical-align: middle;
+}
+.table tbody tr:last-child td { border-bottom: none; }
+
+/* Hover de linha — só em dispositivos com ponteiro fino (evita "stick" no touch) */
+@media (hover: hover) {
+  .table tbody .row:hover td,
+  .table tbody tr:hover td { background: var(--color-surface-muted); }
+}
+
+/* Linha selecionada */
+.table tbody .row.is-selected td { background: var(--color-accent-subtle); }
+
+/* Estado vazio dentro da tabela — uma célula que ocupa toda a largura */
+.table .is-empty td {
+  padding: var(--space-10) var(--space-4);
+  text-align: center;
+  color: var(--color-text-muted);
+}
+
+/* Mobile: tabela vira cards empilhados.
+   Marque <td data-label="Coluna"> para mostrar o rótulo. */
+@media (max-width: 767px) {
+  .table.table--stack thead { display: none; }
+  .table.table--stack tbody tr {
+    display: block;
+    margin: var(--space-3);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+  }
+  .table.table--stack tbody td {
+    display: flex;
+    justify-content: space-between;
+    gap: var(--space-4);
+    border-bottom: 1px solid var(--color-border);
+  }
+  .table.table--stack tbody td::before {
+    content: attr(data-label);
+    font-weight: var(--fw-medium);
+    color: var(--color-text-secondary);
+  }
+}
+
+/* =============================================================================
+   7. KPI STAT  — .kpi  (+ tom via .kpi--success/--warning/--danger/--info)
+   ============================================================================= */
+.kpi {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  padding: var(--space-5);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-left: 3px solid var(--color-border-strong);  /* faixa de tom */
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-sm);
+}
+.kpi__label {
+  font-size: var(--text-sm);
+  font-weight: var(--fw-medium);
+  color: var(--color-text-secondary);
+}
+.kpi__value {
+  font-size: var(--text-2xl);
+  line-height: var(--lh-2xl);
+  font-weight: var(--fw-semibold);
+  color: var(--color-text);
+}
+.kpi__delta {
+  font-size: var(--text-xs);
+  color: var(--color-text-muted);
+}
+
+/* Tons — faixa esquerda + valor coloridos conforme severidade */
+.kpi--info    { border-left-color: var(--color-accent); }
+.kpi--info    .kpi__value { color: var(--color-accent-text); }
+.kpi--success { border-left-color: var(--color-success); }
+.kpi--success .kpi__value { color: var(--color-success); }
+.kpi--warning { border-left-color: var(--color-warning); }
+.kpi--warning .kpi__value { color: var(--color-warning); }
+.kpi--danger  { border-left-color: var(--color-danger); }
+.kpi--danger  .kpi__value { color: var(--color-danger); }
+
+/* =============================================================================
+   8. CHIP (toggle)  — .chip  (+ .is-on)
+   Estados: off (default), on, focus, disabled
+   ============================================================================= */
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: var(--control-height-sm);
+  padding: 0 var(--space-3);
+  font-size: var(--text-sm);
+  font-weight: var(--fw-medium);
+  color: var(--color-text-secondary);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-full);
+  cursor: pointer;
+  user-select: none;
+  transition: background var(--transition-fast), border-color var(--transition-fast),
+              color var(--transition-fast);
+}
+@media (hover: hover) {
+  .chip:hover { background: var(--color-surface-muted); }
+}
+/* Estado ligado — fundo de acento sutil + texto/borda de acento */
+.chip.is-on {
+  color: var(--color-accent-text);
+  background: var(--color-accent-subtle);
+  border-color: var(--color-accent);
+}
+.chip:focus-visible {
+  outline: var(--focus-ring-width) solid var(--color-focus-ring);
+  outline-offset: 2px;
+}
+.chip[disabled],
+.chip.is-disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+/* =============================================================================
+   9. NAV ITEM  — .nav-item  (+ .is-active)
+   Estados: default, hover, active, focus
+   ============================================================================= */
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  min-height: var(--control-height);           /* alvo ≥44px */
+  padding: 0 var(--space-3);
+  font-size: var(--text-base);
+  font-weight: var(--fw-medium);
+  color: var(--color-text-secondary);
+  background: transparent;
+  border: none;
+  border-radius: var(--radius-md);
+  text-decoration: none;
+  cursor: pointer;
+  transition: background var(--transition-fast), color var(--transition-fast);
+}
+@media (hover: hover) {
+  .nav-item:hover { background: var(--color-surface-muted); color: var(--color-text); }
+}
+.nav-item:focus-visible {
+  outline: var(--focus-ring-width) solid var(--color-focus-ring);
+  outline-offset: 2px;
+}
+/* Ativo — fundo de acento sutil + texto/ícone de acento */
+.nav-item.is-active {
+  color: var(--color-accent-text);
+  background: var(--color-accent-subtle);
+  font-weight: var(--fw-semibold);
+}
+.nav-item .nav-item__icon {
+  display: inline-flex;
+  flex: 0 0 auto;
+  width: 20px;
+  height: 20px;
+}
+
+/* =============================================================================
+   10. SIDEBAR  — .sidebar  (navegação lateral, largura fixa do token)
+   ============================================================================= */
+.sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  width: var(--sidebar-width);
+  min-height: 100%;
+  padding: var(--space-4);
+  background: var(--color-surface);
+  border-right: 1px solid var(--color-border);
+}
+.sidebar__brand {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: var(--topbar-height);
+  padding: 0 var(--space-2);
+  font-size: var(--text-md);
+  font-weight: var(--fw-semibold);
+  color: var(--color-text);
+}
+.sidebar__section {
+  margin-top: var(--space-4);
+  padding: 0 var(--space-3);
+  font-size: var(--text-xs);
+  font-weight: var(--fw-semibold);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--color-text-muted);
+}
+
+/* < lg: vira rail de ícones; < md normalmente vira drawer controlado pelo app */
+@media (max-width: 1023px) {
+  .sidebar {
+    width: auto;
+  }
+}
+
+/* =============================================================================
+   11. TOPBAR  — .topbar  (barra superior, altura fixa do token)
+   ============================================================================= */
+.topbar {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  min-height: var(--topbar-height);
+  padding: 0 var(--space-5);
+  background: var(--color-surface);
+  border-bottom: 1px solid var(--color-border);
+}
+.topbar__title {
+  font-size: var(--text-lg);
+  font-weight: var(--fw-semibold);
+  color: var(--color-text);
+}
+.topbar__spacer { flex: 1 1 auto; }            /* empurra ações para a direita */
+.topbar__actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+/* Botão hamburger (mobile) — só aparece abaixo de lg */
+.topbar__menu-btn { display: none; }
+@media (max-width: 1023px) {
+  .topbar__menu-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: var(--control-height);
+    height: var(--control-height);
+    background: transparent;
+    border: none;
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    color: var(--color-text);
+  }
+  .topbar__menu-btn:hover { background: var(--color-surface-muted); }
+  .topbar__menu-btn:focus-visible {
+    outline: var(--focus-ring-width) solid var(--color-focus-ring);
+    outline-offset: 2px;
+  }
+}
+
+/* =============================================================================
+   12. TOAST  — .toast  (+ --success / --error)
+   ============================================================================= */
+.toast {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+  max-width: 360px;
+  padding: var(--space-3) var(--space-4);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-left: 3px solid var(--color-text-secondary);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg);
+  color: var(--color-text);
+}
+.toast__icon {
+  flex: 0 0 auto;
+  display: inline-flex;
+  margin-top: 1px;
+  color: var(--color-text-secondary);
+}
+.toast__body { flex: 1 1 auto; font-size: var(--text-sm); line-height: var(--lh-sm); }
+.toast__title { font-weight: var(--fw-semibold); }
+.toast__close {
+  flex: 0 0 auto;
+  width: 24px;
+  height: 24px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: none;
+  border-radius: var(--radius-sm);
+  color: var(--color-text-muted);
+  cursor: pointer;
+}
+.toast__close:hover { background: var(--color-surface-muted); color: var(--color-text); }
+.toast__close:focus-visible {
+  outline: var(--focus-ring-width) solid var(--color-focus-ring);
+  outline-offset: 2px;
+}
+
+/* Variantes de severidade — faixa + ícone */
+.toast--success { border-left-color: var(--color-success); }
+.toast--success .toast__icon { color: var(--color-success); }
+.toast--error   { border-left-color: var(--color-danger); }
+.toast--error   .toast__icon { color: var(--color-danger); }
+
+/* Container fixo de toasts (canto inferior direito; topo no mobile) */
+.toast-stack {
+  position: fixed;
+  right: var(--space-5);
+  bottom: var(--space-5);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  z-index: 1000;
+}
+@media (max-width: 639px) {
+  .toast-stack { left: var(--space-4); right: var(--space-4); bottom: var(--space-4); }
+  .toast { max-width: none; }
+}
+
+/* =============================================================================
+   13. EMPTY STATE  — .empty-state
+   ============================================================================= */
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: var(--space-3);
+  padding: var(--space-12) var(--space-6);
+  color: var(--color-text-secondary);
+}
+.empty-state__icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 56px;
+  height: 56px;
+  border-radius: var(--radius-full);
+  background: var(--color-surface-muted);
+  color: var(--color-text-muted);
+}
+.empty-state__title {
+  font-size: var(--text-md);
+  font-weight: var(--fw-semibold);
+  color: var(--color-text);
+}
+.empty-state__desc {
+  max-width: 42ch;
+  font-size: var(--text-base);
+  color: var(--color-text-secondary);
+}
+.empty-state__actions { margin-top: var(--space-2); }
+
+/* =============================================================================
+   14. SKELETON  — .skeleton  (placeholder de carregamento com shimmer)
+   ============================================================================= */
+.skeleton {
+  display: block;
+  border-radius: var(--radius-sm);
+  background: var(--slate-100);
+  /* gradiente que desliza para criar o brilho (shimmer) */
+  background-image: linear-gradient(
+    90deg,
+    var(--slate-100) 0%,
+    var(--slate-200) 50%,
+    var(--slate-100) 100%
+  );
+  background-size: 200% 100%;
+  animation: skeleton-shimmer 1.4s ease-in-out infinite;
+}
+/* Formas utilitárias prontas */
+.skeleton--text  { height: 12px; margin: 6px 0; }
+.skeleton--title { height: 20px; width: 40%; }
+.skeleton--line  { height: 12px; width: 100%; }
+.skeleton--circle{ width: 40px; height: 40px; border-radius: var(--radius-full); }
+.skeleton--btn   { height: var(--control-height); width: 120px; border-radius: var(--radius-md); }
+
+@keyframes skeleton-shimmer {
+  0%   { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+/* =============================================================================
+   15. APP SHELL  — utilitário de layout que combina sidebar + topbar + conteúdo
+   (referência de montagem; cada tela pode reusar)
+   ============================================================================= */
+.app-shell {
+  display: grid;
+  grid-template-columns: var(--sidebar-width) 1fr;
+  grid-template-rows: var(--topbar-height) 1fr;
+  grid-template-areas:
+    "sidebar topbar"
+    "sidebar main";
+  min-height: 100vh;
+}
+.app-shell > .sidebar { grid-area: sidebar; }
+.app-shell > .topbar  { grid-area: topbar; }
+.app-shell > .app-main {
+  grid-area: main;
+  padding: var(--space-6);
+  overflow: auto;
+}
+/* < lg: empilha (sidebar vira drawer controlado pelo app, fora do fluxo do grid) */
+@media (max-width: 1023px) {
+  .app-shell {
+    grid-template-columns: 1fr;
+    grid-template-areas: "topbar" "main";
+  }
+  .app-shell > .sidebar { display: none; }     /* app reexibe como drawer */
+}

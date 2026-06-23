@@ -1,0 +1,40 @@
+# .pre-commit-config.yaml — ptm-platform (Spec Hub)
+# Este repo contém specs, docs e configuração — não código de aplicação (vive em services/).
+# Hooks focam em: secrets, formatação, validação de estrutura.
+
+default_stages: [pre-commit]
+fail_fast: false
+
+repos:
+  # ─── Secret Detection ───────────────────────────────────────────────
+  - repo: https://github.com/gitleaks/gitleaks
+    rev: v8.22.1
+    hooks:
+      - id: gitleaks
+        name: "gitleaks: detect secrets"
+        stages: [pre-commit]
+
+  # ─── General Quality ────────────────────────────────────────────────
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v5.0.0
+    hooks:
+      - id: trailing-whitespace
+        args: [--markdown-linebreak-ext=md]
+      - id: end-of-file-fixer
+      - id: check-yaml
+        args: [--allow-multiple-documents]
+      - id: check-json
+      - id: check-merge-conflict
+      - id: detect-private-key
+      - id: no-commit-to-branch
+        args: ['--branch', 'main']
+      - id: check-added-large-files
+        args: ['--maxkb=500']
+
+  # ─── Commit Message Convention ──────────────────────────────────────
+  - repo: https://github.com/compilerla/conventional-pre-commit
+    rev: v4.0.0
+    hooks:
+      - id: conventional-pre-commit
+        stages: [commit-msg]
+        args: [feat, fix, chore, docs, test, refactor, ci, hotfix, spec, prd]
