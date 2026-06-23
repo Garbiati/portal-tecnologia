@@ -1,13 +1,13 @@
 ---
 id: SPEC-MEDICOS-ESCALA
 title: Médicos & Escala (cadastro-dono do médico + escala fixa + estoque)
-status: draft            # draft | specified | tested | implemented
+status: specified        # draft | specified | tested | implemented
 owner: Alessandro
 area: Oferta
 clickup: ""
 figma: "snTNGRUJO2GwoKpXTHCBjf"   # frame "Médicos & Escala"
-validated_by: ""
-validated_at: ""
+validated_by: "Alessandro"
+validated_at: "2026-06-23"
 last_update: 2026-06-23
 ---
 
@@ -18,8 +18,9 @@ last_update: 2026-06-23
 > Recorte de UI (handoff de tela): [`./ui.md`](./ui.md). Modelo de domínio do contexto ② Médico+Escala+Estoque:
 > [`../../docs/architecture/01-domain-model.md`](../../docs/architecture/01-domain-model.md).
 >
-> **Status `draft` por decisão de método:** há perguntas 🔴 abertas (§8) que **bloqueiam** o
-> `specified`. Não inferimos a fórmula de capacidade nem a granularidade do estoque — perguntamos.
+> **Status `specified`** (validado por Alessandro em 2026-06-23): os 2 bloqueadores 🔴 foram
+> confirmados — granularidade = **contagem** (D-111) e fórmula = **base pura** (D-112). Restam só
+> 🟡 (não bloqueiam). Próximo passo: **TDD** (cenários §4 → testes → código).
 
 ## 1. Problema / Dor  _(Definition of Success)_
 
@@ -44,11 +45,14 @@ Permitir ao operador Admin/Demandas:
 
 - ✅ **D-010** — O **Doutor é DADO, não usuário** (não loga); é cadastrado por operador Admin/Demandas.
 - ✅ **D-008** — O **cadastro de médico/escala é do papel Admin/Demandas** (RBAC).
-- ✅ **D-005** — O **estoque é MISTO**: uma **base calculada** a partir da escala (dias × horário ×
-  consultas/hora × período) **+ ajuste manual** ("retornos/extras"), e o ajuste manual é **auditado**.
-
-> ⚠️ A **fórmula exata** de derivação da base calculada e a **granularidade** do estoque **NÃO** estão
-> confirmadas — ver §8 (🔴). Por isso esta spec permanece `draft`.
+- ✅ **D-005** — O **estoque é MISTO**: uma **base calculada** a partir da escala **+ ajuste manual**
+  ("retornos/extras"), e o ajuste manual é **auditado**.
+- ✅ **D-111** — **Granularidade = CONTAGEM (inteiro).** A vaga é uma contagem de capacidade por
+  médico/especialidade/período — não horário concreto. — _Confirmado por Alessandro em 2026-06-23._
+- ✅ **D-112** — **Fórmula = BASE PURA:** `estoque_base = (horário_fim − horário_início)[h] ×
+  consultas_por_hora × dias_válidos_no_período`, sem descontar almoço/feriados. `dias_válidos` = nº de
+  ocorrências dos dias da escala dentro de `[período_início, período_fim]`. — _Confirmado por Alessandro em 2026-06-23._
+- ✅ **estoque_total = estoque_base + ajuste_manual** (D-005 + D-112).
 
 ## 4. Critérios de aceite  _(Gherkin — fonte do teste; TDD)_
 
@@ -91,12 +95,19 @@ Cenário: salvar com sucesso
   Quando o operador salva
   Então o sistema confirma (toast) e o médico aparece na lista com seu status
 
-# ⛔ PENDENTE (bloqueado por §8 🔴 — fórmula/granularidade):
-Cenário: cálculo do estoque antes de salvar (D-005)
-  Dado dias, horário, consultas/hora e período válidos
+Cenário: cálculo do estoque base antes de salvar (D-005, D-111, D-112)
+  Dado uma escala com horário 08:00–12:00 (4h), 3 consultas por hora
+    E os dias seg, qua, sex
+    E o período de 01/07/2026 a 31/07/2026 (13 ocorrências desses dias)
   Quando o operador preenche a escala
-  Então o sistema exibe o estoque calculado ("≈ N vagas") no banner ANTES de salvar
-  # N depende da fórmula confirmada (§8 🔴-1) e da granularidade (§8 🔴-2)
+  Então o sistema exibe o estoque base calculado de 156 vagas no banner ANTES de salvar
+  # 4h × 3/h × 13 dias = 156 (contagem inteira — D-111/D-112)
+
+Cenário: estoque total soma o ajuste manual (D-005)
+  Dado um estoque base de 156 vagas
+  Quando o operador aplica um ajuste manual de +10 (retornos/extras)
+  Então o estoque total exibido é 166 vagas
+    E o ajuste é registrado com trilha de auditoria
 ```
 
 ## 5. Definition of Done
@@ -122,17 +133,13 @@ Cenário: cálculo do estoque antes de salvar (D-005)
   O cadastro desta tela e o sync precisam de uma regra de convivência (🟡 §8).
 - **Estoque → Disponibilização (③):** o estoque calculado é o insumo da etapa de Alocação.
 
-## 8. Perguntas abertas  _(NÃO INFERIR — bloqueiam `specified` enquanto 🔴)_
+## 8. Perguntas abertas  _(NÃO INFERIR — perguntar)_
 
-- 🔴 **(1) Fórmula exata da base calculada.** `(horas no dia × consultas/hora) × dias válidos no
-  período`? Como tratar **intervalo (almoço)**, **duração fixa de consulta**, **feriados**? Parâmetros
-  do edital (≈ **3 consultas/hora**, plantão mín. 4h) são **referência, não regra confirmada**
-  ([`05-processo-manual-excel.md`](../../docs/discovery/05-processo-manual-excel.md) §5).
-- 🔴 **(2) Granularidade do estoque.** Vaga = **contagem de capacidade** (um inteiro) OU **horário
-  concreto** (slots datados)? O `03-open-questions.md` **sugere** começar como contagem — mas é
-  sugestão, não confirmação. Define o modelo de dados.
+> ✅ **Resolvidas (desbloquearam o `specified`):** fórmula da base calculada → **D-112** (base pura);
+> granularidade do estoque → **D-111** (contagem). Restam só 🟡, que **não bloqueiam** esta entrega.
+
 - 🟡 **(3) Trilha de auditoria do ajuste manual:** quem pode ajustar, o que se registra, retenção (LGPD).
 - 🟡 **(4) Convivência cadastro × sync RO:** o médico vem da TC (RO); o que esta tela cria/edita vs. o
-  que é espelhado? Conflito de fonte da verdade.
+  que é espelhado? Conflito de fonte da verdade. _(Escopo desta spec assume o médico existente; ver §6/§7.)_
 - 🟡 **(5) Especialidade:** texto livre ou referência ao `internal_specialization_id` da TC?
 - 🟢 **(6)** Classes em `design/components/components.css` ainda não materializadas (seguem UI Kit Figma `24:2`).
