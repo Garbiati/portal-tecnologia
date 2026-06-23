@@ -81,7 +81,7 @@ flowchart LR
 ### 1.3 Custo de tokens / assinatura de IA (pass-through) — [FATO, citado do relatório de pesquisa]
 
 A **mão de obra domina**; IA + infra são pequenos `[04-custo-e-proposta.md]`. Fatos de billing
-(`docs/research/ai-coding-sdd-report.md`, §7, recuperados 2026-06-14):
+(`docs/method/ai-coding-sdd-report.md`, §7, recuperados 2026-06-14):
 
 - **[FATO]** Médias oficiais de uso de Claude Code: **~US$13/dev/dia ativo**, **~US$150–250/dev/mês**, 90%
   abaixo de US$30/dia `[ai-coding-sdd-report §7.3, code.claude.com/docs/en/costs]`.

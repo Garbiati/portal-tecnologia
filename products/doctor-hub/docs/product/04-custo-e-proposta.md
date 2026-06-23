@@ -8,7 +8,7 @@ gerado_por: rascunho automático (a validar com Alessandro)
 # Custo & Proposta de Preço
 
 > ⚠️ **Nada aqui é preço final.** Seu **valor/hora** é a variável que você define. Câmbio assumido
-> **US$1 ≈ R$5,50** (verificar). Preços de IA conforme `docs/research/ai-coding-sdd-report.md` (2026-06-14).
+> **US$1 ≈ R$5,50** (verificar). Preços de IA conforme `docs/method/ai-coding-sdd-report.md` (2026-06-14).
 > A mão de obra **domina** o custo; IA + infra são pequenos.
 
 ## 1. Custos de IA, ferramentas e infraestrutura (pass-through)

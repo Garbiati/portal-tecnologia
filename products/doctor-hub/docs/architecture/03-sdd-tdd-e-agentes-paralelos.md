@@ -10,7 +10,7 @@ rastreabilidade: M-001..M-004; CLAUDE.md (Diretriz Suprema, princípios de risco
 
 > Como o **Spec-Driven + Test-Driven Development** opera neste projeto e como **vários agentes de IA
 > trabalham em paralelo SEM quebrar a arquitetura**. Tudo aqui é **método**, não regra de negócio.
-> Base: `CLAUDE.md` (Diretriz Suprema + princípios de risco), `docs/enforcement/spec-first-hook.md`,
+> Base: `CLAUDE.md` (Diretriz Suprema + princípios de risco), `docs/method/spec-first-hook.md`,
 > `M-001..M-004` (`decisions-log.md`).
 
 ## 1. O ciclo SDD+TDD (spec → teste → código)
@@ -29,7 +29,7 @@ Estados da spec (M-001): **draft → specified → tested → implemented**. As 
 em `draft` (corretamente — têm perguntas abertas; `BUILD-PROGRESS.md`).
 
 ### Enforcement (a "máquina obriga o fluxo")
-Os hooks desenhados em `docs/enforcement/spec-first-hook.md` (a implementar quando a stack fechar — D-001):
+Os hooks desenhados em `docs/method/spec-first-hook.md` (a implementar quando a stack fechar — D-001):
 
 1. **Sem spec validada ⇒ não codifica** (`PreToolUse` bloqueia Edit/Write de código sem `spec.md` `specified`).
 2. **Teste antes do código** (TDD): sem teste correspondente ⇒ bloqueia.

@@ -4,7 +4,7 @@ status: draft
 date: 2026-06-14
 gerado_por: rascunho automático (a validar com Alessandro)
 papel_autor: product/delivery lead
-rastreabilidade: 06-roadmap-telas.md · 07-fases-entrega.md · 03-estimativa-esforco.md · 05-estimativa-normal-vs-ai.md · architecture/03-sdd-tdd-e-agentes-paralelos.md
+rastreabilidade: 06-roadmap-telas.md · 07-fases-entrega.md · 03-estimativa-esforco.md · 05-estimativa-normal-vs-ai.md · products/doctor-hub/docs/architecture/03-sdd-tdd-e-agentes-paralelos.md
 ---
 
 # 🧭 Roadmap Detalhado (para Diretoria + Delivery)

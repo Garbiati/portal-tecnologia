@@ -122,5 +122,5 @@
 ## Decisões de método (já materializadas no repo)
 - **M-001** Spec como fonte da verdade (`specs/`), ciclo draft→specified→tested→implemented.
 - **M-002** Zero inferência de regra de negócio; dúvida vira pergunta aberta (Diretriz Suprema, `CLAUDE.md`).
-- **M-003** Enforcement por hooks spec-first/TDD (desenho em `docs/enforcement/spec-first-hook.md`).
+- **M-003** Enforcement por hooks spec-first/TDD (desenho em `docs/method/spec-first-hook.md`).
 - **M-004** SDD+TDD alinhados ao que a própria Teleconsulta já pratica (monorepo com `/specs`).

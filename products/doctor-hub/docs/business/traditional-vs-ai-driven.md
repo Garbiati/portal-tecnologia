@@ -5,8 +5,8 @@ status: draft
 date: 2026-06-14
 author: Staff Architect (agente)
 rastreabilidade: >
-  docs/research/ai-coding-sdd-report.md (METR, DORA, GitClear, Veracode, Stanford CCS, GitGuardian, USENIX);
-  docs/architecture/03-sdd-tdd-e-agentes-paralelos.md; docs/enforcement/spec-first-hook.md;
+  docs/method/ai-coding-sdd-report.md (METR, DORA, GitClear, Veracode, Stanford CCS, GitGuardian, USENIX);
+  products/doctor-hub/docs/architecture/03-sdd-tdd-e-agentes-paralelos.md; docs/method/spec-first-hook.md;
   CLAUDE.md (Diretriz Suprema + princípios de risco); decisions-log.md (M-001..M-004)
 tags: [negocio, custo, governanca, seguranca, sdd, tdd, ai-coding, previsibilidade]
 ---
@@ -14,7 +14,7 @@ tags: [negocio, custo, governanca, seguranca, sdd, tdd, ai-coding, previsibilida
 # Desenvolvimento Tradicional × AI-Driven (AI Coding + SDD+TDD)
 
 > **Tese, sem hype.** A IA **não é mágica** e a pesquisa é explícita nisso (ver
-> `docs/research/ai-coding-sdd-report.md`): isolada, ela acelera boilerplate mas **introduz
+> `docs/method/ai-coding-sdd-report.md`): isolada, ela acelera boilerplate mas **introduz
 > riscos reais** — código inseguro por padrão, vazamento de segredo, dependências
 > inexistentes, dívida técnica acelerada e uma perigosa **lacuna de superconfiança**. O que
 > torna o modelo **AI-Driven** vantajoso **neste projeto** não é a IA sozinha; é o **arcabouço
@@ -24,8 +24,8 @@ tags: [negocio, custo, governanca, seguranca, sdd, tdd, ai-coding, previsibilida
 > segurança**. Sem ele, "AI-Driven" é só "vibe coding" — e aí o tradicional é mais seguro.
 
 Neste documento, **"AI-Driven"** significa sempre **AI Coding sob a disciplina SDD+TDD com
-enforcement**, exatamente como descrito em `docs/architecture/03-sdd-tdd-e-agentes-paralelos.md`
-e `docs/enforcement/spec-first-hook.md`. Não é AI Coding cru.
+enforcement**, exatamente como descrito em `products/doctor-hub/docs/architecture/03-sdd-tdd-e-agentes-paralelos.md`
+e `docs/method/spec-first-hook.md`. Não é AI Coding cru.
 
 ---
 
@@ -137,7 +137,7 @@ escrito. Toda suposição vira **pergunta aberta**; toda regra confirmada vira *
 interno do slopsquatting, sem registry para pegar).
 
 ### 3.2 Hooks spec-first / TDD (governa: superconfiança, código sem contrato)
-Os hooks de `docs/enforcement/spec-first-hook.md` são **determinísticos** — `CLAUDE.md` é conselho
+Os hooks de `docs/method/spec-first-hook.md` são **determinísticos** — `CLAUDE.md` é conselho
 (advisory), hooks são **executados** (exit 2 = bloqueia):
 - **Regra 1 — sem spec validada ⇒ não codifica** (`PreToolUse` bloqueia Edit/Write de código quando
   não há `spec.md` `specified`).
@@ -225,7 +225,7 @@ olhos). Tire o arcabouço, e a recomendação se inverte.
 
 ---
 
-> **Fontes** (todas em `docs/research/ai-coding-sdd-report.md`, recuperadas 2026-06-14): METR RCT
+> **Fontes** (todas em `docs/method/ai-coding-sdd-report.md`, recuperadas 2026-06-14): METR RCT
 > (slowdown 19%), DORA 2025 (verification tax, "amplifica práticas"), GitClear 2025 (dívida técnica),
 > Veracode 2025 (45% inseguro), Stanford CCS 2023 (menos seguro + superconfiança), GitGuardian 2026
 > (~2× vazamento de segredo, 24.008 segredos em MCP), USENIX 2025 (~20% deps alucinadas). Preços e

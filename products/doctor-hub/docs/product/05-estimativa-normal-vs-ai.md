@@ -16,7 +16,7 @@ gerado_por: rascunho automático (a validar com Alessandro)
 ## Como modelo "normal" × "AI coding"
 - As horas do backlog (`01-spec-backlog.md`) já foram estimadas como **1 dev + IA** → são a coluna **AI coding**.
 - **Desenvolvimento normal** (sem IA) = AI coding **+ ~35%** (faixa +25% a +45%).
-- ⚠️ **Este delta é o número MAIS INCERTO de toda a estimativa.** A pesquisa (`docs/research/`) mostra:
+- ⚠️ **Este delta é o número MAIS INCERTO de toda a estimativa.** A pesquisa (`docs/method/`) mostra:
   o ganho da IA **concentra-se em boilerplate/CRUD/UI/testes/docs**, e é **fraco ou negativo** na lógica
   complexa de domínio (o motor de alocação) e no debug de integração, onde ainda há "imposto de verificação"
   (METR 2025: experts ficaram mais lentos em código complexo). Ou seja: a economia é real nas telas e na

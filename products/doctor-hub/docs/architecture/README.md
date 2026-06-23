@@ -19,7 +19,7 @@ author: Staff Architect (agente)
 | 00 | [00-overview.md](./00-overview.md) | **Contexto C4 (L1/L2)**: Demandas (montante) → Teleconsulta (jusante); atores/papéis (D-008); clientes público/privado (D-018); fronteira de integração (D-002). |
 | 01 | [01-domain-model.md](./01-domain-model.md) | **Bounded contexts e agregados** (Cliente/HC; Médico+Escala+Estoque; Solicitação; Disponibilização; Assunção+Agendamento; Remanejamento; Monitor/Integração; RBAC; Auditoria) + **invariantes-chave** (D-003, D-005, D-011, D-013) + perguntas abertas. |
 | 02 | [02-system-design.md](./02-system-design.md) | **Arquitetura proposta**: monólito modular + **Adapter de Integração TC** (idempotência por `external_id`, retry/backoff, **monitor proativo da janela** que mata os 7,7%) + padrões de resiliência (outbox, read-models, jobs, observabilidade) + contratos de API + Auth/RBAC + **opções de stack (DECISÃO ABERTA — D-001)**. |
-| 03 | [03-sdd-tdd-e-agentes-paralelos.md](./03-sdd-tdd-e-agentes-paralelos.md) | **SDD+TDD** (spec→teste→código, hooks de enforcement) + como **múltiplos agentes de IA trabalham em paralelo sem quebrar a arquitetura** + **mapa de paralelização** dos módulos. |
+| 03 | [03-sdd-tdd-e-agentes-paralelos.md](./03-sdd-tdd-e-agentes-paralelos.md) | **SDD+TDD** (spec→teste→código, hooks de enforcement) + como **múltiplos agentes de IA trabalham em paralelo sem quebrar a arquitetura** + **mapa de paralelização** dos módulos. Aplica o método de plataforma (`../../../../docs/method/`) ao domínio Doctor-Hub. |
 
 ## Decisões de arquitetura que orientam estes docs
 
@@ -45,4 +45,4 @@ author: Staff Architect (agente)
 - Produto/escopo/fases: `../product/02-scope-entrega-1.md`, `07-fases-entrega.md`
 - Design system: `../../design/design-system.md`, `../../design/BUILD-PROGRESS.md`, `../../design/tokens.*`
 - UI-specs: `../../specs/*/ui.md`
-- Enforcement: `../enforcement/spec-first-hook.md`
+- Enforcement (método de plataforma): `docs/method/spec-first-hook.md`
