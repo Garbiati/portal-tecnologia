@@ -1,6 +1,7 @@
 # Regra global — Segurança & LGPD (healthcare)
 
-> Vale para o hub e para todos os `services/`. Detalhe de fundo: `docs/research/` e `docs/security/`.
+> Vale para o hub e para todos os `services/`. **Detalhe completo:** `docs/security/security-baseline.md`.
+> Fundamentação (estudos/taxas): `docs/method/ai-coding-sdd-report.md`.
 
 1. **Zero segredo no código.** Nada de senha/token/connection string em código, `appsettings`,
    `.mcp.json` ou settings. Dev: `.env` (gitignored) + `dotnet user-secrets`. Prod: **GCP Secret Manager**.
