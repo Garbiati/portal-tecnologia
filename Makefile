@@ -1,12 +1,20 @@
-## ptm-platform — entry point. `make help` lista os alvos.
-API_DIR := services/doctor-hub-api
-WEB_DIR := services/doctor-hub-web
+## portal-platform — entry point (guarda-chuva da empresa). `make help` lista os alvos.
+## Product-aware: `make api` usa PRODUCT=doctor-hub; `make api PRODUCT=<outro>` mira outro produto.
+PRODUCT ?= doctor-hub
+API_DIR := services/$(PRODUCT)-api
+WEB_DIR := services/$(PRODUCT)-web
 
 .DEFAULT_GOAL := help
-.PHONY: help api web db down install test test-api test-web build-web
+.PHONY: help catalog workspace api web db down install test test-api test-web build-web
 
 help: ## Lista os alvos
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN{FS=":.*?## "}{printf "  \033[36m%-12s\033[0m %s\n", $$1, $$2}'
+
+catalog: ## Mostra o catálogo de repos da empresa (repos.yml)
+	@grep -E '^\s+- name:|^\s+url:|^\s+status:' repos.yml | sed 's/^/  /'
+
+workspace: ## Clona/atualiza os repos da empresa (com url) em ./workspace/ (gitignored)
+	@bash scripts/workspace.sh
 
 db: ## Sobe o Postgres local (docker compose)
 	cd $(API_DIR) && docker compose up -d db
