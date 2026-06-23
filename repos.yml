@@ -1,0 +1,72 @@
+# Manifest / catálogo de repositórios — Portal Telemedicina
+# Fonte da verdade da linkagem entre o guarda-chuva (portal-platform) e os repos da empresa.
+# Polyrepo: cada repo é independente; aqui só REFERENCIAMOS (não submodules).
+# `scripts/workspace.sh` (make workspace) clona/atualiza os que têm `url` confirmada em ./workspace/.
+#
+# Diretriz Suprema: NÃO inventar URL/dono/stack. O que não foi verificado leva `confirmar: true`.
+# Campos: name, url, kind (governance|product|service|hub|lib), owner, stack, status, docs (self|<path>), path.
+
+version: 1
+org: PortalTelemedicina
+
+repos:
+  - name: portal-platform
+    url: git@github.com:PortalTelemedicina/portal-platform.git   # verificado (este repo)
+    kind: governance
+    owner: Alessandro
+    stack: docs/markdown
+    status: active
+    docs: self
+    path: .
+
+  - name: teleconsulta
+    url: git@github.com:PortalTelemedicina/teleconsulta.git       # verificado (remote local)
+    kind: hub                 # monorepo-hub com ~30 services aninhados em services/
+    owner: ~                  # confirmar
+    stack: ~                  # confirmar (multi-stack)
+    status: production
+    docs: self                # docs/specs vivem no próprio repo
+    path: workspace/teleconsulta
+
+  - name: doctor-hub-api
+    url: ~                    # confirmar (ainda sem remote — a publicar)
+    confirmar: true
+    kind: service
+    product: doctor-hub
+    owner: Alessandro
+    stack: .NET 10 · EF Core+Dapper · Postgres
+    status: build (Fase 6)
+    docs: products/doctor-hub
+    path: services/doctor-hub-api
+
+  - name: doctor-hub-web
+    url: ~                    # confirmar (ainda sem remote — a publicar)
+    confirmar: true
+    kind: service
+    product: doctor-hub
+    owner: Alessandro
+    stack: React · Vite · TS · Tailwind · PWA
+    status: build (Fase 6)
+    docs: products/doctor-hub
+    path: services/doctor-hub-web
+
+  # --- candidatos (existem como diretório em ~/ptm mas ainda NÃO são repos git / a confirmar) ---
+  - name: dados
+    url: ~
+    confirmar: true
+    kind: product
+    owner: ~
+    stack: ~
+    status: candidate
+    docs: ~
+    path: workspace/dados
+
+  - name: telediagnostico        # diretório local: ~/ptm/td
+    url: ~
+    confirmar: true
+    kind: product
+    owner: ~
+    stack: ~
+    status: candidate
+    docs: ~
+    path: workspace/td
