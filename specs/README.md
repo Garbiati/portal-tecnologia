@@ -25,22 +25,29 @@ draft ──▶ specified ──▶ tested ──▶ implemented
 > Regra de ouro (ver `../CLAUDE.md`): nenhuma spec passa de `draft` para `specified`
 > com **perguntas abertas pendentes**. Não inferimos — perguntamos.
 
-## Estrutura
+## Estrutura — método aqui, specs de feature no produto
+
+> Esta pasta (`specs/` na **raiz**) guarda só o **método**: o ciclo de vida acima + o template.
+> **As specs de feature vivem em cada produto:** `products/<produto>/specs/<slug>/`
+> (ex.: `products/doctor-hub/specs/medicos-escala/`). Assim cada produto tem suas features isoladas.
 
 ```
-specs/
-├── README.md              ← este arquivo
-├── _template/
-│   └── spec-template.md   ← modelo a copiar para cada nova feature
+specs/                          ← raiz: só método
+├── README.md                   ← este arquivo (ciclo de vida da spec)
+└── _template/spec-template.md   ← modelo a copiar para cada nova feature
+
+products/<produto>/specs/        ← specs de feature do produto
+├── README-ui.md                 ← (se houver) índice/convenção de ui.md do produto
 └── <slug-da-feature>/
-    └── spec.md            ← uma feature = uma pasta = uma spec
+    ├── spec.md                  ← uma feature = uma pasta = uma spec
+    └── ui.md                    ← (opcional) recorte de UI
 ```
 
-O `STATUS.md` na raiz do projeto é **gerado** a partir do frontmatter de todas as specs —
-é o embrião do portal visual: mostra o que existe, o que está validado, testado e implementado.
+Um `STATUS.md` por produto pode ser **gerado** a partir do frontmatter das specs do produto —
+embrião do portal visual: o que existe, validado, testado e implementado.
 
 ## Como nasce uma spec
-1. Copie `_template/spec-template.md` para `specs/<slug>/spec.md`.
+1. Copie `specs/_template/spec-template.md` para `products/<produto>/specs/<slug>/spec.md`.
 2. Preencha o que se SABE. Tudo que não se sabe vira **Pergunta aberta** (não invente regra).
 3. Humano valida → `status: specified`.
 4. IA gera os testes de aceite a partir dos critérios → `status: tested`.

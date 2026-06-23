@@ -1,137 +1,130 @@
-# ptm-platform — Spec Hub da Plataforma (constituição)
+# portal-platform — Constituição da Plataforma Portal Telemedicina
 
-> **Este repositório é o spec-hub** da plataforma interna da empresa (análogo ao
-> `../teleconsulta`): guarda **especificações, regras e governança** — **não** código de app.
-> O código vive em `services/` (repos git **separados**, gitignorados aqui). Todo agente de IA e
-> todo humano DEVE ler e seguir esta constituição antes de qualquer ação.
+> **Repo oficial de governança da empresa (Portal Telemedicina).** Guarda-chuva acima de **todos os
+> repos** da empresa: carrega **governança de IA, LGPD/segurança, padrões, agents/skills e o catálogo
+> de todos os repositórios** — **não** código de app. Todo agente de IA e todo humano DEVE ler e
+> seguir esta constituição **antes de qualquer ação**.
 >
-> **1º produto: Doctor-Hub** (planejamento de capacidade médica) — services `doctor-hub-api`
-> (.NET 10) e `doctor-hub-web` (React PWA). A plataforma nasce para servir produtos da empresa
-> (Teleconsulta, Telediagnóstico, Dados…).
+> **Modelo:** polyrepo. Cada produto/serviço é **seu próprio repo git** (independente). O que é
+> **comum** vive aqui; o que é **específico** vive em cada repo. A linkagem oficial entre o guarda-chuva
+> e os repos é o **manifest** ([`repos.yml`](repos.yml)) + o **catálogo** — **não** submodules.
 
-## 🏗️ Estrutura (spec-hub + services)
+## 🏗️ Estrutura
 
 ```
-ptm-platform/
-├── CLAUDE.md · README.md · Makefile         ← governança + entry point
-├── docs/        ← discovery, decisions-log, design, glossary, architecture, research, security
-├── specs/       ← specs por subdomínio (SDD) — caminho para PRDs
-├── infrastructure/   ← docker-compose + envs
-├── .claude/rules/    ← regras globais (SDD, security)
-└── services/    (gitignored — cada um é repo git próprio)
-    ├── doctor-hub-api/   (.NET 10 · EF Core+Dapper · Postgres)
-    └── doctor-hub-web/   (React · Vite · Tailwind · PWA)
+portal-platform/
+├── CLAUDE.md · README.md · Makefile      ← constituição da empresa + entry point
+├── repos.yml                              ← MANIFEST: catálogo de todos os repos (fonte da verdade)
+├── docs/                ← GOVERNANÇA TRANSVERSAL (vale p/ todos os repos)
+│   ├── method/            SDD + TDD + AI-coding
+│   ├── security/          baseline de segurança & LGPD
+│   ├── architecture/      arquitetura DA PLATAFORMA (como ela serve produtos)
+│   └── decisions/         ADR de PLATAFORMA (P-001…)
+├── specs/               ← metodologia SDD (ciclo de vida + template)
+├── products/           ← produtos cuja governança/specs são HOSPEDADAS aqui (ex.: doctor-hub)
+│   ├── README.md          registry de produtos hospedados
+│   ├── _template/         scaffold p/ onboard um produto novo
+│   └── doctor-hub/        docs/ + specs/ + design/ + CLAUDE.md
+├── infrastructure/     ← docker-compose + envs (compartilhado)
+├── scripts/            ← utilitários (workspace.sh: clona/atualiza repos do manifest)
+├── .claude/rules/      ← regras globais aplicadas pela máquina (SDD, security)
+├── workspace/  (gitignored)  ← clones locais dos repos da empresa (via `make workspace`) — só DEV
+└── services/   (gitignored)  ← código local do doctor-hub (api/web), repos próprios
 ```
 
-Cada service tem seu próprio `CLAUDE.md` (recorte da stack) apontando de volta para esta constituição.
+**Hierarquia de `CLAUDE.md`:** raiz (empresa) → produto (`products/<p>/CLAUDE.md`) → repo de código
+(cada `services/<repo>/CLAUDE.md` aponta de volta para cá). Cada nível só acrescenta o que é seu.
+
+**Catálogo de repos:** `repos.yml` lista **todos** os repos da empresa (url, tipo, dono, stack,
+status, onde ficam os docs). Alguns têm os **docs hospedados aqui** (ex.: doctor-hub em `products/`);
+outros mantêm docs **no próprio repo** (ex.: `teleconsulta`) e só constam no catálogo. `make workspace`
+clona/atualiza os que têm remote num `workspace/` gitignored para visão local.
 
 ---
 
-## 🧭 Diretriz Suprema (Prime Directive)
+## 🧭 Diretriz Suprema (Prime Directive) — vale para todo repo
 
 **NÃO INFERIR REGRA DE NEGÓCIO. NA DÚVIDA, PERGUNTAR.**
 
-1. Nenhuma regra de negócio é inventada, deduzida ou "preenchida por bom senso".
-   Se não está escrito em `docs/discovery/` ou em uma spec aprovada, **não existe ainda** — pergunte.
-2. Toda suposição vira uma **pergunta aberta** em `docs/discovery/open-questions.md`,
-   não uma decisão silenciosa no código.
-3. Toda decisão de negócio confirmada pelo humano vira um **registro** (ver "Como registrar" abaixo).
-4. Em saúde pública lidamos com **dado sensível (LGPD)** e **dinheiro público** — o custo de
-   uma regra errada é alto. Prefira perguntar duas vezes a assumir uma vez.
+1. Nenhuma regra de negócio é inventada, deduzida ou "preenchida por bom senso". Se não está escrita
+   na discovery do produto (`products/<p>/docs/discovery/`) ou numa spec aprovada, **não existe ainda**.
+2. Toda suposição vira **pergunta aberta**, não decisão silenciosa no código.
+3. Toda decisão confirmada pelo humano vira **registro** (ADR de plataforma `P-xxx` se transversal;
+   decisions-log do produto `D-xxx` se específica).
+4. Lidamos com **dado sensível (LGPD)** e, em saúde pública, **dinheiro público** — o custo de uma
+   regra errada é alto. Prefira perguntar duas vezes a assumir uma vez.
 
 Se um agente perceber que está prestes a "achar" algo sobre o negócio: **pare e pergunte.**
 
 ---
 
-## 🎯 O que é este projeto
+## 🔬 Método de trabalho (igual para todos os repos)
 
-Sistema de **planejamento de capacidade médica** (oferta × demanda) para health centers (HCs)
-de governos. Fica **a montante** do produto de Teleconsulta existente
-(`/home/alessandro/ptm/teleconsulta`) e **alimenta** a Teleconsulta com agendamentos prontos —
-não a substitui.
-
-Pipeline: **Oferta (escala dos médicos) → Demanda (solicitação dos governos) →
-Alocação (disponibilização: simular/reservar/emitir) → Remanejamento → Agendamento → Teleconsulta.**
-
-Detalhe verificado do domínio: `docs/discovery/01-domain-overview.md`.
+- **Double Diamond / Design Thinking**: entender o PROBLEMA antes da solução.
+- **SDD (Spec-Driven Development)**: nada é codificado sem spec aprovada. A spec **é** o sistema;
+  o código é derivado. Ciclo de vida: [`specs/README.md`](specs/README.md).
+- **TDD**: nada é codificado sem teste antes. Cada invariante médica/financeira cercada de teste.
+- Detalhe: [`docs/method/`](docs/README.md) — `spec-first-hook.md` (enforcement), `ai-coding-sdd-report.md` (pesquisa).
 
 ---
 
-## 🔬 Método de trabalho
+## ⚠️ Princípios de risco (1 dev + IA em healthcare) — `docs/method/ai-coding-sdd-report.md`
 
-- **Double Diamond / Design Thinking**: entender o PROBLEMA antes de pensar em solução.
-- **SDD (Spec-Driven Development)**: nada é codificado sem uma spec aprovada.
-- **TDD (Test-Driven Development)**: nada é codificado sem teste antes.
-
-### Gate de fase (atualizado 2026-06-16)
-A descoberta essencial está fechada e o Alessandro optou por **CONSTRUIR um protótipo funcional**
-(D-030) — então **já estamos na Fase 6 (Construir)**. O gate "não escrever código" foi **superado por
-D-030**. O que **continua valendo sempre**: a Diretriz Suprema (não inferir regra de negócio), **SDD+TDD**
-(spec/teste antes), lotes pequenos e os princípios de risco abaixo. O produto foi reposicionado para
-**"Doctor-Hub" — gestão de médicos** (D-055), com a **1ª entrega = Fase 1 do roadmap da diretoria: escala
-médica + cadastro-dono do médico** (D-052), rodando sobre **dados reais de produção** (médicos via sync RO).
-
-| Fase | Foco | Saída | Status |
-|------|------|-------|--------|
-| 1. Descobrir & Definir | Entender o problema | Domínio, papéis, perguntas, critérios | 🟢 Fechada |
-| 2. Pesquisar | Frameworks AI-coding, SDD, segurança | Decisão de método/ferramental | 🟢 Feita (`docs/research/`) |
-| 3. Arquitetura de contexto | Agents, skills, MCP, RAG, docs | Pasta pronta pra IA | 🟢 Fundação feita |
-| 4. Estimar & Contratar | Escopo congelado, horas, custo, gates | Proposta aprovada | 🔵 Rascunho em `docs/product/` |
-| 5. Desenhar (Figma) | Telas | Protótipo | ⚪ Pulada — optou-se por protótipo funcional (D-030) |
-| 6. Construir | Front, back, banco | Sistema | 🟢 **EM ANDAMENTO** — build real em `services/doctor-hub-api` (.NET 10) + `services/doctor-hub-web` (React PWA); walking skeleton verde (D-109/D-110) |
+1. **Lacuna de superconfiança (risco nº 1).** A spec e os testes são a ÚNICA verdade de campo.
+2. **Segurança inegociável.** Baseline: [`docs/security/security-baseline.md`](docs/security/security-baseline.md).
+3. **Núcleo crítico à mão.** Invariantes médicas/financeiras revisadas por humano e cercadas de teste.
+4. **Lotes pequenos.** Mudanças pequenas, testadas, frequentes.
 
 ---
 
-## ⚠️ Princípios de risco (do relatório de pesquisa — `docs/research/`)
+## 🔒 Segurança & LGPD (não relaxar nunca) — `docs/security/security-baseline.md`
 
-Para 1 dev + IA em sistema de saúde, estes não são opcionais:
-
-1. **Lacuna de superconfiança (risco nº 1).** Estudos (Stanford 2023, METR 2025) mostram que você
-   vai *sentir-se* mais rápido e seguro do que está. **A spec e a suíte de testes são a ÚNICA verdade
-   de campo** — não a sensação, não "parece certo".
-2. **Segurança inegociável (healthcare).** IA gera código inseguro ~45% das vezes, dobra vazamento de
-   segredo e sugere ~20% de dependências inexistentes. Baseline: scanning de segredo em camadas,
-   **zero segredo em `.mcp.json`/settings**, verificar todo pacote sugerido, least-privilege.
-   Detalhe em `docs/security/security-baseline.md` (a criar).
-3. **Núcleo crítico à mão.** As invariantes médicas (alocação, capacidade, elegibilidade, fairness)
-   são escritas/revisadas por humano e cercadas de testes — não delegadas cegamente à IA.
-4. **Lotes pequenos.** A IA amplifica suas práticas (DORA 2025): mudanças pequenas, testadas, frequentes.
-
-Hipótese atual, **nomes provisórios** dados pelo Alessandro: Admin, Demandas, Solicitante,
-Doutor, Paciente, Gestor. Detalhe e perguntas: `docs/discovery/02-roles.md`.
+- **Zero segredo no código** (`.mcp.json`, `appsettings`, settings). Dev: `.env` + `dotnet user-secrets`.
+  Prod: **GCP Secret Manager**. `gitleaks` + pre-commit barram vazamento.
+- **LGPD**: nunca expor dado de paciente em log/resposta; demo só com iniciais. Least-privilege/RBAC.
+- **Verificar todo pacote sugerido por IA** antes de adicionar.
+- **Sync com a Teleconsulta = via banco**: PULL read-only; PUSH só via credencial dedicada + allowlist
+  tabela:colunas + dry-run + `--apply` + log; nunca DELETE/DROP/TRUNCATE; UPDATE com WHERE por `external_id`.
 
 ---
 
-## 📂 Como trabalhar nesta pasta
+## 🤖 Governança de IA (como agentes operam nesta empresa)
 
-- **Onde LER o que já sabemos:** `docs/discovery/`.
-- **Onde ESCREVER dúvidas:** adicione em `docs/discovery/open-questions.md` (nunca decida sozinho).
-- **Ubiquitous Language (glossário):** `docs/discovery/glossary.md` — use exatamente esses termos.
-- **Como registrar uma decisão de negócio confirmada:** mova a pergunta de `open-questions.md`
-  para o doc de domínio correspondente, com a marca `✅ Confirmado por Alessandro em <data>`.
+- **`.claude/rules/`** = regras aplicadas pela máquina (security, SDD). **`.claude/agents/`** e
+  **`.claude/skills/`** (quando criados) = agents/skills compartilhados entre repos.
+- **Hierarquia de contexto**: o `CLAUDE.md` de um repo herda esta constituição. Não duplicar regra —
+  apontar para cá.
+- **Padrão de modelo/MCP**: ver `docs/method/`. Zero segredo em `.mcp.json`.
+
+---
+
+## ➕ Como adicionar um repo/produto ao catálogo
+
+1. Registre o repo em [`repos.yml`](repos.yml) (url, tipo, dono, stack, status, docs).
+2. Se a governança/specs serão **hospedadas aqui**: copie [`products/_template/`](products/_template/)
+   para `products/<produto>/`, preencha o `CLAUDE.md`, crie `docs/discovery/` antes das specs, e
+   registre em [`products/README.md`](products/README.md).
+3. Se os docs ficam **no próprio repo**: basta o catálogo + um `CLAUDE.md` nesse repo apontando para cá.
+4. Registre a decisão em [`docs/decisions/platform-decisions.md`](docs/decisions/platform-decisions.md) (P-xxx).
+
+---
+
+## ⛔ O que continua valendo — não relaxar
+- **Não inferir regra de negócio.** Dúvida → pergunta aberta do produto + `// PROVISÓRIO`.
+- **SDD+TDD**; **Segurança/LGPD**; **least-privilege/RBAC**.
+- **Stack baseline da plataforma** (recomendado; cada repo confirma): **.NET 10 + EF Core 10 + Dapper +
+  PostgreSQL** (api); **React + Vite + TS + Tailwind + PWA** (web); infra **GCP** (Cloud Run + Cloud SQL
+  + Secret Manager). Reabrir só por decisão registrada.
 
 ### Integrações disponíveis (verificadas 2026-06-13)
-- **ClickUp**: MCP funciona (leitura+escrita) no workspace `9013772753`.
-  ⚠️ Conteúdo VISUAL de whiteboard não sai por MCP — precisa do browser (Claude-in-Chrome).
-- **Figma, Slack, Google Drive, Gmail/Calendar**: MCP disponível, ainda não exercitado.
-- **Browser (Claude-in-Chrome)**: abre em janela separada com sessão própria (login não é
-  herdado da janela principal do usuário).
+- **ClickUp**: MCP (leitura+escrita) workspace `9013772753`. ⚠️ Whiteboard visual só pelo browser.
+- **Figma, Slack, Google Drive, Gmail/Calendar**: MCP disponível. **Browser (Claude-in-Chrome)**: sessão própria.
 
 ---
 
-## ⛔ O que continua valendo (não relaxar nunca)
-- **Não inferir regra de negócio.** Dúvida → `docs/discovery/03-open-questions.md` + `// PROVISÓRIO` no código.
-- **SDD+TDD:** spec/teste antes; cada invariante médica/financeira cercada de teste (`services/doctor-hub-api` xUnit, `services/doctor-hub-web` Vitest).
-- **Segurança/LGPD:** zero segredo no código; least-privilege/RBAC. **Sync com a TC = via banco (D-069):**
-  PULL é RO; **PUSH (escrita) só via credencial dedicada + allowlist tabela:colunas + dry-run + `--apply` + log**,
-  nunca DELETE/DROP/TRUNCATE, UPDATE sempre com WHERE por `external_id`, **mapeamento confirmado pelo humano**.
-- Não tratar nenhum nome de papel/regra/campo como definitivo sem `✅ Confirmado` (decisions-log).
-- **Stack decidido** (D-109, atualiza D-049): **.NET 10 + EF Core 10 + Dapper + Postgres** (`services/doctor-hub-api`); **React + Vite + TS + Tailwind + PWA mobile-first** (`services/doctor-hub-web`); infra **GCP** (Cloud Run + Cloud SQL + Secret Manager — a confirmar c/ infra da Portal). Estrutura **spec-hub + services** = **D-110**. Reabrir só por decisão registrada.
-- **🧩 COERÊNCIA DO PROTÓTIPO (regra dura, 2026-06-20).** Todo dado de demo vem da **fixture canônica** (`docs/product/22-demo-fixtures.md`) — **nunca digitar dados à mão por tela**. Variantes/filtros são **subconjuntos derivados** (ex.: Com escala + Sem escala = Todos, por construção). **Antes de entregar QUALQUER conjunto de telas, rodar a REVISÃO DE COERÊNCIA:** (a) invariantes (união dos filtros = total; mesma entidade = mesmos atributos em todas as telas; todo link leva a um destino coerente; o fluxo continua de uma tela à seguinte); (b) **agente revisor adversarial** que navega como usuário cético e reporta furos; (c) **LINTER DE NAVEGAÇÃO** (`docs/product/23-navegacao-contrato.md`, D-106) — roda sobre o grafo do Figma e exige **isolamento de persona** (troca de persona só pelo avatar→Seletor; nenhum botão cruza Demandas↔Gestor Geral↔Gestor Regional), **alcançabilidade** (toda tela a partir do Login), **0 clicks mortos**, **0 órfãs**; (d) **CICLO DE VIDA DE TELA** (`docs/product/24-registro-telas.md`, D-108) — **1 tela canônica por intenção**; ao superar uma tela, **APAGAR a antiga e REPONTAR todas as referências** (nunca "v2" convivendo com "v1"); rodar os 2 detectores (inventário de duplicatas/PROVISÓRIO/órfãs + consistência de clique: mesmo rótulo → destinos diferentes). **Não dizer "pronto" sem isso.** O usuário não deve precisar caçar furo de coerência (nem de dados, nem de navegação, nem de tela duplicada/desatualizada).
+## 📌 Estado atual
+- **Catálogo de repos:** [`repos.yml`](repos.yml). **Produtos hospedados:** [`products/README.md`](products/README.md).
+- **Decisões de plataforma:** [`docs/decisions/platform-decisions.md`](docs/decisions/platform-decisions.md) (P-001, P-002…).
+- **Governança transversal:** [`docs/README.md`](docs/README.md).
 
-## 📌 Onde está o estado atual
-- Decisões: `docs/decisions/decisions-log.md` (D-001..D-110). Início do build real: **D-109**; estrutura ptm-platform: **D-110**.
-- Protótipo Figma (homologação visual, ainda referência de produto): fileKey `snTNGRUJO2GwoKpXTHCBjf`.
-- Perguntas abertas: `docs/discovery/03-open-questions.md`.
-
-_Última atualização: 2026-06-23 (ptm-platform criado; walking skeleton api+web verde; Fase 6 — build real)._
+_Última atualização: 2026-06-23 (repo oficial de governança da empresa = portal-platform; catálogo de repos via manifest — P-002)._
