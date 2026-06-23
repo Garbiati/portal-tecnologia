@@ -1,5 +1,9 @@
-# Services são repos git PRÓPRIOS (D-110) — não versionar aqui.
+# Repos da empresa = repos git PRÓPRIOS (polyrepo) — referenciados em repos.yml, não versionados aqui.
+# (comentários só em linha própria — gitignore não aceita comentário inline)
+# código local do doctor-hub (api/web):
 /services/
+# clones locais dos repos do manifest (make workspace) — visão de DEV:
+/workspace/
 
 # Segredos (nunca versionar) — usar .env.example + Secret Manager (GCP)
 .env
