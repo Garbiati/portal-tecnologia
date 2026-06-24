@@ -33,6 +33,13 @@
 - 🟡 **Campos do agendamento:** por ora paciente + doutor + horário + local. **Refinar depois** (data, primeira vez/retorno, duração) quando focar nesta parte.
 - 🟡 **"Local":** o que é (unidade do cliente? do paciente? virtual?).
 
+## 🆕 Abertas na sessão de 2026-06-23 (confirmações D-113..D-118) — NÃO inferir
+> O Alessandro confirmou 8 decisões (D-113..D-118 + nota de auth/redirect). Estas 4 ficaram **explicitamente em aberto**:
+- 🔴 **Janela de envio do Monitor — prazo e gatilho do alerta:** qual é a "janela de envio" do Monitor (a partir de quando uma solicitação/disponibilização é alertada como atrasada)? **prazo** (quantos dias/horas) e **gatilho** do alerta (evento que dispara) **não definidos**. Não inferir.
+- 🔴 **Fonte do funil do Monitor:** de onde vêm os números do funil do Monitor — da **nossa integração com a Teleconsulta** (PULL RO, D-069/D-098) ou de um **hub externo (AM / SISReg)**? Define a proveniência do dado e a confiabilidade. Não inferir.
+- 🟡 **Flag ">30 dias" (D-118) — regra:** a sinalização ">30 dias" nas telas de Disponibilização/Sobrepor está **DESLIGADA** até a regra existir. **Quando** aparece (prazo/gatilho), **o que mede** (>30 dias de quê: janela? data de início? prazo restante?) e **qual o efeito** (só visual? bloqueia ação?). Não inferir.
+- 🟡 **Atribuição de capacidade entre clientes simultâneos (D-117):** a capacidade **disponível na janela** (ex.: Cardiologia 700 de 7.000) é **consumida/decrementada** como, quando vários clientes reservam ao mesmo tempo? (FIFO por solicitação? rateio? trava ao reservar? libera ao descartar/expirar?) **PROVISÓRIA / indefinida** — não inferir; afeta o Sobrepor multi-cliente e a Contratação.
+
 ## 🗓️ Escala v2 — múltiplas escalas + fixa/flexível (surgidas em D-091, 2026-06-18) — NÃO inferir
 - ✅ **RESOLVIDO (2026-06-18):** **1 escala por especialidade (Teleconsulta) OU por exame/modalidade (Telediagnóstico)**; o médico acumula **VÁRIAS**, e o conjunto cobre os 2 produtos. Cada escala é FIXA (sem fim) ou FLEXÍVEL.
 - ✅ **RESOLVIDO (2026-06-18):** a **escala FLEXÍVEL evolui os modais de "Horas adicionais"** (hoje 1 dia → ganha início+fim; renomear/expandir, reaproveitando o que existe).
