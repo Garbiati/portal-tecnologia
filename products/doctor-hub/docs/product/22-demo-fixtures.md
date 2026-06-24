@@ -109,7 +109,7 @@ O estoque de vagas do médico no mês usa o **mês corrente = junho/2026 · 22 d
 
 | Use case | Cliente | Janela (A PARTIR DE → ATÉ) | Cenário | Resultado esperado na tela |
 |---|---|---|---|---|
-| **UC-COBRE** "Amapá coberto" | SES-AP | **24/06 → 02/07** | pede **200** cardio · disponível folgada · retorno 0 | Sobrepor **COM capacidade** → reserva total (verde, "cobre 200/200") |
+| **UC-COBRE** "Piauí coberto" | SES-PI | **24/06 → 30/06** | pede **200** cardio · disponível folgada · retorno 0 | Sobrepor **COM capacidade** → reserva total (verde, "cobre 200/200") · _SES-PI tem 2 solicitações de cardio: esta (coberta) e a UC-FALTA (faltam 300) — D-119_ |
 | **UC-FALTA** "Piauí em falta" | SES-PI | **20/06 → 30/06** | pede **1.000** cardio · disponível **700** (gargalo, D-117) · retorno 0 | Sobrepor **SEM capacidade** → "faltam 300" → vai p/ Contratação |
 | **UC-RESERVAR** "Amazonas reservado" | SES-AM | **22/06 → 26/06** | Aberto → **Reservar** (pediatria 250) · retorno 0 | status **Reservado · atendendo total** |
 | **UC-VOLTAR** "Alagoas reaberto" | SES-AL | **18/06 → 28/06** | Reservado → **Voltar para Aberto** (dermato 120) · retorno 0 | status volta a **Aberto** (pré-cancelamento) |
