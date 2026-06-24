@@ -34,7 +34,7 @@ Demanda em **atendimentos de Teleconsulta**. Manter os MESMOS clientes/siglas/pr
 ### Operadora PTM — persona **Demandas Médicas** (interno)
 | Papel | Nome | Doc (fictício) | Avatar | Onde aparece |
 |---|---|---|---|---|
-| **Demandas Médicas** (operadora PTM) | **Renata Troncoso** | renata@portaltelemedicina.com.br · CPF 318.224.905-11 | **RT** (azul-marinho) | header de todas as telas de Demandas + login (substitui "Millena Garbiati / MG") |
+| **Demandas Médicas** (operadora PTM) | **Mariana Rabelo** | mariana.rabelo@portaltelemedicina.com.br · CPF 318.224.905-11 | **MR** (foto de retrato) | header de todas as telas de Demandas + login (substitui "Millena Garbiati / MG") |
 
 ### Clientes — persona **Gestor Geral** (quem solicita; 1 por cliente)
 | Cliente | Gestor Geral (nome) | Doc (fictício) | Avatar |
