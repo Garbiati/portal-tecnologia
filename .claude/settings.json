@@ -1,0 +1,15 @@
+{
+  "hooks": {
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "sh -c 'f=services/doctor-hub-web/scripts/check-ui.mjs; [ -f \"$f\" ] || exit 0; node \"$f\" 1>&2 || exit 2'",
+            "statusMessage": "Checando design system (doctor-hub-web)…"
+          }
+        ]
+      }
+    ]
+  }
+}
