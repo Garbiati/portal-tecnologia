@@ -1,88 +1,65 @@
 ---
 id: UI-MEDICOS-ESCALA
-title: Médicos & Escala
-status: draft
-area: Oferta (escala fixa / estoque)
-last_update: 2026-06-14
+title: Médicos & Escala (perfil do médico + escalas FIXA/FLEX)
+status: specified
+area: Oferta (escalas / estoque)
+last_update: 2026-06-24
 ---
 
-# UI-spec — Médicos & Escala
+# UI-spec — Médicos & Escala (v2)
 
-> Etapa ① Oferta do pipeline (`01-domain-overview.md`). Tela Figma de fluxo: **Médicos & Escala**
-> (`docs/design/figma-prototipo.md`) com banner "≈ 208 vagas".
+> Regras de negócio: [`./spec.md`](./spec.md) (D-120..D-123). Figma: frame "Escala" (`2:2`).
+> **Princípio de UX (pedido do Alessandro):** a escala vive **dentro do cadastro/perfil do médico**
+> (menos telas). **Responsivo, UX amigável, didático e elegante.**
 
-## 1. Propósito / Dor _(Definition of Success)_
-- **Dor:** hoje a **capacidade do médico só é vista por consequência** — "Sem médico / horário
-  ocupado" aparece **depois** que o slot estourou (`05-processo-manual-excel.md` §6, dor 2). Não há
-  visão prévia de oferta por especialidade-horário.
-- **De quem:** Admin/Demandas.
-- **Evidência:** achado da planilha (Substatus "Sem médico" 712 casos) + D-005.
-- **Sucesso = quando:** ao cadastrar médico + escala fixa, o sistema **calcula o estoque de vagas
-  antes** (não a posteriori), e esse estoque alimenta a Disponibilização.
+## 1. Arquitetura de telas (1 tela, 2 níveis)
 
-## 2. Layout
-**Shell:** `.sidebar` (nav "Médicos & Escala" `.nav-item--active`) + `.topbar` (**Admin · PTM**).
+- **Nível A — Lista de médicos:** tabela (nome+foto · especialidades · status · capacidade ≈ no período).
+  Filtros derivados (Todos · Com fixa · Só flex · Temporários · Inativos). Ação **+ Novo médico**.
+- **Nível B — Perfil do médico** (abre da linha, painel à direita em ≥lg / página no mobile):
+  1. **Cabeçalho:** foto + nome + CRM + **especialidades** (chips) + status. Ações: editar dados, ← voltar.
+  2. **Visão consolidada (semana efetiva = FIXA + Σ FLEX):** grade semanal/heatmap dos slots ocupados,
+     com legenda **FIXA** (azul) × **FLEX** (laranja). Banner de **estoque ≈ N vagas** por especialidade no período.
+  3. **Escalas** (lista de cards) + **+ Criar escala**. Cada card:
+     - Linha 1: `especialidade` · badge **FIXA**/**FLEX** · badge status (ativa/encerrada) · **vigência**
+       (FIXA "desde dd/mm · sem fim" · FLEX "dd/mm hh:mm–dd/mm hh:mm").
+     - Linha 2: dias + **blocos** ("Ter/Qui · 08:00–12:00 e 13:00–17:00 · 20 min") + "≈ N vagas".
+     - Ações: **Linha do tempo** (histórico — placeholder) · **Excluir** (🔒 cadeado se já iniciada — §4).
 
-Seções:
-1. **Cabeçalho** — título + `.btn--primary` ("Novo médico").
-2. **Lista de médicos** (`.table`) — Nome · Especialidade · Status (`.badge` ativo/inativo) ·
-   Vagas calculadas (`.kpi` inline). Linha `.table__row--interactive` abre o detalhe.
-3. **Formulário Médico + Escala** (`.card` / `.drawer`):
-   - Bloco **Dados do médico** (`.input`/`.select`): nome, especialidade.
-   - Bloco **Escala fixa**: dias de atendimento (`.chip` toggle por dia), horário (início/fim,
-     `.input` time), consultas por hora (`.input` number), período válido (date range), flag
-     ativo/inativo (`.switch`).
-   - **Banner de estoque calculado** (`.card` com `.kpi--neutral`): "≈ N vagas no período"
-     (derivado da escala — D-005).
-   - Bloco **Ajuste manual** (retornos/extras) — `.input` + nota de auditoria.
-4. Ações: `.btn--primary` ("Salvar") · `.btn--secondary` ("Cancelar").
+## 2. Criar / editar escala (drawer ou modal — reusar design system)
 
-## 3. Dados & campos
-| Campo | Tipo | Origem |
-|---|---|---|
-| medico.nome | texto | cadastro Admin (`01-domain-overview.md` ①); **Doutor é DADO, não usuário** (D-010) |
-| medico.especialidade | texto/ref | cadastro Admin; mapear com `internal_specialization_id` da TC (🟡 `04-integration-teleconsulta.md`) |
-| escala.dias | lista (dias da semana) | cadastro Admin |
-| escala.horario_inicio / fim | hora | cadastro Admin |
-| escala.consultas_por_hora | inteiro | cadastro Admin (param edital ≈ 3/hora, `05-processo-manual-excel.md` §5) |
-| escala.periodo_inicio / fim | data | "período válido de prestação de serviço" (`01-domain-overview.md`) |
-| escala.ativo | booleano | cadastro Admin |
-| estoque_calculado | inteiro (derivado) | **calculado** dias×horário×consultas/hora×período (D-005) |
-| ajuste_manual (retornos/extras) | inteiro + nota | manual com auditoria (D-005) |
+Campos (todos com os componentes do DS — `Select`, `Chip`, `Input`, **`DataInput`**, máscaras):
+- **Tipo:** segmented **FIXA** | **FLEX** (com microcopy didático: "FIXA = contrato, sem fim · FLEX = período, horas extras").
+- **Especialidade:** `Select` com as **especialidades do médico** (INV-5).
+- **Dias da semana:** `Chip` toggle (Seg…Dom).
+- **Blocos de horário:** lista de `{início, fim}` com **+ adicionar bloco** / remover (permite almoço; INV-4).
+- **Consultas/hora** (ou min/atendimento) — `Input` number.
+- **Vigência:**
+  - FIXA → **data de início** (`DataInput`, ≥ amanhã se substitui — INV-3). Ao salvar com FIXA já existente,
+    mostrar o **assistente de troca** (encerra a atual em _data-fim_ default hoje; nova inicia default amanhã;
+    editável p/ futuro e com intervalo — D-121).
+  - FLEX → **início (data+hora)** e **fim (data+hora)** — granularidade por hora (D-122).
+- **Banner de estoque ao vivo:** "≈ N vagas no período" recalcula a cada mudança (D-111/D-112/D-122), ANTES de salvar.
+- **Validação inline:** fim ≤ início (bloco/vigência); blocos sobrepostos; **conflito de slot** com outra
+  escala do médico (INV-1) → erro claro indicando qual escala conflita; especialidade fora das do médico (INV-5).
 
-## 4. Estados (board "Estados" id `36:2`)
-- **Default:** lista de médicos + detalhe/escala.
-- **Vazio:** `.empty-state` — "Nenhum médico cadastrado ainda" + "Novo médico".
-- **Loading:** `.skeleton` na tabela; spinner no `.btn--loading`; banner de estoque em skeleton enquanto recalcula.
-- **Erro:** erro de formulário (horário fim ≤ início, consultas/hora ≤ 0, período inválido) com
-  borda `--color-danger`; `.error-state` 403/500.
-- **Sucesso:** `.toast` "Médico salvo" + banner de estoque atualizado.
+## 3. Estados
+- **Vazio (médico sem escala):** `.empty-state` "Sem escala — defina a oferta deste médico" + **+ Criar escala**.
+- **Loading:** `.skeleton` na lista/grade; banner de estoque em skeleton ao recalcular.
+- **Erro de validação:** borda `--color-danger` + mensagem no campo (conflito de slot, fim≤início, retroação).
+- **Sucesso:** `.toast` "Escala criada/encerrada" + grade consolidada e estoque atualizados.
 
-## 5. Comportamento responsivo (D-015)
-- **≥ lg:** lista (esquerda) + formulário/detalhe (direita).
-- **md–lg:** `.sidebar` em rail; 1 coluna; banner de estoque full width.
-- **< md:** top app bar + `.drawer`; tabela → cards; formulário 1 coluna; inputs time/number com
-  `font-size:16px`; chips de dia em wrap com alvos ≥44px.
+## 4. Excluir escala (D-123)
+- Início **no futuro** → botão **Excluir** comum, confirma e exclui.
+- Já **iniciada** → botão **Excluir 🔒** → **modal "Confirmar exclusão (gestão)"** pedindo a **senha de gestão**
+  (`Input` type=password). Senha correta → exclui; errada → erro. **Registra auditoria** (quem, quando, resultado).
 
-## 6. Regras de negócio
-- **D-005** — Estoque **misto**: base **calculada** da escala (dias × horário × consultas/hora ×
-  período) + **ajuste manual** ("retornos/extras") com auditoria.
-- **D-010** — Doutor é **dado**, não usuário (não loga); é cadastrado por operador Admin/Demandas.
-- **D-008** — Cadastro de médico/escala é do **Admin/Demandas**.
-- A escala alimenta ① Oferta → estoque consumido pela Disponibilização (`01-domain-overview.md`).
+## 5. Responsivo / acessibilidade
+- **≥ lg:** lista (esq.) + perfil/escala (dir.). **md:** sidebar em rail, 1 coluna, grade full-width.
+- **< md:** lista vira cards; perfil em página; grade semanal com scroll horizontal; chips/blocos com alvos ≥44px;
+  inputs de hora/data com `font-size:16px`. WCAG AA (foco visível, contraste, labels associadas).
+- **Didático:** microcopy explicando FIXA×FLEX; legenda da grade; tooltip do cadeado ("exige senha de gestão").
 
-## 7. Critérios de aceite (EARS)
-- QUANDO o operador preenche dias, horário, consultas/hora e período válidos, O SISTEMA DEVE exibir o estoque calculado (≈ N vagas) no banner antes de salvar (D-005).
-- QUANDO o horário de fim é menor ou igual ao de início, O SISTEMA DEVE bloquear o salvamento e exibir erro no campo de horário.
-- QUANDO o operador aplica um ajuste manual de retornos/extras, O SISTEMA DEVE registrar a alteração com trilha de auditoria (D-005).
-- QUANDO não há médicos cadastrados, O SISTEMA DEVE exibir o estado vazio com a ação "Novo médico".
-- QUANDO o médico é salvo com sucesso, O SISTEMA DEVE exibir um toast e atualizar o estoque calculado na lista.
-- QUANDO um usuário sem papel Admin acessa esta tela, O SISTEMA DEVE responder com o estado de erro 403 (D-008).
-
-## 8. Perguntas abertas
-- 🟡 **Fórmula exata** de capacidade não confirmada: tratar intervalos (almoço), duração fixa de
-  consulta, feriados (`03-open-questions.md`).
-- 🟡 **Granularidade do estoque**: vaga = contagem de capacidade OU horário concreto? (`03-open-questions.md`).
-- 🟡 Trilha de auditoria do ajuste manual: quem pode, o que se registra (LGPD) (D-005, `03-open-questions.md`).
-- 🟡 Mapeamento de especialidades com a TC (texto / `internal_specialization_id`).
-- 🟢 Classes em `design/components/components.css` ainda não materializadas (seguem UI Kit `24:2`).
+## 6. Pendências de UI
+- 🟢 **Linha do tempo** (vigências/histórico) e **Arquivar** — placeholders.
+- 🟡 grade consolidada: definir visual final (heatmap × lista de slots) na homologação.
