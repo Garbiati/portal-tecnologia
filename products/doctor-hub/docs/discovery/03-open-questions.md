@@ -325,3 +325,10 @@
   livre p/ alocação imediata) é um conceito distinto da capacidade instalada (já há PROVISÓRIO em types.ts)?
 - 🟡 Se derivar: a avaliação cobre/falta (UC-FALTA "faltam 300") passaria a reagir às escalas — confirmar o
   efeito desejado antes de ligar (hoje os casos canônicos dependem dos números fixos da fixture).
+
+## 🔑 Trocar a senha de gestão sem reautenticação (auditoria de maturidade 3, 2026-06-25)
+> Na tela "Configurações do sistema" (persona Demandas), a senha de gestão (que protege excluir/trocar
+> escala iniciada, D-123) pode ser TROCADA sem provar identidade (sem pedir a senha atual). Coerência:
+> a senha protege ações sensíveis, mas trocá-la não exige prova. No mock é aceitável; NÃO inferir o real:
+- 🔴 **Quem pode trocar a senha de gestão?** Só admin? Exige reautenticação (senha atual) antes de trocar?
+- 🟡 No backend: senha nunca trafega/persiste no client; troca via endpoint autenticado + RBAC.
