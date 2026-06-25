@@ -332,3 +332,11 @@
 > a senha protege ações sensíveis, mas trocá-la não exige prova. No mock é aceitável; NÃO inferir o real:
 - 🔴 **Quem pode trocar a senha de gestão?** Só admin? Exige reautenticação (senha atual) antes de trocar?
 - 🟡 No backend: senha nunca trafega/persiste no client; troca via endpoint autenticado + RBAC.
+
+## ✏️ Editar dados do médico — escopo dos campos editáveis (D-127, 2026-06-25)
+> O card "Dados do médico" tem "Editar" funcional: edita CPF/nascimento/telefone/e-mail; NOME e CRM
+> ficam bloqueados (vêm do credenciamento). NÃO inferir o que falta:
+- 🔴 **NOME/CRM realmente nunca editáveis no hub?** (vêm da fonte oficial/credenciamento — ou há caso de correção?)
+- 🔴 **Edição dos VALORES de faturamento** (Teleconsulta por especialidade: RQE/modo/valor/tempo; Telediagnóstico
+  por laudo: exame/valor) — quem edita, com que aprovação/auditoria, e a partir de quando vale (effective-dating)?
+- 🟡 Validação real de CPF/RQE contra fonte oficial; no mock só há máscara + validação de dígito do CPF.
