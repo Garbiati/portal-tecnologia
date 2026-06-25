@@ -337,6 +337,7 @@
 > O card "Dados do médico" tem "Editar" funcional: edita CPF/nascimento/telefone/e-mail; NOME e CRM
 > ficam bloqueados (vêm do credenciamento). NÃO inferir o que falta:
 - 🔴 **NOME/CRM realmente nunca editáveis no hub?** (vêm da fonte oficial/credenciamento — ou há caso de correção?)
-- 🔴 **Edição dos VALORES de faturamento** (Teleconsulta por especialidade: RQE/modo/valor/tempo; Telediagnóstico
-  por laudo: exame/valor) — quem edita, com que aprovação/auditoria, e a partir de quando vale (effective-dating)?
+- ✅ **Edição dos VALORES de faturamento** — IMPLEMENTADA (D-128, CRUD add/alterar/inativar/remover, auditado).
+  🔴 **Falta:** **effective-dating** — alterar valor hoje vale imediato; o real precisa "a partir de quando vale"
+  (ex.: novo valor só p/ atendimentos futuros) + **aprovação** (quem pode alterar valor financeiro)?
 - 🟡 Validação real de CPF/RQE contra fonte oficial; no mock só há máscara + validação de dígito do CPF.
