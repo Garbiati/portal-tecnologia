@@ -341,3 +341,10 @@
   🔴 **Falta:** **effective-dating** — alterar valor hoje vale imediato; o real precisa "a partir de quando vale"
   (ex.: novo valor só p/ atendimentos futuros) + **aprovação** (quem pode alterar valor financeiro)?
 - 🟡 Validação real de CPF/RQE contra fonte oficial; no mock só há máscara + validação de dígito do CPF.
+
+## 📤 Provisionamento aos produtos de destino (Teleconsulta/Telediagnóstico) (D-130, 2026-06-25)
+> A ficha tem o card "Provisionamento · destinos" (Figma), HOJE só reflete o que está configurado p/
+> faturar em cada produto e é marcado "provisório — mecanismo a definir". NÃO inferir:
+- 🔴 **O que é "provisionar" um médico num produto?** Cria/ativa o profissional na Teleconsulta/Telediagnóstico
+  (via sync D-069?), ou é só um flag interno? Quem dispara, quando, e o que precisa estar completo antes?
+- 🟡 Telediagnóstico como 2º destino: mesmo mecanismo da Teleconsulta ou fluxo próprio?
