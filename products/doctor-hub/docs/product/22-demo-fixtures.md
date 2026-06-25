@@ -3,6 +3,13 @@
 > **Atualização 2026-06-23 (D-113..D-118):** período do estoque = junho/2026 (22 dias úteis) → Henrique **264 vagas/mês**;
 > capacidade **DISPONÍVEL na janela** distinta da instalada (só Cardiologia é gargalo: 700 de 7.000); use cases ganharam
 > **janela "A PARTIR DE → ATÉ"**; **cliente = 1 ponto** (sem nível de HC na 1ª entrega — D-114).
+>
+> ⚠️ **SUPERSEDIDO por D-120..D-122 (2026-06-24, modelo de escala v2):** o estoque passou a **FIXA + Σ FLEX** com
+> **effective-dating** (a FIXA só conta a partir da sua vigência). Henrique deixa de ser 264 e passa a **156** (FIXA
+> 132 = 12/dia × **11 dias úteis** a partir de 16/06 + FLEX 24); a **capacidade instalada de Cardiologia = 168**
+> (Henrique 156 + Juliana FLEX 12). É o que o app calcula/exibe e está cercado de teste. **Os "264 / 22 dias úteis"
+> abaixo são históricos (D-113)** — o período canônico do estoque (22 dias úteis fixos × mês∩vigência) continua
+> **questão aberta** (ver `../discovery/03-open-questions.md`). Não tratar 264 como verdade atual.
 
 > ⚠️ **REGRA DURA (CLAUDE.md / D-106):** toda tela do Figma que mostra dados de demo deve **derivar destes valores** —
 > nunca digitar dados à mão por tela. Filtros/variantes são **subconjuntos derivados** (ex.: "Com escala" =
@@ -58,7 +65,7 @@ Avatar = **iniciais coloridas** consistentes (mesma cor por médico em toda tela
 
 | # | Nome | CRM | Especialidade | temEscala | escala (resumo) | cadastro | status |
 |---|------|-----|---------------|-----------|-----------------|----------|--------|
-| 1 | **Dr. Henrique Sampaio** | CRM-PI 55210 | Cardiologia | **sim** | Seg–Sex · 08–12h (4h) · 3 consultas/h · 12/dia → **264/junho** | completo | ativo |
+| 1 | **Dr. Henrique Sampaio** | CRM-PI 55210 | Cardiologia | **sim** | Seg–Sex · 08–12h (4h) · 3 consultas/h · 12/dia → **264/junho** _(D-113; v2: **156** — ver nota do topo)_ | completo | ativo |
 | 2 | **Dra. Juliana Castro** | CRM-AM 23456 | Cardiologia | não | — | completo | ativo |
 | 3 | **Dr. Rafael Lima** | CRM-AP 56789 | Clínica geral | não | — | completo | ativo |
 | 4 | **Dra. Fernanda Alves** | CRM-PI 12345 | Cardiologia | não | — | completo | ativo |
@@ -97,6 +104,7 @@ sustenta o UC-FALTA "faltam 300" (pediu 1.000, cobre 700). Demais especialidades
 O estoque de vagas do médico no mês usa o **mês corrente = junho/2026 · 22 dias úteis** como `dias_válidos_no_período`
 (fórmula base pura, D-112: `(horas_no_dia × consultas_por_hora) × dias_válidos`). Exemplo canônico:
 **Dr. Henrique** = `4h (08–12h) × 3 consultas/h = 12/dia × 22 dias úteis = **264 vagas/junho**`.
+_(D-113 — **superado por D-120..D-122**: no modelo v2 com effective-dating Henrique = **156**; ver nota do topo.)_
 > Distinto da **janela da solicitação** (A PARTIR DE → ATÉ, §5/D-103/D-115): este é o **estoque do médico no mês**.
 
 ---
