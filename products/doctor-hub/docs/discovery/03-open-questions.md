@@ -304,3 +304,14 @@
   no período = período ∩ vigência, por dia-da-semana". Confirmar com o Alessandro antes de reescrever a decisão.
 - 🟡 **Sábados/domingos:** o v2 já conta sábado (FLEX do Henrique) — confirmar que fins de semana entram no estoque
   quando há escala FLEX nesses dias (hoje entram).
+
+## 📧 Empresa de CAPTAÇÃO — destinatário do relatório/e-mail (surgida ao implementar o pipeline, 2026-06-25)
+> O objetivo prevê: sem capacidade → gerar RELATÓRIO + disparar E-MAIL a uma "empresa de captação" que
+> recruta médicos. A UI já gera o relatório (consolidado de contratação) e registra o disparo na Auditoria,
+> mas o DESTINATÁRIO não está na discovery (NÃO inferir):
+- 🔴 **Quem é a empresa de captação?** É uma empresa externa fixa, várias (por região/especialidade), ou um
+  setor interno? Qual o e-mail/canal de envio?
+- 🔴 **O que vai no e-mail?** Só o consolidado (especialidade × faltam × clientes/prazos) ou também dados de
+  contexto (período, prioridade, valor/h alvo)?
+- 🟡 **Retorno do ciclo:** quando a captação inclui o médico (disponibilidade+especialidades), como isso volta
+  ao sistema e soma à capacidade — entrada manual no cadastro de médicos, importação, ou integração?
