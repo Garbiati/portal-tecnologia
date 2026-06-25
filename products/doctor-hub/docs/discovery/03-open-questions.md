@@ -348,3 +348,9 @@
 - 🔴 **O que é "provisionar" um médico num produto?** Cria/ativa o profissional na Teleconsulta/Telediagnóstico
   (via sync D-069?), ou é só um flag interno? Quem dispara, quando, e o que precisa estar completo antes?
 - 🟡 Telediagnóstico como 2º destino: mesmo mecanismo da Teleconsulta ou fluxo próprio?
+
+## 🌙 Escala que cruza a meia-noite (Madrugada 22–02) (D-131, 2026-06-25)
+> O preset "Madrugada (22–02)" está DESABILITADO: o motor de estoque (horasDoBloco) não calcula
+> bloco que vira o dia (fim ≤ início = inválido hoje). D-022 já previa "bloco pode cruzar a meia-noite"
+> como futuro. NÃO inferir: confirmar se há demanda real de plantão de madrugada e como contar os slots
+> (dividir em 22–24 + 00–02? turno único?) antes de habilitar.
