@@ -354,3 +354,16 @@
 > bloco que vira o dia (fim ≤ início = inválido hoje). D-022 já previa "bloco pode cruzar a meia-noite"
 > como futuro. NÃO inferir: confirmar se há demanda real de plantão de madrugada e como contar os slots
 > (dividir em 22–24 + 00–02? turno único?) antes de habilitar.
+
+## 🔄 Sync Doctor-Hub ← Teleconsulta (carga + atualizações, D-133, 2026-06-25)
+> Backend iniciado: o Doctor-Hub vira a fonte da verdade de médicos; sync TEMPORÁRIO via banco
+> read-only (D-069) + BackgroundService leve. NÃO inferir — confirmar com humano (baseline de segurança):
+- 🔴 **Mapeamento exato TC→Doctor** (confirmar campo a campo): `doctor_profiles.id`→ExternalId;
+  `User.Person.FirstName+LastName`→Nome; `DoctorProfileLicense.license`→Crm (e RQE?); `doctor_profiles.cpf`→Cpf;
+  `Specialization`(enum DoctorSpecializationType) / specialty por license → Especialidade. **CNS** entra?
+  **Multi-especialidade** (TC tem N licenses/specialties): como mapear p/ a v1 (Especialidade única)?
+- 🔴 **Credencial READ-ONLY dedicada** + allowlist tabela:colunas (D-069/baseline) — host/usuário/segredo (infra).
+- 🟡 **Política de conflito na TRANSIÇÃO:** enquanto a TC é a fonte, o sync sobrescreve edições locais do hub?
+  (hoje: TC vence; quando inverter, o sync é removido). Confirmar.
+- 🟡 **Watermark:** onde persistir o "último sync OK" (tabela SyncState?) p/ o incremental por updated_at.
+- 🟡 **`deleted_at` (soft-delete na TC)** → desativa aqui. E se for "re-criado" depois? (reativar?)
