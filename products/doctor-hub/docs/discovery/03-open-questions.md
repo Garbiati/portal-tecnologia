@@ -315,3 +315,13 @@
   contexto (período, prioridade, valor/h alvo)?
 - 🟡 **Retorno do ciclo:** quando a captação inclui o médico (disponibilidade+especialidades), como isso volta
   ao sistema e soma à capacidade — entrada manual no cadastro de médicos, importação, ou integração?
+
+## 🔁 "Capacidade soma" — capacidade derivada das escalas × `disponivel` estático (auditoria 2ª rodada, 2026-06-25)
+> O painel agora mostra "Nossa capacidade efetiva por especialidade" DERIVADA das escalas (capacidadeInstalada),
+> que cresce AO VIVO quando um médico/escala entra — o elo "médico entra→capacidade soma" do objetivo é visível.
+> PORÉM o downstream (Disponibilização, Sobrepor, consolidado de contratação) ainda lê `Especialidade.disponivel`,
+> um número ESTÁTICO da fixture, desconectado das escalas. NÃO inferir como reconciliar:
+- 🔴 **`disponivel` deve passar a derivar de Σ estoqueMedico (escalas vigentes)?** Ou `disponivel` (capacidade
+  livre p/ alocação imediata) é um conceito distinto da capacidade instalada (já há PROVISÓRIO em types.ts)?
+- 🟡 Se derivar: a avaliação cobre/falta (UC-FALTA "faltam 300") passaria a reagir às escalas — confirmar o
+  efeito desejado antes de ligar (hoje os casos canônicos dependem dos números fixos da fixture).
