@@ -362,10 +362,12 @@
   `User.Person.FirstName+LastName`→Nome; `DoctorProfileLicense.license`→Crm (e RQE?); `doctor_profiles.cpf`→Cpf;
   `Specialization`(enum DoctorSpecializationType) / specialty por license → Especialidade. **CNS** entra?
   **Multi-especialidade** (TC tem N licenses/specialties): como mapear p/ a v1 (Especialidade única)?
-- 🟡 **CBO das especialidades** — seed preenchido com o CBO oficial (CBO 2002/MTE): Cardiologia 225120,
-  Pediatria 225124, Clínica geral 225125 ("Médico clínico"), Dermatologia 225135, Ginecologia 225250.
-  **Confirmar:** (a) reconciliar com o CBO que a TC **realmente** usa ("os mesmos da TC"); (b) "Clínica geral"
-  = 225125 ou 225170 (generalista)/225130 (família e comunidade)?
+- 🟡 **CBO das especialidades** — a TC tem a tabela `Specialty` mas o CBO das **33 operacionais** (legacy
+  0..32) é placeholder `TEMP_xx`. Decisão (D-133): doctor-hub semeia os **nomes/ids da TC** com o **CBO REAL**
+  (CBO 2002/MTE, pesquisado). **Confirmar os ⚠** (CBO não tem código próprio): Obstetra=Ginecologista (225250),
+  Traumatologista=Ortopedista (225270), variantes "Infantil" (Psiquiatra/Neurologista/Endócrino/Psicólogo)
+  caem no CBO base, Hepatologia→Gastroenterologista (225165). E se as 35 não-operacionais (CBO real, sem
+  doutores) entram também.
 - 🔴 **Credencial READ-ONLY dedicada** + allowlist tabela:colunas (D-069/baseline) — host/usuário/segredo (infra).
 - 🟡 **Política de conflito na TRANSIÇÃO:** enquanto a TC é a fonte, o sync sobrescreve edições locais do hub?
   (hoje: TC vence; quando inverter, o sync é removido). Confirmar.
