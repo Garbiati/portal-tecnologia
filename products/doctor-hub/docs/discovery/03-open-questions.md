@@ -373,3 +373,15 @@
   (hoje: TC vence; quando inverter, o sync é removido). Confirmar.
 - 🟡 **Watermark:** onde persistir o "último sync OK" (tabela SyncState?) p/ o incremental por updated_at.
 - 🟡 **`deleted_at` (soft-delete na TC)** → desativa aqui. E se for "re-criado" depois? (reativar?)
+
+## 🔑 RQE não vem da origem (descoberta 2026-06-25, sync Core-Api)
+> O código antigo (saude-digital-demandas) SUMIU, mas o DB `saude_demandas` (4523 médicos sincronizados
+> da Core-Api) sobrevive como gabarito. Achado: `doctor_specialties.rqe` está **vazio em 4524 de 4525**
+> (só 1 registro de teste). Ou seja, o **RQE não está disponível/preenchido na origem (Core-Api)**.
+> O usuário pediu "RQE para especialidades" (modelado em DoctorEspecialidade.Rqe). NÃO inferir:
+- 🔴 **De onde vem o RQE?** (a) é cadastrado/gerido no Doctor-Hub (vira NOSSO dado, coerente com "fonte
+  da verdade") e o sync NÃO mexe nele; (b) existe em outro campo/tabela da Core-Api que não achamos; (c)
+  fica vazio até ser preenchido. Hoje o sync não tem de onde puxá-lo.
+- 🟡 **Mapeamento doutor→especialidade (Core-Api):** chave do doutor = `doctor_profiles.id`; especialidade
+  via `doctor_profiles.specialization` (enum) → nossa Especialidade por `ExternalId` (legacy id). CRM via
+  `doctor_profile_licenses.license` (confirmar CRM×RQE). Multi-especialidade é raro (quase todos 1).
