@@ -362,6 +362,10 @@
   `User.Person.FirstName+LastName`→Nome; `DoctorProfileLicense.license`→Crm (e RQE?); `doctor_profiles.cpf`→Cpf;
   `Specialization`(enum DoctorSpecializationType) / specialty por license → Especialidade. **CNS** entra?
   **Multi-especialidade** (TC tem N licenses/specialties): como mapear p/ a v1 (Especialidade única)?
+- 🟡 **CBO das especialidades** — seed preenchido com o CBO oficial (CBO 2002/MTE): Cardiologia 225120,
+  Pediatria 225124, Clínica geral 225125 ("Médico clínico"), Dermatologia 225135, Ginecologia 225250.
+  **Confirmar:** (a) reconciliar com o CBO que a TC **realmente** usa ("os mesmos da TC"); (b) "Clínica geral"
+  = 225125 ou 225170 (generalista)/225130 (família e comunidade)?
 - 🔴 **Credencial READ-ONLY dedicada** + allowlist tabela:colunas (D-069/baseline) — host/usuário/segredo (infra).
 - 🟡 **Política de conflito na TRANSIÇÃO:** enquanto a TC é a fonte, o sync sobrescreve edições locais do hub?
   (hoje: TC vence; quando inverter, o sync é removido). Confirmar.
