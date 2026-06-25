@@ -291,3 +291,16 @@
   sem atendimento realizado há N? decisão manual do gestor?) — afeta a worklist de saneamento.
 - 🟡 **Efeito no denominador da Taxa de ativação:** confirmado que o denominador = cadastrados **ATIVOS** (exclui
   inativos sem escala e sem valor). Inativo COM escala ou COM valor permanece no denominador?
+
+## 📊 Período de cálculo do estoque — D-113 (22 dias úteis) × modelo v2 (mês-calendário ∩ vigência) (surgida na auditoria de maturidade, 2026-06-25)
+> A auditoria de coerência apontou que coexistiam DOIS cálculos de estoque: o **v1** (D-113: `vagas/dia × 22
+> dias úteis` = 264 p/ o Henrique) e o **v2** (multi-escala FIXA/FLEX contando ocorrências do dia-da-semana
+> dentro de `período ∩ vigência` = 132+24=156). O caminho **v1 foi REMOVIDO** (código) p/ não haver dois números,
+> mas a definição oficial do período precisa ser confirmada (NÃO inferir):
+- 🔴 **Qual é o período canônico do estoque?** (a) mês-calendário corrente contando os dias reais em que a escala
+  é válida (modelo v2, respeita vigência/effective-dating), ou (b) "22 dias úteis" fixos (D-113)? Os dois divergem
+  porque o v2 respeita a vigência (ex.: FIXA do Henrique começa 16/06 → só 11 dias úteis no mês, não 22).
+- 🔴 **D-113 fica revisada?** Se o canônico é o v2, a D-113 ("22 dias úteis") deve ser atualizada para "dias válidos
+  no período = período ∩ vigência, por dia-da-semana". Confirmar com o Alessandro antes de reescrever a decisão.
+- 🟡 **Sábados/domingos:** o v2 já conta sábado (FLEX do Henrique) — confirmar que fins de semana entram no estoque
+  quando há escala FLEX nesses dias (hoje entram).
