@@ -8,6 +8,26 @@
 > **Fonte do mapeamento:** `src/app/routes.ts` (cada rota tem `figmaId`) + inventário do arquivo Figma.
 > **Diretriz Suprema:** divergência que toca **regra de negócio** vira pergunta/flag — NÃO se "conserta" por suposição.
 
+## 🌙 SUMÁRIO EXECUTIVO (loop autônomo concluído — 26/06, madrugada)
+**Auditei as 26 telas (A→D). Conclusão: o app está MUITO aderente ao Figma no núcleo (Médicos+Escala 100% conforme) e foi ALÉM no cockpit (Demandas). Não havia gaps de UI "claros e seguros" para corrigir — as divergências são (a) estrutura/UX, (b) decisões deliberadas já registradas, ou (c) regra de negócio/auth/LGPD que NÃO inferi (Diretriz Suprema). Por isso NÃO mexi em código de telas — só auditei e sinalizei.** Resumo:
+
+| Seção | Telas | Veredito |
+|-------|-------|----------|
+| **A — Médicos + Escala** | 12 | ✅ **Tudo conforme.** Zero gap. |
+| **B — Demandas / cockpit** | 7 | ⚠️ App é **superset** do Figma (provisório). Sem gap; flags de produto. |
+| **C — Personas** | 3 | ✅ 2 conformes · ⚠️ Assunção (modelo batch×modal). |
+| **D — Conta / Login** | 4 | ✅ Login+Seletor · ⚠️🚩 **Conta = stub** (maior gap, exige auth/LGPD). |
+
+### 🚩 Decisões que dependem de você (não inferi — por prioridade)
+1. **Conta · Configurações (#26)** — maior gap. Quer que eu construa as seções (Notificações, Preferências idioma/tema/densidade, Conta&Segurança, Privacidade&LGPD)? Várias exigem **auth real** (senha/sessões — D-109) e **LGPD/backend** (baixar dados). Posso fazer os pedaços puramente de UI/preferência (ex.: **tema claro/escuro**, densidade) se você topar.
+2. **Home/Início (#13)** — adotar os KPIs **acionáveis** do Figma (Solicitações novas / A provisionar / **Sem capacidade · captar**) + coluna **PRAZO por urgência**? (Hoje o app usa status cru.)
+3. **Ficha-editar (#3)** — migrar do modal+ações-por-linha para o **modo "editando" inline** do Figma? (Só UX; funcional já existe.)
+4. **Assunção (#20)** — o agendamento deve fixar **horário + local** concretos por slot (como o Figma)? = modelo D-029 a confirmar.
+5. **Perfil editável (#25)** — permitir editar nome/e-mail próprios? (Conta/auth.)
+6. **Pequenos:** `figmaId` imprecisos no `routes.ts` (`/painel`, `/disponibilizacao`); preset **Madrugada** segue desabilitado (D-022); descrições por persona no Seletor.
+
+**Nada foi commitado em código de telas** (tudo conforme/flag). Só este doc de auditoria foi versionado, por seção.
+
 ## Legenda
 - ✅ **conforme** — campos/funcionalidades do Figma presentes no app (estilo pode diferir).
 - ⚠️ **divergência** — falta/sobra de campo ou funcionalidade (detalhar; classificar gap × intencional).
@@ -58,18 +78,18 @@
 
 | # | Rota (app) | Frame(s) Figma | Status | Notas |
 |---|-----------|----------------|--------|-------|
-| 20 | `/assuncao` · **Assumir / Agendar** | `522:6125` | ⬜ | Gestor Regional. |
-| 21 | `/minhas-solicitacoes` · **Minhas Solicitações** | `530:6141` | ⬜ | Gestor Geral. |
-| 22 | `/de-acordo` · **De Acordo** | `531:6251` | ⬜ | Gestor Geral (disponibilização de acordo). Nova solicitação `531:6141` (conferir). |
+| 20 | `/assuncao` · **Assumir / Agendar** | `522:6125` | ⚠️ | Núcleo presente: atribuir **paciente + doutor** (lógica "último que atendeu"/preferencial D-011, iniciais LGPD) → Teleconsulta. **Divergência de estrutura/modelo:** Figma = **tabela batch** (#·paciente·doutor·**horário**·**local**·status + selects inline + "Confirmar agendamentos"); app = **modal por vaga** (paciente+doutor+resumo, **sem seleção explícita de horário/local**). 🚩 se o agendamento deve fixar horário/local concreto (D-029) = modelo a confirmar. |
+| 21 | `/minhas-solicitacoes` · **Minhas Solicitações** | `530:6141` (+ nova `531:6141`) | ✅ | Form "Nova solicitação" (cliente travado=escopo, período a-partir/até com default fim-do-mês, especialidades+qtd múltiplas, +Adicionar/Remover, Enviar) + histórico (cenário/esp/qtd/período/status). Cobre os frames. Avaliado via inventário do código. |
+| 22 | `/de-acordo` · **De Acordo** | `531:6251` | ✅ | Cards por disponibilização (RESERVADO/ENTREGUE) com "Dou meu de acordo" → libera Assunção + KPIs (Disponibilizações/Atendimentos/De acordo). Cobre o frame. Avaliado via inventário do código. |
 
 ## D. Conta / acesso (neutras)
 
 | # | Rota (app) | Frame(s) Figma | Status | Notas |
 |---|-----------|----------------|--------|-------|
-| 23 | `/` (login) · **Login** | `65:2` | login·erro `66:2` | ⬜ |
-| 24 | `/seletor` · **Entrar como** | `529:6141` | ⬜ | Seletor de persona (única ponte). |
-| 25 | `/configuracoes` · **Meus dados** | `57:2` | ⬜ | Conta · Meus dados. |
-| 26 | (conta) · **Configurações** | `59:2` | ⬜ | Conta · Configurações (menu avatar `683:6241`). |
+| 23 | `/` (login) · **Login** | `65:2` (erro `66:2`) | ✅ | E-mail + Senha + Entrar presentes; app ainda adiciona link "Registre-se" + toast de erro. Layout (split-screen no app × card central no Figma) = estilo. |
+| 24 | `/seletor` · **Entrar como** | `529:6141` | ✅ | Cards de persona (avatar/nome/papel/unidade) → Entrar; roteia por papel (D-106). Trivial: Figma tem 1 linha de descrição por persona ("Opera a capacidade…"/"Solicita…"/"Assume os slots…") que o app não mostra. |
+| 25 | `/configuracoes` · **Meus dados (Perfil)** | `57:2` | ⚠️🚩 | Figma: nome/e-mail **editáveis** + "Salvar alterações" + "Alterar foto". App: **read-only** (Linha nome/papel/e-mail/CPF/órgão/unidade) + "Trocar foto". App fundiu Perfil+Configurações numa tela mínima. 🚩 editar perfil = conta/auth (D-109 futura) — stub deliberado. |
+| 26 | (conta) · **Configurações** | `59:2` | ⚠️🚩 **GAP** | Figma tem 4 seções ricas: **Conta & Segurança** (alterar senha, sessões ativas/revogar), **Notificações** (3 toggles), **Preferências** (idioma/**tema**/densidade), **Privacidade & LGPD** (baixar meus dados, histórico de acesso). App: só 2 toggles demo. **Maior gap da auditoria** — mas tudo exige **auth** (senha/sessões), **tema/i18n** ou **LGPD/backend**. 🚩 não construí (decisões de produto/segurança + sem backend). |
 
 ## E. Telas do app SEM frame no Figma (🔵 — anotar, não auditar contra Figma)
 - `/clientes-hcs` (figmaId `C-HCS`), `/monitor-integracao` (`MON-INT`), `/auditoria` (`AUDIT`),
@@ -100,3 +120,11 @@
 - 🚩 **#14 Inbox — modelo de solicitação:** Figma trata 1 solicitação = N especialidades com qtd cada ("itens"); o app usa especialidade+badge "múltiplas". Decisão de modelo de dado (não inferi).
 - **Mapeamentos `figmaId` imprecisos** no `routes.ts`: `/painel`→`511:6029` (na verdade só o Relatório de contratação; o `/painel` Visão geral ≈ `28:2`) e `/disponibilizacao`→`516:6307` (frouxo). Sugiro corrigir os ids quando revisarmos o cockpit.
 - Frames vistos: 514:6045, 516:6102, 511:6029; sobrepor/reservado/disponibilização avaliados via inventário do código (detalhado). Posso aprofundar qualquer um sob demanda.
+
+### ⚠️ Seções C+D — Personas + Conta/Login (concluídas) — 7/7 telas
+**Resultado: telas de fluxo (Login, Seletor, Minhas Solicitações, De Acordo) conformes; a área de CONTA é um stub vs o Figma.**
+- ✅ **#23 Login / #24 Seletor**: conformes (app cobre + extras: registro, erro). Trivial: descrições por persona no Seletor.
+- ✅ **#21 Minhas Solicitações / #22 De Acordo**: forms/cards completos batem com a intenção dos frames (via inventário do código).
+- ⚠️ **#20 Assunção**: núcleo presente (paciente+doutor preferencial→TC); 🚩 Figma usa tabela batch com **horário+local** por slot, app usa modal por vaga sem horário/local explícito → modelo de agendamento concreto (D-029) a confirmar.
+- ⚠️🚩 **#25/#26 Conta (MAIOR GAP):** o Figma tem Perfil editável + Configurações com **Conta&Segurança (senha/sessões), Notificações (3), Preferências (idioma/tema/densidade), Privacidade&LGPD (baixar dados/histórico)**. O app tem um stub (read-only + 2 toggles). **Não construí** — exige auth (D-109 futura), tema/i18n e LGPD/backend (decisões de produto/segurança).
+- Frames vistos: 65:2, 57:2, 59:2, 522:6125, 529:6141; minhas-sol/de-acordo via inventário do código.
