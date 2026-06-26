@@ -46,13 +46,13 @@
 
 | # | Rota (app) | Frame(s) Figma | Status | Notas |
 |---|-----------|----------------|--------|-------|
-| 13 | `/` · **Início · Pendências** | `514:6045` | ⬜ | Home da persona Demandas. |
-| 14 | `/solicitacoes-inbox` · **Inbox** | `516:6102` | ⬜ | Inbox de solicitações. |
-| 15 | `/disponibilizacao` · **Disponibilização** | `516:6307` (multi-cliente) | ⬜ | ⚠ id Figma nomeado "visão multi-cliente" (conferir). |
-| 16 | `/sobrepor-falta` · **Sobrepor (em falta)** | `517:6093` | ⬜ | Solicitação × capacidade. |
-| 17 | `/sobrepor-capacidade` · **Sobrepor (coberto)** | `651:6207` | ⬜ | Caso com capacidade. |
-| 18 | `/disponibilizacao-reservado` · **Reservado** | `518:6109` | ⬜ | DRAFT reservado. |
-| 19 | `/painel` · **Painel / Relatório** | `511:6029` | ⬜ | Relatório de contratação (+ exportar `641:6188`). |
+| 13 | `/` · **Início · Pendências** | `514:6045` | ⚠️🚩 | App tem home (KPIs por status + lista de abertos). Figma usa **KPIs por ETAPA de fluxo** (Solicitações novas / Reservados em aberto / **A provisionar** / **Sem capacidade · precisa captar**) + tabela "Precisa da sua atenção" com **PRAZO** ordenado por urgência. **🚩 Decisão de produto** (reframe do cockpit, provisório, já pivotou D-083/84): vale considerar adotar os KPIs acionáveis + coluna PRAZO do Figma. Não auto-construí (semântica de "a provisionar/sem capacidade" + urgência = regra). |
+| 14 | `/solicitacoes-inbox` · **Inbox** | `516:6102` | ⚠️ | Núcleo igual (tabela cliente/período/itens/total/status → **Sobrepor**). Diferenças: Figma quebra **itens multi-especialidade com qtd** por linha + marcadores "nova"/"Urgent"; app usa especialidade+qtd+badge "múltiplas" + **filtros de status** (Figma só "ordenado por prazo"). 🚩 modelo "solicitação tem N especialidades com qtd cada" = decisão de dado (não inferir). |
+| 15 | `/disponibilizacao` · **Disponibilização** | `516:6307` | ⚠️ | App: Simular/Reservar/Emitir + tabela de alocação (Solicitado/Retorno/Total/Capacidade/Cobertura) + KPIs. Funcionalidade presente e RICA. Mapeamento `516:6307` ("visão multi-cliente") parece **frouxo** — conferir qual frame é a referência real. Avaliado via inventário do app. |
+| 16 | `/sobrepor-falta` · **Sobrepor (em falta)** | `517:6093` | ✅ | App: caso sem cobertura (KPIs Solicitado/Disponibilizado/Faltam/Capacidade total + tabela sobreposição + "Ir para Contratação"). Cobre o frame. |
+| 17 | `/sobrepor-capacidade` · **Sobrepor (coberto)** | `651:6207` | ✅ | App: caso coberto (KPIs + Estoque×demanda + Reservar→Provisionar). Cobre o frame. |
+| 18 | `/disponibilizacao-reservado` · **Reservado** | `518:6109` | ✅ | Destino de "Provisionar" (DRAFT reservado). Coberto pelo fluxo do app. |
+| 19 | `/painel` · **Painel / Relatório** | `511:6029` | ⚠️ | Figma `511` = só o **Relatório de contratação** (gaps por especialidade + prioridade + "contratar ~N médicos" + exportar) — que no app é o **card Contratação + modal** dentro de um `/painel` **SUPERSET** (KPIs integração, Top especialidades, Unidades por HC, Capacidade efetiva). App foi **além** do Figma. Mapeamento `figmaId` do `/painel` está impreciso (deveria apontar p/ a Visão geral, ex.: `28:2`). |
 
 ## C. Gestor Regional / Gestor Geral (personas)
 
@@ -93,3 +93,10 @@
 - 🚩 **FLAG (regra de negócio, não inferir):** "lançar horas/atendimentos REALIZADOS" (produtividade) não existe no app (Realizados=0, integração de atendimentos é futura). Já é pergunta aberta. Não construí.
 - Trivial: subtítulo de Médicos diz "…escalas" (app) vs "…valores" (Figma).
 - Frames verificados visualmente: 16:2, 17:2, 2:2, 10:2, 12:2; demais (8:2,9:2,13:2,14:2 + modais de faturamento) avaliados via inventário do código (que bate).
+
+### ⚠️ Seção B — Demandas / cockpit (concluída) — 7/7 telas
+**Resultado: o app IMPLEMENTOU o cockpit, frequentemente como SUPERSET do Figma (que é PROVISÓRIO dos dois lados).** Nenhum gap onde o app esteja "faltando" funcionalidade do Figma — ao contrário, o app foi além (pivôs D-083/84: foco em NOSSA capacidade, não demanda inventada). **Não corrigi código** (mexer no cockpit toca regra de negócio/dados inventados — Diretriz Suprema). Itens p/ sua atenção:
+- 🚩 **#13 Home — reframe dos KPIs:** Figma usa KPIs acionáveis (Solicitações novas / Reservados em aberto / A provisionar / **Sem capacidade · precisa captar**) + tabela "Precisa da sua atenção" com **PRAZO por urgência**; o app usa KPIs por status cru + lista simples. O do Figma é mais operacional — **vale sua decisão** se quer adotar.
+- 🚩 **#14 Inbox — modelo de solicitação:** Figma trata 1 solicitação = N especialidades com qtd cada ("itens"); o app usa especialidade+badge "múltiplas". Decisão de modelo de dado (não inferi).
+- **Mapeamentos `figmaId` imprecisos** no `routes.ts`: `/painel`→`511:6029` (na verdade só o Relatório de contratação; o `/painel` Visão geral ≈ `28:2`) e `/disponibilizacao`→`516:6307` (frouxo). Sugiro corrigir os ids quando revisarmos o cockpit.
+- Frames vistos: 514:6045, 516:6102, 511:6029; sobrepor/reservado/disponibilização avaliados via inventário do código (detalhado). Posso aprofundar qualquer um sob demanda.
