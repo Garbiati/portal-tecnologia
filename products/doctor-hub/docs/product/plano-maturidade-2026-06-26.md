@@ -25,7 +25,9 @@
 
 ## Ondas (prioridade por ROI no score)
 
-### 🌊 Onda 1 — Persistir a ficha do médico no backend (MAIOR impacto)
+### ✅ 🌊 Onda 1 — Persistir a ficha do médico no backend (FEITA — D-138, 26/06)
+> **Concluída e provada E2E** (edição pelo UI → Postgres). Backend escrita 2→4, Integração front 1→3.
+> Itens originais abaixo (todos entregues, exceto concorrência = flag).
 > Hoje o front edita dados/faturamento/RQE só na **sessão** (some ao recarregar). Mover pro Postgres
 > usa o domínio que já existe + pequenas adições de schema. **Sem regra nova** (modelo = D-125/126 + tipos do front).
 - [ ] **Schema:** colunas de cadastro no `Doctor` (nascimento/telefone/email) + tabela/colunas de **faturamento por especialidade** (modo/valor/tempo) em `DoctorEspecialidade` + tabela **FaturamentoLaudo** (exame/valor). Migration.
