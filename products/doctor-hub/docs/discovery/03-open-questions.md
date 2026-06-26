@@ -99,9 +99,10 @@
 - 🟡 **Escopo do cadastro/escala do médico:** hoje qualquer admin/demandas edita/cria/arquiva escala e
   cadastro de QUALQUER médico (cadastro-mestre global, coerente com D-055). Confirmar que **não há recorte
   por HealthCenter/Unit** (se um dia "demandas" for limitado a um estado, faltará filtro de escopo aqui).
-- 🟡 **Formato/obrigatoriedade de CPF/e-mail no cadastro do médico:** o backend agora impõe só **limites de
-  tamanho** (defensivo). Validar dígito verificador de CPF, formato de e-mail e se são obrigatórios/únicos
-  é regra a confirmar (não implementei por suposição).
+- 🟡 **Formato/obrigatoriedade de CPF/e-mail no cadastro do médico:** o sync agora **normaliza o CPF da
+  origem** (só dígitos; aceita 11, senão grava `null`) porque a TC tem CPF sujo (sequências de zeros que
+  estouram o `varchar(14)`). **NÃO valida dígito verificador**, formato de e-mail, nem se são
+  obrigatórios/únicos — regra a confirmar (não implementei por suposição).
 
 ## 🟡 Levantadas na sessão autônoma (2026-06-15 noite) — PROVISÓRIO, revisar
 - 🟡 **`doctors.specialty_id` (única) × `doctor_specialties` (conjunto, D-064):** agora o médico tem N
