@@ -375,6 +375,15 @@
 - 🟡 **Watermark:** onde persistir o "último sync OK" (tabela SyncState?) p/ o incremental por updated_at.
 - 🟡 **`deleted_at` (soft-delete na TC)** → desativa aqui. E se for "re-criado" depois? (reativar?)
 
+## 🆕 Cadastro/gestão de médicos no Doctor-Hub — pós-inversão (D-136, 2026-06-26)
+> Removemos o "+ Novo médico" local (cadastro não nasce aqui hoje — vem da TC). Quando o cadastro
+> **inverter** (Doctor-Hub vira a fonte da verdade), o cadastro/gestão será **redesenhado**. NÃO inferir:
+- 🔴 **Quais campos/etapas** tem o cadastro próprio do médico (além de nome/CRM/CPF/especialidade/RQE)?
+- 🔴 **Anexo de documentos** (quais? RG, CRM, diploma, comprovantes) — armazenamento (GCS?), LGPD, validade.
+- 🔴 **Contrato** (modelo, assinatura, vigência, valores) — vincula ao faturamento por especialidade (D-125)?
+- 🟡 **Fluxo de criação** (manual? importação? aprovação?) e **quem** pode cadastrar (RBAC).
+- 🟡 **Convivência durante a transição:** enquanto a TC ainda é fonte, o cadastro próprio coexiste? (provável: só leitura até inverter).
+
 ## 🔑 RQE não vem da origem (descoberta 2026-06-25, sync Core-Api)
 > O código antigo (saude-digital-demandas) SUMIU, mas o DB `saude_demandas` (4523 médicos sincronizados
 > da Core-Api) sobrevive como gabarito. Achado: `doctor_specialties.rqe` está **vazio em 4524 de 4525**
