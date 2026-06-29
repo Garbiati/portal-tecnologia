@@ -32,4 +32,11 @@ fi
 echo "▸ Reativando o guard-rail de segredos (gitleaks)…"
 bash scripts/install-hooks.sh
 
+echo "▸ Instalando deps do front (pnpm install)…"
+if command -v pnpm >/dev/null 2>&1 && [ -d services/doctor-hub-web ]; then
+  ( cd services/doctor-hub-web && pnpm install )
+else
+  echo "  ⚠ pnpm ausente ou web não clonado — rode 'pnpm install' em services/doctor-hub-web depois"
+fi
+
 echo "✓ Ambiente pronto. Suba:  make up  (Postgres+API+Front)  e  make -C services/portal-identity up  (Keycloak)"
