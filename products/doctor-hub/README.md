@@ -1,7 +1,7 @@
 # Doctor-Hub
 
 **Planejamento de capacidade médica** (oferta × demanda) para health centers de governos. 1º produto
-da plataforma `portal-platform`. Fica a montante da Teleconsulta e a alimenta com agendamentos prontos.
+da plataforma `portal-tecnologia`. Fica a montante da Teleconsulta e a alimenta com agendamentos prontos.
 
 - **Constituição do produto:** [`CLAUDE.md`](CLAUDE.md) (leia também a raiz [`../../CLAUDE.md`](../../CLAUDE.md)).
 - **Domínio / descoberta:** [`docs/discovery/`](docs/discovery/) · **Glossário:** [`docs/discovery/glossary.md`](docs/discovery/glossary.md)

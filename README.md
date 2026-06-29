@@ -1,4 +1,4 @@
-# portal-platform
+# portal-tecnologia
 
 **Repo oficial de governança da Portal Telemedicina.** Guarda-chuva acima de todos os repos da
 empresa: **método, padrões, governança de IA, LGPD/segurança e o catálogo de repositórios**. O
@@ -10,7 +10,7 @@ empresa: **método, padrões, governança de IA, LGPD/segurança e o catálogo d
 
 | Repo | Tipo | Status | Docs | URL |
 |---|---|---|---|---|
-| **portal-platform** | governança | active | self | `PortalTelemedicina/portal-platform` ✅ |
+| **portal-tecnologia** | governança | active | self | `PortalTelemedicina/portal-tecnologia` ✅ |
 | **teleconsulta** | hub (monorepo, ~30 services) | production | self | `PortalTelemedicina/teleconsulta` ✅ |
 | **doctor-hub-api** | service (doctor-hub) | build | `products/doctor-hub` | `PortalTelemedicina/doctor-hub-api` ✅ |
 | **doctor-hub-web** | service (doctor-hub) | build | `products/doctor-hub` | `PortalTelemedicina/doctor-hub-web` ✅ |
@@ -22,7 +22,7 @@ empresa: **método, padrões, governança de IA, LGPD/segurança e o catálogo d
 ## Estrutura
 
 ```
-portal-platform/
+portal-tecnologia/
 ├── CLAUDE.md           Constituição da empresa (ler antes de qualquer ação)
 ├── repos.yml           Manifest/catálogo de todos os repos (fonte da verdade)
 ├── docs/               GOVERNANÇA transversal: method/ security/ architecture/ decisions/

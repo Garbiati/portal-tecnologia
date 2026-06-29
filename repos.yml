@@ -1,5 +1,5 @@
 # Manifest / catálogo de repositórios — Portal Telemedicina
-# Fonte da verdade da linkagem entre o guarda-chuva (portal-platform) e os repos da empresa.
+# Fonte da verdade da linkagem entre o guarda-chuva (portal-tecnologia) e os repos da empresa.
 # Polyrepo: cada repo é independente; aqui só REFERENCIAMOS (não submodules).
 # `scripts/workspace.sh` (make workspace) clona/atualiza os que têm `url` confirmada em ./workspace/.
 #
@@ -18,8 +18,8 @@ version: 1
 org: PortalTelemedicina
 
 repos:
-  - name: portal-platform
-    url: git@github.com:PortalTelemedicina/portal-platform.git   # verificado (este repo)
+  - name: portal-tecnologia
+    url: git@github.com:PortalTelemedicina/portal-tecnologia.git   # P-005 (renomear no GitHub: portal-platform→portal-tecnologia; pendente)
     kind: governance
     owner: Alessandro
     stack: docs/markdown

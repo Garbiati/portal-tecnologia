@@ -1,5 +1,5 @@
 ---
-title: Arquitetura da Plataforma — como o portal-platform serve produtos
+title: Arquitetura da Plataforma — como o portal-tecnologia serve produtos
 status: active
 scope: plataforma
 date: 2026-06-23

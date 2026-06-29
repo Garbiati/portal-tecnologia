@@ -1,4 +1,4 @@
-# portal-platform — Constituição da Plataforma Portal Telemedicina
+# portal-tecnologia — Constituição da Plataforma Portal Telemedicina
 
 > **Repo oficial de governança da empresa (Portal Telemedicina).** Guarda-chuva acima de **todos os
 > repos** da empresa: carrega **governança de IA, LGPD/segurança, padrões, agents/skills e o catálogo
@@ -12,7 +12,7 @@
 ## 🏗️ Estrutura
 
 ```
-portal-platform/
+portal-tecnologia/
 ├── CLAUDE.md · README.md · Makefile      ← constituição da empresa + entry point
 ├── repos.yml                              ← MANIFEST: catálogo de todos os repos (fonte da verdade)
 ├── docs/                ← GOVERNANÇA TRANSVERSAL (vale p/ todos os repos)
@@ -132,4 +132,4 @@ Se um agente perceber que está prestes a "achar" algo sobre o negócio: **pare 
 - **Decisões de plataforma:** [`docs/decisions/platform-decisions.md`](docs/decisions/platform-decisions.md) (P-001, P-002…).
 - **Governança transversal:** [`docs/README.md`](docs/README.md).
 
-_Última atualização: 2026-06-23 (repo oficial de governança da empresa = portal-platform; catálogo de repos via manifest — P-002)._
+_Última atualização: 2026-06-23 (repo oficial de governança da empresa = portal-tecnologia; catálogo de repos via manifest — P-002)._

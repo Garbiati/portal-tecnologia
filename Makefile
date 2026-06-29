@@ -1,4 +1,4 @@
-## portal-platform — entry point (guarda-chuva da empresa). `make help` lista os alvos.
+## portal-tecnologia — entry point (guarda-chuva da empresa). `make help` lista os alvos.
 ## Product-aware: `make api` usa PRODUCT=doctor-hub; `make api PRODUCT=<outro>` mira outro produto.
 PRODUCT ?= doctor-hub
 API_DIR := services/$(PRODUCT)-api
