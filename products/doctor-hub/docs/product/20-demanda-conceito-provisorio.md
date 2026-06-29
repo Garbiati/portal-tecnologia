@@ -21,10 +21,10 @@
 **Máquina de estados (PROVISÓRIO):** Recebida → Em análise → {Alocada total | Alocada parcial → Remanejamento | Recusada} → (Emitida → Agendamento).
 
 ## ✅ WORKFLOW CONFIRMADO (D-094, 2026-06-19) — Solicitação → Sobrepor → Draft → Enviar
-Dois atores: **Cliente/Gestor Geral** (solicita) e **Demandas Médicas** `demandas` (sobrepõe/aprova/envia).
+Dois atores: **Cliente/Regulação** (solicita) e **Demandas Médicas** `demandas` (sobrepõe/aprova/envia).
 
 ```
-CLIENTE (Gestor Geral)                    DEMANDAS MÉDICAS (operador PTM)
+CLIENTE (Regulação)                    DEMANDAS MÉDICAS (operador PTM)
 ─────────────────────                     ──────────────────────────────
 cria SOLICITAÇÃO ad-hoc      ──notifica──▶ recebe notificação de nova solicitação
 (prazo "até dia X" +                       │

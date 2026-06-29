@@ -36,8 +36,8 @@
 | Contratação + exportar | Relatório de contratação | `511:6029` (+ modal `641:6188`) | |
 | Remanejamento (futuro) | Remanejamento | `621:6169` | placeholder |
 | Conta | Meus dados | `57:2` (+ Configurações `59:2`) | menu do avatar = `683:6241` |
-| **Gestor Geral** | Minhas solicitações / Nova / De acordo | `530:6141` / `531:6141` / `531:6251` | |
-| **Gestor Regional** | Agendamentos / Assumir-Agendar | `532:6141` / `522:6125` | |
+| **Regulação** | Minhas solicitações / Nova / De acordo | `530:6141` / `531:6141` / `531:6251` | |
+| **Gestor** | Agendamentos / Assumir-Agendar | `532:6141` / `522:6125` | |
 
 ## 3. Detectores (rodar antes de "pronto") — `use_figma` read-only
 ### 3a. Inventário (inbound/PROVISÓRIO/órfã)

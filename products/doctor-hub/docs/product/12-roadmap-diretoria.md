@@ -29,7 +29,7 @@ quantidade disponibilizada por HC; histórico de "quantos especialistas contrata
 _(Mapeia D-031/D-032/D-035/D-043/D-045 — já construído no protótipo.)_
 
 ## Fase 3 — Agendamento
-**Perfil:** Gestor Regional (vinculado a um gestor de HC).
+**Perfil:** Gestor (vinculado a um gestor de HC).
 **Fluxo:** o regional separa uma quantidade de slots p/ sua unidade e faz o **agendamento
 (paciente + doutor)**; Demandas/Gestor HC têm visão e podem aprovar/reprovar/solicitar alteração.
 **Habilita:** autonomia local p/ agendar; **integração com a Teleconsulta** (baixa do agendamento);

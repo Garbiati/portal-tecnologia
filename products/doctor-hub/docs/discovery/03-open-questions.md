@@ -12,7 +12,7 @@
 - ✅ **C1/C3 — Periodicidade:** **mensal** (geralmente), podendo ser **semanal**. (represamento histórico: não citado → assumir forward-looking; confirmar se surgir.)
 - ✅ **F1/F3 — "Cobrir" + falta:** cobrir = ter capacidade de **disponibilizar**; sem capacidade → **RELATÓRIO DE CONTRATAÇÃO** (info p/ contratar mais doutores). _(Aberto: precedência remanejamento × contratação.)_
 - ✅ **K3 — Paciente (LGPD):** **NÃO entra** — demanda **agregada**.
-- ✅ **L1 — Origem:** **DIGITADO** pelo Gestor Geral (login + perfil); não é sync externo.
+- ✅ **L1 — Origem:** **DIGITADO** pelo Regulação (login + perfil); não é sync externo.
 > **Levantadas pelas telas status/alocação:** estados oficiais do ciclo de vida e quem os move? "Alocada parcial" → remanejamento automático ou manual?
 > os verbos Simular/Reservar/Emitir — efeito real (reserva trava a escala? expira?)? cada transição guarda autor+data? há rejeição/cancelamento? margem de no-show?
 > **Remanejamento (tela PROVISÓRIO `503:6013`):** de onde se remaneja (outro estado? outra especialidade?)? **há substituição entre especialidades** (Clínico Geral cobre Ginecologia — "coringa")? quem aprova o remanejamento? qual a prioridade/ordem das fontes? remanejar tira capacidade de outra demanda já alocada?
@@ -20,14 +20,14 @@
 ### Demanda-workflow (Sobrepor + Draft + Travas — D-094/D-095, 2026-06-19)
 - ✅ **Disputa de capacidade (D-095):** **Demandas Médicas decide**; o sistema dá **insights** (urgência por prazo, gap a contratar). Sem auto-resolução.
 - ✅ **Descartar/expirar draft (D-095):** draft pode ser **descartado → libera a reserva**; **não expira**. Home terá relatório de pendências (drafts/solicitações).
-- 🟡 **Enviar — efeito (parcial, D-095):** "Enviar" **notifica o Gestor Geral (talvez Gestores Regionais), in-app** (canal e-mail/WhatsApp a definir). **AINDA ABERTO:** o que o cliente FAZ ao receber — só vê, ou **assume/agenda** (conecta ao Gestor Regional do modelo antigo)?
+- 🟡 **Enviar — efeito (parcial, D-095):** "Enviar" **notifica o Regulação (talvez Gestores Regionais), in-app** (canal e-mail/WhatsApp a definir). **AINDA ABERTO:** o que o cliente FAZ ao receber — só vê, ou **assume/agenda** (conecta ao Gestor do modelo antigo)?
 - 🟡 **Gestores Regionais** também recebem a notificação do "Enviar"? (D-095 deixou "talvez".)
 - 🟡 **Solicitação imutável — exceções:** Demandas pode **editar** a solicitação travada (corrigir qty) ou só a **disponibilização**? se o cliente quiser mudar, abre **nova** solicitação?
 - 🟡 **Cobertura parcial:** sobreposição que cobre só parte → envia o parcial ao cliente **e** gera o "Captar novos médicos", ou segura até cobrir?
 - 🟡 **Captar novos médicos:** formato do relatório à recrutadora (export? integração?); prazo/SLA da contratação; como a capacidade contratada volta a alimentar a disponibilização.
 
 ### Agendamento + integração com a Teleconsulta (D-097/D-098) — tela `522:6125`
-- 🔴 **LGPD (PACIENTE entra no sistema):** base legal, retenção, minimização e RBAC da **lista de pacientes por cliente**. ✅ Confirmado: Gestor Regional vê **só o seu cliente/unidade** (isolamento). Falta o resto da política de dado sensível.
+- 🔴 **LGPD (PACIENTE entra no sistema):** base legal, retenção, minimização e RBAC da **lista de pacientes por cliente**. ✅ Confirmado: Gestor vê **só o seu cliente/unidade** (isolamento). Falta o resto da política de dado sensível.
 - 🔴 **Integração TC:** PULL **read-only** de **pacientes + doutores** da Teleconsulta (paciente é mais sensível que médico — estende D-069: credencial dedicada, escopo mínimo, segurança). PUSH do **agendamento completo** para a TC.
 - 🟡 **"Último doutor que atendeu o paciente naquela especialidade":** fonte e regra exata (vem da TC; casa com D-011 preferencial).
 - 🟡 **Campos do agendamento:** por ora paciente + doutor + horário + local. **Refinar depois** (data, primeira vez/retorno, duração) quando focar nesta parte.

@@ -74,7 +74,7 @@
 | 18 | `/disponibilizacao-reservado` · **Reservado** | `518:6109` | ✅ | Destino de "Provisionar" (DRAFT reservado). Coberto pelo fluxo do app. |
 | 19 | `/painel` · **Painel / Relatório** | `511:6029` | ⚠️ | Figma `511` = só o **Relatório de contratação** (gaps por especialidade + prioridade + "contratar ~N médicos" + exportar) — que no app é o **card Contratação + modal** dentro de um `/painel` **SUPERSET** (KPIs integração, Top especialidades, Unidades por HC, Capacidade efetiva). App foi **além** do Figma. Mapeamento `figmaId` do `/painel` está impreciso (deveria apontar p/ a Visão geral, ex.: `28:2`). |
 
-## C. Gestor Regional / Gestor Geral (personas)
+## C. Gestor / Regulação (personas)
 
 | # | Rota (app) | Frame(s) Figma | Status | Notas |
 |---|-----------|----------------|--------|-------|
@@ -98,7 +98,7 @@
 ## F. Frames do Figma sem rota clara no app (conferir durante o loop)
 - `28:2` Início · Visão geral (Home antiga) — pode ser a base do `/painel` ou `/home`.
 - `490:5414`/`495:5955` Demanda · detalhe/status (PROVISÓRIO) · `654:6226` Status (diagrama, não-tela) ·
-  `621:6169` Remanejamento (entrega futura) · `532:6141` Gestor Regional · Agendamentos.
+  `621:6169` Remanejamento (entrega futura) · `532:6141` Gestor · Agendamentos.
 
 ---
 

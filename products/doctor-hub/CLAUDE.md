@@ -65,8 +65,8 @@ REVISÃO DE COERÊNCIA:**
    todo link leva a destino coerente; o fluxo continua de uma tela à seguinte;
 (b) **agente revisor adversarial** — navega como usuário cético e reporta furos;
 (c) **LINTER DE NAVEGAÇÃO** ([`docs/product/23-navegacao-contrato.md`](docs/product/23-navegacao-contrato.md), D-106) —
-   **isolamento de persona** (troca só pelo avatar→Seletor; nenhum botão cruza Demandas↔Gestor
-   Geral↔Gestor Regional), **alcançabilidade** (toda tela a partir do Login), **0 clicks mortos**, **0 órfãs**;
+   **isolamento de persona** (troca só pelo avatar→Seletor; nenhum botão cruza Demandas↔Regulação↔Gestor),
+   **alcançabilidade** (toda tela a partir do Login), **0 clicks mortos**, **0 órfãs**;
 (d) **CICLO DE VIDA DE TELA** ([`docs/product/24-registro-telas.md`](docs/product/24-registro-telas.md), D-108) —
    **1 tela canônica por intenção**; ao superar uma tela, **APAGAR a antiga e REPONTAR todas as
    referências** (nunca "v2" convivendo com "v1"); rodar os 2 detectores (duplicatas/PROVISÓRIO/órfãs +

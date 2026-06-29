@@ -4,12 +4,15 @@
 # `scripts/workspace.sh` (make workspace) clona/atualiza os que têm `url` confirmada em ./workspace/.
 #
 # Diretriz Suprema: NÃO inventar URL/dono/stack. O que não foi verificado leva `confirmar: true`.
-# Campos: name, url, kind (governance|product|service|hub|lib), owner, stack, status, docs (self|<path>), path, local.
+# Campos: name, url, kind (governance|product|service|hub|lib|infra), owner, stack, status, docs (self|<path>), path, local.
+# kind: infra = serviço de PLATAFORMA compartilhado por vários produtos (ex.: portal-identity = IdP), sem `product:`.
 #
-# Migração LÓGICA (P-002): os repos NÃO moram fisicamente dentro do portal-platform — são só referenciados.
-# `path:` = onde o clone de DEV ficaria em ./workspace/. `local:` = onde o repo JÁ existe na máquina hoje
-# (ex.: o hub teleconsulta segue vivo em ~/ptm/teleconsulta com seus worktrees/helpers — NÃO re-clonar nem mover).
-# Quando `local:` existe, `make workspace` faz um SYMLINK em ./workspace/<name> em vez de clonar (sem duplicar).
+# Linkagem LÓGICA via manifest (P-002): polyrepo, cada repo é git independente — sem submodules.
+# Lar FÍSICO (P-004): os repos próprios da empresa moram DENTRO do umbrella em `services/<repo>` (gitignored,
+# git independente) — é o caso de doctor-hub-api/web e portal-identity. `path:` = esse caminho interno.
+# `local:` = repo cujo lar canônico ainda é EXTERNO hoje (ex.: o hub teleconsulta vive em ~/ptm/teleconsulta
+# com seus worktrees/helpers — NÃO re-clonar nem mover; migra para dentro com plano). Quando `local:` existe,
+# `make workspace` faz um SYMLINK em ./workspace/<name> em vez de clonar (sem duplicar).
 
 version: 1
 org: PortalTelemedicina
@@ -23,6 +26,15 @@ repos:
     status: active
     docs: self
     path: .
+
+  - name: portal-identity
+    url: git@github.com:PortalTelemedicina/portal-identity.git    # confirmada por Alessandro
+    kind: infra               # serviço de plataforma COMPARTILHADO (sem product:) — IdP da empresa
+    owner: Alessandro
+    stack: Keycloak · realm-as-code (JSON→Terraform) · GCP (futuro)
+    status: build (P-003)
+    docs: self                # README + docs/decisions/ no próprio repo
+    path: services/portal-identity   # mora DENTRO do umbrella (gitignored), git independente — igual doctor-hub
 
   - name: teleconsulta
     url: git@github.com:PortalTelemedicina/teleconsulta.git       # verificado (remote local)

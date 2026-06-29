@@ -1,7 +1,7 @@
 # Contrato de Navegação + Linter (gate de coerência) — 2026-06-22
 
 > **Por que existe:** o Alessandro homologa caçando furo. Já aconteceu de um clique dentro de
-> **Demandas** cair na tela do **Gestor Geral/Regional**. Igual fizemos para DADOS (fixture canônica
+> **Demandas** cair na tela do **Regulação/Regional**. Igual fizemos para DADOS (fixture canônica
 > `22-demo-fixtures.md`), agora a NAVEGAÇÃO tem **fonte de verdade + verificação automática**.
 > Regra: **rodar o linter abaixo ANTES de dizer "pronto".** (D-106)
 
@@ -13,8 +13,8 @@
 | Persona | Home | Telas | Menu lateral |
 |---|---|---|---|
 | **Demandas Médicas** | `514:6045` Início (Pendências) | Médicos, Escala, Demandas/Sobrepor/Reservado/Status/Multi-cliente/Contratação/Remanejamento, Conta | Início · Médicos · Escala · Demandas |
-| **Gestor Geral** (cliente) | `530:6141` Minhas solicitações | Nova solicitação `531:6141`, De acordo `531:6251` | menu próprio (mínimo) |
-| **Gestor Regional** (unidade) | `532:6141` Agendamentos | Assumir/Agendar `522:6125` | menu próprio (mínimo) |
+| **Regulação** (cliente) | `530:6141` Minhas solicitações | Nova solicitação `531:6141`, De acordo `531:6251` | menu próprio (mínimo) |
+| **Gestor** (unidade) | `532:6141` Agendamentos | Assumir/Agendar `522:6125` | menu próprio (mínimo) |
 | **Neutras** (sem persona) | — | Login `65:2`, Login·erro `66:2`, **Seletor `529:6141`**, Lab QA `552:6041`, modais (`14:2`,`15:2`,`37:2`) | — |
 
 ### Invariantes (o que SEMPRE tem que valer)
@@ -29,10 +29,10 @@
    (fica "ativo"); isso **não** é furo.
 
 ### Handoff entre personas (como o fluxo continua sem vazar)
-O pipeline cruza personas (Demandas entrega → **Gestor Geral** dá "de acordo" → **Gestor Regional**
+O pipeline cruza personas (Demandas entrega → **Regulação** dá "de acordo" → **Gestor**
 assume/agenda), mas **no protótipo a continuação é por troca de perfil** (avatar→Seletor), não por
 um botão que teleporta. Ex.: ao **Provisionar**, Demandas vai para **Status da demanda `495:5955`**
-(mostra *Entregue*); para seguir como Gestor Geral, troca-se de perfil pelo Seletor.
+(mostra *Entregue*); para seguir como Regulação, troca-se de perfil pelo Seletor.
 
 ---
 

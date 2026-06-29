@@ -28,9 +28,14 @@ portal-platform/
 ├── infrastructure/     ← docker-compose + envs (compartilhado)
 ├── scripts/            ← utilitários (workspace.sh: clona/atualiza repos do manifest)
 ├── .claude/rules/      ← regras globais aplicadas pela máquina (SDD, security)
-├── workspace/  (gitignored)  ← clones locais dos repos da empresa (via `make workspace`) — só DEV
-└── services/   (gitignored)  ← código local do doctor-hub (api/web), repos próprios
+├── workspace/  (gitignored)  ← clones de repos com lar canônico EXTERNO (ex.: teleconsulta) — só DEV
+└── services/   (gitignored)  ← LAR dos repos próprios da empresa (P-004): cada um git independente
+                                 (doctor-hub-api · doctor-hub-web · portal-identity[IdP/Keycloak] · …)
 ```
+
+> **Lar dos repos (P-004):** os repos próprios da empresa moram **dentro** do umbrella em `services/<repo>`
+> (gitignored, git independente — não é monorepo). `teleconsulta`/`telediagnóstico` migram para dentro
+> com plano (hubs vivos). O manifest [`repos.yml`](repos.yml) é a fonte da verdade dos paths.
 
 **Hierarquia de `CLAUDE.md`:** raiz (empresa) → produto (`products/<p>/CLAUDE.md`) → repo de código
 (cada `services/<repo>/CLAUDE.md` aponta de volta para cá). Cada nível só acrescenta o que é seu.

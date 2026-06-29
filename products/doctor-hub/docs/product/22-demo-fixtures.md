@@ -43,20 +43,20 @@ Demanda em **atendimentos de Teleconsulta**. Manter os MESMOS clientes/siglas/pr
 |---|---|---|---|---|
 | **Demandas Médicas** (operadora PTM) | **Mariana Rabelo** | mariana.rabelo@portaltelemedicina.com.br · CPF 318.224.905-11 | **MR** (foto de retrato) | header de todas as telas de Demandas + login (substitui "Millena Garbiati / MG") |
 
-### Clientes — persona **Gestor Geral** (quem solicita; 1 por cliente)
-| Cliente | Gestor Geral (nome) | Doc (fictício) | Avatar |
+### Clientes — persona **Regulação** (quem solicita; 1 por cliente)
+| Cliente | Regulação (nome) | Doc (fictício) | Avatar |
 |---|---|---|---|
 | SES-PI | **Aldair Moura** | CPF 502.118.334-70 | AM (verde-petróleo) |
 | SES-AM | **Tânia Albuquerque** | CPF 233.490.661-05 | TA |
 | SES-AL | **Cleidson Tenório** | CPF 711.205.448-92 | CT |
 | IASEP-PA | **Marivalda Pinheiro** | CPF 044.876.219-30 | MP |
 | SES-AP | **Jucélio Tavares** | CPF 690.331.572-14 | JT |
-> Persona logada nas telas de **Gestor Geral** (Minhas solicitações / Nova / De acordo) = **Aldair Moura (SES-PI)** por padrão no demo.
+> Persona logada nas telas de **Regulação** (Minhas solicitações / Nova / De acordo) = **Aldair Moura (SES-PI)** por padrão no demo.
 
-### Unidade — persona **Gestor Regional** (assume/agenda)
+### Unidade — persona **Gestor** (assume/agenda)
 | Papel | Nome | Doc (fictício) | Unidade | Avatar |
 |---|---|---|---|---|
-| **Gestor Regional** | **Eronildes Bastos** | CPF 825.640.173-06 | Núcleo Teresina-Centro (SES-PI) | EB (teal) |
+| **Gestor** | **Eronildes Bastos** | CPF 825.640.173-06 | Núcleo Teresina-Centro (SES-PI) | EB (teal) |
 
 ---
 
@@ -113,7 +113,7 @@ _(D-113 — **superado por D-120..D-122**: no modelo v2 com effective-dating Hen
 > Cada cenário usa cliente + especialidade + números coerentes com §1 e §4.
 > **Janela "A PARTIR DE → ATÉ" (D-103/D-115):** toda solicitação tem janela editável; as datas abaixo são só **preenchimento de demo** (não regra nova).
 > **RETORNO = 0** em todos os use cases (campo manual da Demandas, D-100; só preenchido quando a operadora lança retorno).
-> **De acordo (D-116):** dar "De acordo" marca a solicitação como **aceita pelo cliente** e **libera a Assunção** (Gestor Regional pode assumir).
+> **De acordo (D-116):** dar "De acordo" marca a solicitação como **aceita pelo cliente** e **libera a Assunção** (Gestor pode assumir).
 
 | Use case | Cliente | Janela (A PARTIR DE → ATÉ) | Cenário | Resultado esperado na tela |
 |---|---|---|---|---|
@@ -136,7 +136,7 @@ Organizar **POR ESPECIALIDADE** (quantos médicos contratar) e, dentro, **para q
 
 ---
 
-## 6. Pacientes (agendamento — Gestor Regional) — LGPD: só iniciais
+## 6. Pacientes (agendamento — Gestor) — LGPD: só iniciais
 Maria S. · João P. · Ana R. (por unidade/cliente). **Nunca** nome completo no demo.
 > **Agendamento (GR · `522:6125`) usa SÓ médicos da fixture** — para Cardiologia: Henrique Sampaio, Fernanda Alves, Juliana Castro. Nunca inventar nomes (já houve "Helena Costa"/"Paulo Reis" — corrigido).
 
