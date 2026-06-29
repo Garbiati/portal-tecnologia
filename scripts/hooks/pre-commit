@@ -1,0 +1,21 @@
+#!/usr/bin/env bash
+# Guard-rail de segredos — bloqueia o commit se o gitleaks achar segredo nos arquivos staged.
+# Instalado por scripts/install-hooks.sh (copiado p/ .git/hooks de cada repo). Usa o .gitleaks.toml
+# do repo se existir, senão as regras padrão do gitleaks.
+# Escape (use com consciência): SKIP_GITLEAKS=1 git commit ...
+set -euo pipefail
+
+[ "${SKIP_GITLEAKS:-0}" = "1" ] && { echo "⚠ gitleaks PULADO (SKIP_GITLEAKS=1)"; exit 0; }
+
+if ! command -v gitleaks >/dev/null 2>&1; then
+  echo "✗ gitleaks não encontrado — guard-rail de segredos não pôde rodar (fail-closed)." >&2
+  echo "  Instale (https://github.com/gitleaks/gitleaks) ou use SKIP_GITLEAKS=1 conscientemente." >&2
+  exit 1
+fi
+
+if ! gitleaks protect --staged --redact --no-banner; then
+  echo "" >&2
+  echo "✗ Commit BLOQUEADO: possível segredo detectado acima." >&2
+  echo "  Se for falso-positivo (ex.: dado fictício de demo), ajuste o allowlist do .gitleaks.toml." >&2
+  exit 1
+fi
