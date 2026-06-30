@@ -48,7 +48,15 @@ Para reduzir custo cognitivo de 1 dev + IA, a plataforma recomenda um stack úni
 - **Web:** React + Vite + TypeScript + Tailwind + PWA mobile-first.
 - **Infra:** GCP (Cloud Run + Cloud SQL + Secret Manager) — a confirmar com a infra da Portal.
 
+### 4.1 Produção (IaC) — em construção
+O **como** subir a plataforma vive em [`../../infrastructure/`](../../infrastructure/) (Terraform +
+Dockerfiles). 1ª fatia (**P-006**): **portal-identity (Keycloak)** no **GCP pessoal** — Cloud Run
+(`min=1`, imagem com providers+tema) + Cloud SQL Postgres + Secret Manager + Artifact Registry, região
+`southamerica-east1`. **Esqueleto desenhado, ainda não aplicado** (ler `infrastructure/README.md`).
+Demais serviços (doctor-hub api/web) entram em fatias seguintes — strangler-fig.
+
 ## 5. Decisões que sustentam este modelo
 - **P-001** — estrutura `governança + products/ + services/` (este doc). Ver
   [`../decisions/platform-decisions.md`](../decisions/platform-decisions.md).
+- **P-006** — produção começa pelo portal-identity no GCP pessoal (IaC em `infrastructure/`).
 - Origem (history do Doctor-Hub): **D-109** (build real, stack), **D-110** (spec-hub + services).

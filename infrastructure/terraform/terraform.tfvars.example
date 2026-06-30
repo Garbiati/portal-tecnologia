@@ -1,0 +1,16 @@
+# Copie para terraform.tfvars (GITIGNORED) e preencha. NUNCA commite terraform.tfvars.
+# Nenhum segredo aqui — só identificadores. Senhas são geradas pelo TF e guardadas no Secret Manager.
+
+project_id     = "portal-tecnologia"            # projeto GCP PESSOAL
+region         = "southamerica-east1"           # São Paulo (LGPD / latência BR)
+
+# Imagem de prod do Keycloak (preencher após o 1º build/push — ver ../README.md):
+keycloak_image = "southamerica-east1-docker.pkg.dev/portal-tecnologia/portal-identity/keycloak:1.0.0"
+
+# Deixe vazio no 1º apply; depois preencha com a URL *.run.app gerada (output keycloak_url) e reaplique:
+keycloak_hostname = ""
+
+# Opcionais (têm default):
+# db_tier          = "db-f1-micro"
+# cloud_run_cpu    = "1"
+# cloud_run_memory = "1024Mi"

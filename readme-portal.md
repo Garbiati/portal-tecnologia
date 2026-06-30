@@ -56,6 +56,10 @@ Decisões: **P-003/P-004/P-005** (plataforma), **D-139..D-142** (doctor-hub), **
   `services/portal-identity/specs/otp-login-dev/spec.md`.
 - **GCP pessoal** (projeto `portal-tecnologia`, R$1.727 de crédito até 28/09/2026) → IaC/Terraform +
   Secret Manager; integrações lendo segredos por nome (swap fácil no repasse à empresa).
+  - 🟡 **Produção do Keycloak (P-006): IaC desenhado, NÃO aplicado.** Plano + Terraform + Dockerfile em
+    `infrastructure/` (ler `infrastructure/README.md`). Cloud Run + Cloud SQL + Secret Manager, GCP
+    pessoal. ⚠️ `gcloud` está na conta da empresa — trocar p/ a pessoal antes de aplicar. Pré-condição:
+    OTP real (SMTP/SMS).
 - Pergunte ao Alessandro por onde seguir antes de assumir.
 
 ## 6) REGRAS (não negociáveis — herdadas de CLAUDE.md)

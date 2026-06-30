@@ -1,0 +1,10 @@
+# Terraform — nunca versionar state (contém segredos) nem tfvars reais.
+*.tfstate
+*.tfstate.*
+.terraform/
+.terraform.lock.hcl
+crash.log
+terraform.tfvars
+*.auto.tfvars
+override.tf
+override.tf.json
