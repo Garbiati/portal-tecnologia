@@ -89,7 +89,9 @@ resource "google_sql_user" "keycloak" {
 resource "google_secret_manager_secret" "db_password" {
   secret_id = "portal-identity-db-password"
   labels    = local.labels
-  replication { auto {} }
+  replication {
+    auto {}
+  }
   depends_on = [google_project_service.apis]
 }
 resource "google_secret_manager_secret_version" "db_password" {
@@ -104,12 +106,50 @@ resource "random_password" "admin" {
 resource "google_secret_manager_secret" "admin_password" {
   secret_id = "portal-identity-admin-password"
   labels    = local.labels
-  replication { auto {} }
+  replication {
+    auto {}
+  }
   depends_on = [google_project_service.apis]
 }
 resource "google_secret_manager_secret_version" "admin_password" {
   secret      = google_secret_manager_secret.admin_password.id
   secret_data = random_password.admin.result
+}
+
+# Secret do service account doctor-hub-admin (gerado pelo TF; o realm e a futura API leem por nome).
+resource "random_password" "admin_client" {
+  length  = 40
+  special = false
+}
+resource "google_secret_manager_secret" "admin_client_secret" {
+  secret_id = "portal-identity-admin-client-secret"
+  labels    = local.labels
+  replication {
+    auto {}
+  }
+  depends_on = [google_project_service.apis]
+}
+resource "google_secret_manager_secret_version" "admin_client_secret" {
+  secret      = google_secret_manager_secret.admin_client_secret.id
+  secret_data = random_password.admin_client.result
+}
+
+# Secrets MANUAIS (valor fora do TF/Git): senha de app do Gmail e auth token do Twilio.
+# Criados pelo usuário via gcloud ANTES do apply (ver ../README.md). Aqui só referenciamos p/ o IAM.
+resource "google_secret_manager_secret_iam_member" "kc_smtp_secret" {
+  secret_id = "portal-identity-smtp-password"
+  role      = "roles/secretmanager.secretAccessor"
+  member    = "serviceAccount:${google_service_account.kc.email}"
+}
+resource "google_secret_manager_secret_iam_member" "kc_twilio_secret" {
+  secret_id = "portal-identity-twilio-token"
+  role      = "roles/secretmanager.secretAccessor"
+  member    = "serviceAccount:${google_service_account.kc.email}"
+}
+resource "google_secret_manager_secret_iam_member" "kc_admin_client_secret" {
+  secret_id = google_secret_manager_secret.admin_client_secret.id
+  role      = "roles/secretmanager.secretAccessor"
+  member    = "serviceAccount:${google_service_account.kc.email}"
 }
 
 # ---------------------------------------------------------------------------
@@ -227,10 +267,100 @@ resource "google_cloud_run_v2_service" "kc" {
         name  = "KC_HTTP_ENABLED"
         value = "true"
       }
-      # Hostname público (setar com a URL *.run.app no 1º deploy; domínio próprio depois).
+      # Hostname: no 1º deploy a URL *.run.app ainda não é conhecida → strict=false deixa o Keycloak
+      # derivar do proxy (X-Forwarded-Host). Depois, opcionalmente, fixe keycloak_hostname e reaplique.
       env {
-        name  = "KC_HOSTNAME"
-        value = var.keycloak_hostname
+        name  = "KC_HOSTNAME_STRICT"
+        value = "false"
+      }
+      dynamic "env" {
+        for_each = var.keycloak_hostname == "" ? [] : [var.keycloak_hostname]
+        content {
+          name  = "KC_HOSTNAME"
+          value = env.value
+        }
+      }
+      env {
+        name  = "FRONT_BASE_URL"
+        value = var.front_base_url
+      }
+      # OTP: em produção NUNCA logar o código.
+      env {
+        name  = "OTP_DEV_LOG_CODE"
+        value = "false"
+      }
+
+      # SMTP (Gmail) — identificadores por env; senha por secret.
+      env {
+        name  = "SMTP_HOST"
+        value = var.smtp_host
+      }
+      env {
+        name  = "SMTP_PORT"
+        value = var.smtp_port
+      }
+      env {
+        name  = "SMTP_FROM"
+        value = var.smtp_from
+      }
+      env {
+        name  = "SMTP_FROM_DISPLAY"
+        value = var.smtp_from_display
+      }
+      env {
+        name  = "SMTP_USER"
+        value = var.smtp_from
+      }
+      env {
+        name  = "SMTP_AUTH"
+        value = "true"
+      }
+      env {
+        name  = "SMTP_STARTTLS"
+        value = "true"
+      }
+      env {
+        name  = "SMTP_SSL"
+        value = "false"
+      }
+      env {
+        name = "SMTP_PASSWORD"
+        value_source {
+          secret_key_ref {
+            secret  = "portal-identity-smtp-password"
+            version = "latest"
+          }
+        }
+      }
+
+      # Twilio (SMS) — SID/remetente por env; auth token por secret.
+      env {
+        name  = "TWILIO_ACCOUNT_SID"
+        value = var.twilio_account_sid
+      }
+      env {
+        name  = "TWILIO_FROM"
+        value = var.twilio_from
+      }
+      env {
+        name = "TWILIO_AUTH_TOKEN"
+        value_source {
+          secret_key_ref {
+            secret  = "portal-identity-twilio-token"
+            version = "latest"
+          }
+        }
+      }
+
+      # Secret do service account doctor-hub-admin (resolve ${ADMIN_CLIENT_SECRET} no import do realm).
+      env {
+        name = "ADMIN_CLIENT_SECRET"
+        value_source {
+          secret_key_ref {
+            secret  = google_secret_manager_secret.admin_client_secret.secret_id
+            version = "latest"
+          }
+        }
       }
 
       # Keycloak demora a subir → startup probe generoso.
@@ -259,6 +389,9 @@ resource "google_cloud_run_v2_service" "kc" {
     google_project_service.apis,
     google_secret_manager_secret_iam_member.kc_db_secret,
     google_secret_manager_secret_iam_member.kc_admin_secret,
+    google_secret_manager_secret_iam_member.kc_smtp_secret,
+    google_secret_manager_secret_iam_member.kc_twilio_secret,
+    google_secret_manager_secret_iam_member.kc_admin_client_secret,
     google_project_iam_member.kc_sql_client,
   ]
 }

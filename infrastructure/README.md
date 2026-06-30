@@ -52,57 +52,100 @@ Manager**. Doctor-Hub (api/web) entra **depois**, em fatias próprias (strangler
 3. **Terraform >= 1.6** e **Docker** instalados.
 4. (Recomendado) **bucket de state** privado+versionado e migrar o backend (ver §7).
 
-## 4. Passo-a-passo do deploy (quando aprovado)
+## 4. Runbook do deploy — IdP-only (D-143; executar nesta ordem)
 
+> Escopo: **só o Keycloak (IdP)**. Validadores testam login (senha/CPF/telefone/OTP e-mail+SMS),
+> reset de senha, tema e o **account console** contra a produção. terraform já instalado? senão:
+> `curl -fsSL -o tf.zip https://releases.hashicorp.com/terraform/1.9.8/terraform_1.9.8_linux_amd64.zip && unzip tf.zip -d ~/.local/bin`.
+> `REGIAO=southamerica-east1`, `PROJ=portal-tecnologia`, `AR=$REGIAO-docker.pkg.dev/$PROJ/portal-identity`.
+
+**0) Autenticar na conta PESSOAL** (você roda — é interativo):
 ```bash
-# (a) build + push da imagem de prod do Keycloak (contexto = o repo portal-identity)
-cd ../services/portal-identity
-gcloud auth configure-docker southamerica-east1-docker.pkg.dev
-docker build -t southamerica-east1-docker.pkg.dev/portal-tecnologia/portal-identity/keycloak:1.0.0 .
-# (o repo do Artifact Registry é criado pelo Terraform no passo b; rode o `terraform apply` p/ os
-#  recursos-base ANTES do push, ou crie o repo primeiro com -target=google_artifact_registry_repository.images)
-docker push southamerica-east1-docker.pkg.dev/portal-tecnologia/portal-identity/keycloak:1.0.0
-
-# (b) provisiona a infra
-cd ../../infrastructure/terraform
-cp terraform.tfvars.example terraform.tfvars   # preencha project_id, keycloak_image
-terraform init
-terraform apply        # 1º apply: cria SQL, secrets, AR, Cloud Run (hostname ainda vazio)
-
-# (c) pega a URL e fixa o hostname (Keycloak exige KC_HOSTNAME coerente)
-terraform output keycloak_url
-#  → coloque o host em terraform.tfvars (keycloak_hostname) e:
-terraform apply
-
-# (d) importa o realm de PRODUÇÃO (ver §6) e faz o smoke test (§8)
+gcloud auth login                                   # alessandro@garbiati.com
+gcloud config set project portal-tecnologia
+gcloud auth application-default login                # credencial p/ o Terraform
+gcloud services enable secretmanager.googleapis.com  # p/ criar os secrets manuais a seguir
 ```
 
-> Ordem de imagem × infra: o repositório do Artifact Registry é um recurso do Terraform. Para o 1º
-> push, crie só ele antes (`terraform apply -target=google_artifact_registry_repository.images`),
-> faça o push, e então o `apply` completo. Está anotado no passo (a).
+**1) Pré-requisitos do Gmail SMTP:** ative a **verificação em 2 etapas** na sua conta Google e gere
+uma **Senha de app** (Conta Google → Segurança → Senhas de app) — 16 caracteres.
 
-## 5. Segredos
+**2) Criar os 2 secrets MANUAIS** (valores nunca vão pro git/Terraform):
+```bash
+printf '%s' 'SUA_SENHA_DE_APP_GMAIL' | gcloud secrets create portal-identity-smtp-password --data-file=-
+printf '%s' 'SEU_TWILIO_AUTH_TOKEN'  | gcloud secrets create portal-identity-twilio-token  --data-file=-
+```
 
-- **Gerados pelo Terraform** e guardados no **Secret Manager**: senha do Cloud SQL e senha do admin
-  bootstrap. Leia a do admin com:
-  ```bash
-  gcloud secrets versions access latest --secret=portal-identity-admin-password
-  ```
-- **Nunca** há segredo no git nem no `terraform.tfvars` (só identificadores). O `tfstate` **contém**
-  segredos (senha gerada) → fica fora do git e, idealmente, em bucket privado (§7).
-- **SMTP/SMS** (envio real do OTP) entram como **novos secrets** quando a fatia I-003-real começar.
+**3) Variáveis (sem segredos):**
+```bash
+cd infrastructure/terraform
+cp terraform.tfvars.example terraform.tfvars
+#  edite: project_id, smtp_from (seu gmail), twilio_account_sid, twilio_from (+E.164),
+#         keycloak_image = "<AR>/keycloak:1.0.0"
+~/.local/bin/terraform init
+```
 
-## 6. Realm de produção (LIMPO)
+**4) Criar só o Artifact Registry (p/ o push da imagem):**
+```bash
+~/.local/bin/terraform apply -target=google_artifact_registry_repository.images
+```
 
-O `realms/portal-realm.json` do DEV **não serve** para prod (tem seed users com senha DEV e
-redirect URIs `localhost`). Estratégia de prod:
-- Derivar um **realm de prod** com: clients (`doctor-hub-web`/`doctor-hub-api`), client roles, flows
-  (`browser-otp`, providers CPF/telefone+OTP), tema `portal`, `sslRequired: all`, **sem usuários**,
-  redirect/webOrigins/`KC_HOSTNAME` apontando para o **domínio de prod**.
-- **Importar uma vez** (não a cada boot): via `kc.sh import` num job, ou Admin API após o 1º boot.
-  Usuários reais são criados depois (Admin API / console) — **LGPD**: realm de prod ≠ realm de dev.
-- ➡️ Este arquivo de realm-prod **ainda não foi commitado** de propósito: depende do **hostname**
-  definido no §4(c) e é regra sensível (não inferir). Vira uma sub-fatia do deploy.
+**5) Build + push da imagem (contexto = repo portal-identity; já embute realm-prod + providers + tema):**
+```bash
+cd ../../services/portal-identity
+gcloud auth configure-docker $REGIAO-docker.pkg.dev
+docker build -t $AR/keycloak:1.0.0 .
+docker push $AR/keycloak:1.0.0
+```
+
+**6) Provisionar tudo (Cloud SQL + secrets gerados + Cloud Run):**
+```bash
+cd ../../infrastructure/terraform
+~/.local/bin/terraform apply
+KC_URL=$(~/.local/bin/terraform output -raw keycloak_url); echo "$KC_URL"
+```
+
+**7) (opcional) Fixar o hostname** (mais estrito): ponha `keycloak_hostname` e `front_base_url` no
+tfvars com a URL gerada e rode `terraform apply` de novo. Sem isso já funciona (hostname-strict=false).
+
+**8) Criar o 1º admin (você) + convite, e validar:**
+```bash
+cd ../..   # raiz do repo
+KC_URL="$KC_URL" ADMIN_NOME="Alessandro Garbiati" ADMIN_EMAIL="voce@gmail.com" \
+  ADMIN_CPF=00000000000 ADMIN_TELEFONE=11999999999 \
+  bash infrastructure/scripts/criar-admin-prod.sh
+KC_URL="$KC_URL" bash infrastructure/scripts/smoke-test-prod.sh
+```
+Abra o e-mail do convite → defina a senha → entre em `$KC_URL/realms/portal/account`. Daí você cadastra
+os validadores (pela tela de Usuários quando o app subir, ou pelo console admin do Keycloak).
+
+> **Imagem × infra:** o repo do Artifact Registry é recurso do Terraform → por isso o passo 4
+> (`-target`) cria só ele antes do push; o passo 6 faz o resto.
+
+## 5. Segredos (Secret Manager)
+
+| Secret | Origem |
+|---|---|
+| `portal-identity-db-password` | **gerado pelo Terraform** (random) |
+| `portal-identity-admin-password` (admin bootstrap do Keycloak) | **gerado pelo Terraform** (random) — leia: `gcloud secrets versions access latest --secret=portal-identity-admin-password` |
+| `portal-identity-admin-client-secret` (service account) | **gerado pelo Terraform** (random) |
+| `portal-identity-smtp-password` (senha de app do Gmail) | **MANUAL** (você cria — §4 passo 2) |
+| `portal-identity-twilio-token` (Twilio auth token) | **MANUAL** (você cria — §4 passo 2) |
+
+- **Nunca** há segredo no git nem no `terraform.tfvars` (só identificadores: smtp_from, twilio_sid…).
+- O `tfstate` **contém** as senhas geradas → fora do git e, idealmente, em bucket GCS privado (§7).
+
+## 6. Realm de produção (LIMPO) — gerado
+
+`realms-prod/portal-realm.json` é **gerado** do realm DEV por `scripts/gerar-realm-prod.py` (no repo
+`portal-identity`): remove os usuários-semente humanos (LGPD — sem senha DEV no git), mantém o
+service account, fixa `sslRequired: external` e parametriza as URLs do front por `${FRONT_BASE_URL}`.
+Clients/roles/flows (`browser-otp` + CPF/telefone + OTP) e o tema `portal` vêm do dev.
+- A **imagem** embute esse realm e sobe com `--import-realm` → **idempotente** em DB persistente
+  (cria no 1º boot, ignora nos seguintes; usuários criados em runtime **persistem**).
+- O **1º admin** (você) é criado **após** o deploy por `infrastructure/scripts/criar-admin-prod.sh`
+  (via admin bootstrap) + convite por e-mail. Demais usuários: pela tela/console.
+- Regenerar após mudar o realm dev: `python3 scripts/gerar-realm-prod.py` e rebuild da imagem.
 
 ## 7. Estado do Terraform (state)
 
@@ -115,17 +158,15 @@ gsutil versioning set on gs://portal-tecnologia-tfstate
 
 ## 8. Smoke test (pós-deploy)
 
-- `GET https://<host>/health/ready` → 200.
-- `GET https://<host>/realms/portal/.well-known/openid-configuration` → JSON.
-- Login E2E (como no DEV): identificador → senha; e "tentar outra forma" → código (com **SMTP/SMS
-  real**, não log).
+`KC_URL=https://...run.app bash infrastructure/scripts/smoke-test-prod.sh` (health/ready, discovery do
+realm, account console). Depois, valide na mão: abra `$KC_URL/realms/portal/account` → login por
+CPF/telefone → "Tente outra forma" → código por **e-mail** (chega de verdade) e por **SMS** (Twilio).
 
-## 9. Perguntas abertas / pré-condições (NÃO INFERIR)
+## 9. Pré-condições / notas (NÃO INFERIR)
 
-- 🔴 **OTP real antes de prod:** produção não pode depender de "código no log". Plugar **SMTP** +
-  **gateway SMS** (I-003-real) é pré-condição p/ o caminho de código. Senha funciona sem isso.
-- 🟡 **Domínio próprio** (ex.: `id.portal…`) vs URL `*.run.app`: define `KC_HOSTNAME`, redirect URIs
-  e o realm de prod. Começar com `*.run.app` e migrar depois é aceitável.
+- ✅ **OTP real (SMTP + Twilio)** já implementado (I-005) — esta config liga os dois em prod.
+- 🟡 **Domínio próprio** (ex.: `id.portal…`) vs URL `*.run.app`: começar com `*.run.app` (hostname
+  -strict=false) e migrar depois é aceitável (§4 passo 7).
 - 🟡 **IP/cessão:** infra/segredos em nome pessoal; formalizar a cessão no repasse à empresa.
 - 🟢 **HA:** hoje `min=max=1` (cache simples). Escalar exige cache distribuído (Infinispan) + Cloud
   SQL `REGIONAL`. Só quando o tráfego justificar.

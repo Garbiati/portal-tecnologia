@@ -42,3 +42,38 @@ variable "cloud_run_memory" {
   type        = string
   default     = "1024Mi"
 }
+
+variable "front_base_url" {
+  description = "URL base do front (doctor-hub-web). Vazio até o front existir; usado nos redirect URIs do realm."
+  type        = string
+  default     = "https://exemplo-front.invalido" # placeholder; trocar quando o front for deployado
+}
+
+# --- SMTP (Gmail) — só IDENTIFICADORES aqui; a SENHA é secret manual (ver runbook). ---
+variable "smtp_host" {
+  type    = string
+  default = "smtp.gmail.com"
+}
+variable "smtp_port" {
+  type    = string
+  default = "587"
+}
+variable "smtp_from" {
+  description = "Remetente (e o usuário SMTP do Gmail). Ex.: voce@gmail.com."
+  type        = string
+}
+variable "smtp_from_display" {
+  type    = string
+  default = "Portal Telemedicina"
+}
+
+# --- Twilio (SMS) — SID/remetente aqui; o AUTH TOKEN é secret manual (ver runbook). ---
+variable "twilio_account_sid" {
+  type    = string
+  default = ""
+}
+variable "twilio_from" {
+  description = "Número remetente Twilio em E.164 (ex.: +1555...)."
+  type        = string
+  default     = ""
+}

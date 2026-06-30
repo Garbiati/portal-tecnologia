@@ -69,6 +69,9 @@ paths = [
   # embed values. The variable names match the connection-string-password
   # rule (PTM_NUGET_PASSWORD=, etc.) but RHS is a $(…) substitution.
   '''^infrastructure/fetch-secrets\.sh$''',
+  # Scripts de deploy/bootstrap (P-006): leem segredos em RUNTIME (gcloud secrets / env) e os usam em
+  # params de curl como `password=$VAR` — referências, nunca valores embutidos. (criar-admin/smoke-test)
+  '''^infrastructure/scripts/.*\.sh$''',
   # PRD plans + technical docs + audits reference connection string
   # TEMPLATES (`Password=<env>`, `DB_PASSWORD=regulahub_dev`), CPFs
   # sintéticos, e regex *patterns* de detecção (em audits, descrevendo
