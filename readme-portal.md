@@ -49,9 +49,11 @@ Java customizado); **tema de login** com a identidade Doctor-Hub. Guard-rail **g
 Decisões: **P-003/P-004/P-005** (plataforma), **D-139..D-142** (doctor-hub), **I-001/I-002** (identidade).
 
 ## 5) Fios em aberto (prováveis próximos passos)
-- **OTP login (e-mail + SMS)** — escolhido "os dois", **não começado**. Plano: 1 authenticator de
-  código (Java SPI) + flow "senha OU código" em **modo DEV** (código no log) → depois plugar **SMTP**
-  (e-mail) e **gateway de SMS pago** (Twilio/Zenvia…). O "Esqueceu a senha?" também depende de SMTP.
+- ✅ **OTP login (e-mail + SMS) — modo DEV: FEITO** (I-003). Fator alternativo à senha; flow
+  `browser-otp` (identificador → senha OU código por e-mail/SMS, 6díg/5min/5tent); código sai no
+  **log** do Keycloak (`grep OTP-DEV`). **Próximo:** plugar **SMTP** (e-mail real) + **gateway de SMS
+  pago** (Twilio/Zenvia…) → aí o "Esqueceu a senha?" também destrava. Spec em
+  `services/portal-identity/specs/otp-login-dev/spec.md`.
 - **GCP pessoal** (projeto `portal-tecnologia`, R$1.727 de crédito até 28/09/2026) → IaC/Terraform +
   Secret Manager; integrações lendo segredos por nome (swap fácil no repasse à empresa).
 - Pergunte ao Alessandro por onde seguir antes de assumir.

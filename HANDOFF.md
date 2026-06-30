@@ -45,14 +45,20 @@ make down                            # derruba a stack (preserva o volume do Pos
 ## 3) Decisões registradas
 - **Plataforma** (`docs/decisions/platform-decisions.md`): **P-003** (IdP Keycloak, realm único), **P-004** (repos próprios moram em `services/<repo>`), **P-005** (rename → portal-tecnologia).
 - **Doctor-Hub** (`products/doctor-hub/docs/decisions/decisions-log.md`): **D-139** (perfis), **D-140/D-141** (Keycloak nasce/extrai), **D-142** (API JWT+RBAC).
-- **Identidade** (`services/portal-identity/docs/decisions/identity-decisions.md`): **I-001** (Keycloak), **I-002** (login CPF/telefone).
+- **Identidade** (`services/portal-identity/docs/decisions/identity-decisions.md`): **I-001** (Keycloak), **I-002** (login CPF/telefone), **I-003** (OTP login modo DEV).
 
 ## 4) Segredos
 - 📦 **`~/portal-tecnologia-segredos.local.tar.gz`** = bundle dos `.env` + `CREDENCIAIS-DEV.txt` + `aplicar-admin.local.sh` (tem **CPF real + senhas**). **NUNCA commitar.** Para outra máquina: copie por scp/pendrive e rode `scripts/setup-clone.sh`.
 - Regra dura: zero segredo no git (o hook gitleaks bloqueia). Prod = GCP Secret Manager.
 
 ## 5) PENDENTE (fios em aberto)
-- **OTP login (e-mail + SMS)** — escolhido "os dois". Plano: 1 authenticator de código (Java SPI, igual ao do CPF) + flow "senha OU código", em **modo DEV** (código no log) primeiro; depois plugar **SMTP** (e-mail real) e **gateway de SMS pago** (Twilio/Zenvia…). **Não começado.** O "Esqueceu a senha?" também depende do SMTP.
+- ✅ **OTP login (e-mail + SMS) — modo DEV: FEITO (I-003, 2026-06-29).** Fator **alternativo à senha**
+  (passwordless opcional). Flow `browser-otp`: identificador → "tentar outra forma" entre **senha**,
+  **código por e-mail** e **código por SMS** (6 díg · 5 min · 5 tentativas). Em DEV o **código vai só
+  pro log** (`grep OTP-DEV` nos `docker logs portal-keycloak`). Spec:
+  `services/portal-identity/specs/otp-login-dev/spec.md`. **Provado E2E** (senha/e-mail/SMS/código
+  errado). **FALTA o envio real:** **SMTP** (e-mail) + **gateway de SMS pago** (Twilio/Zenvia…); o
+  "Esqueceu a senha?" também depende do SMTP. ⚠️ Caminho da senha agora tem **2 telas** (identificador→senha).
 - **GCP pessoal** (`alessandro@garbiati.com`, projeto **`portal-tecnologia`**, **R$1.727** de crédito, 90d até **28/09/2026**). Estratégia: **construir pessoal → repassar à empresa** (IaC/Terraform + segredos no Secret Manager; Twilio/SMTP em seu nome, swap no repasse). Você tem **CNPJ** (prestador) → dá pra buscar **Google for Startups (faixa Start)** self-serve.
 - **IP/cessão**: código construído para a Portal, em repo pessoal → formalizar **cessão** no repasse (contador/advogado).
 - **GitHub**: agora em `Garbiati/`. (P-005 previa renomear `PortalTelemedicina/portal-platform`; em vez disso criamos os repos novos no seu user.)
