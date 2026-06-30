@@ -44,15 +44,15 @@ variable "cloud_run_memory" {
 }
 
 variable "keycloak_domain" {
-  description = "Domínio próprio do IdP (ex.: id.doctorhub.app.br). Vazio = usa só a URL *.run.app."
+  description = "Domínio próprio do IdP (ex.: id.portaltecnologia.app.br — plataforma). Vazio = usa só a URL *.run.app."
   type        = string
   default     = ""
 }
 
 variable "front_base_url" {
-  description = "URL base do front (doctor-hub-web), usada nos redirect URIs do realm. Front é deployado depois."
+  description = "URL base do SITE Doctor-Hub (doctorhub.app.br), usada nos redirect URIs do realm. Front é deployado depois."
   type        = string
-  default     = "https://app.doctorhub.app.br"
+  default     = "https://doctorhub.app.br"
 }
 
 # --- SMTP (Gmail) — só IDENTIFICADORES aqui; a SENHA é secret manual (ver runbook). ---

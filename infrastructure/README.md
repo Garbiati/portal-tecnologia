@@ -105,18 +105,22 @@ cd ../../infrastructure/terraform
 KC_URL=$(~/.local/bin/terraform output -raw keycloak_url); echo "$KC_URL"
 ```
 
-**7) Domínio próprio `id.doctorhub.app.br`** (recomendado — URL e TLS reais):
+**7) Domínio próprio `id.portaltecnologia.app.br`** (recomendado — URL e TLS reais):
+
+> Esquema de domínios: **`portaltecnologia.app.br`** = plataforma (IdP/APIs por subdomínio →
+> `id.` p/ o IdP, `api.` p/ a API depois); **`doctorhub.app.br`** = o **site** (front Doctor-Hub).
 ```bash
-# (a) verifique a posse do domínio no Google (abre o navegador; adiciona um TXT de verificação):
-gcloud domains verify doctorhub.app.br        # ou verifique no Search Console (TXT no domínio)
-# (b) já está no tfvars: keycloak_domain="id.doctorhub.app.br". Aplique p/ criar o domain mapping:
+# (a) verifique a posse do domínio da PLATAFORMA no Google (abre o navegador; TXT de verificação):
+gcloud domains verify portaltecnologia.app.br   # ou no Search Console (TXT em portaltecnologia.app.br)
+# (b) já está no tfvars: keycloak_domain="id.portaltecnologia.app.br". Aplique p/ criar o domain mapping:
 ~/.local/bin/terraform apply
-# (c) pegue os registros DNS e cadastre-os no registro.br p/ o host id.doctorhub.app.br:
+# (c) pegue os registros DNS e cadastre-os no registro.br p/ o host id.portaltecnologia.app.br:
 ~/.local/bin/terraform output dns_records_dominio
 #     (normalmente um CNAME id → ghs.googlehosted.com, ou A/AAAA — use exatamente o que vier)
 ```
 Depois aguarde a propagação do DNS + o **certificado TLS gerenciado** (pode levar de minutos a ~1h).
-A `KC_HOSTNAME` já fica `https://id.doctorhub.app.br` (do `keycloak_domain`).
+A `KC_HOSTNAME` já fica `https://id.portaltecnologia.app.br` (do `keycloak_domain`). O site Doctor-Hub
+(`doctorhub.app.br`) é configurado quando o front for deployado (já consta como `front_base_url`).
 
 > ⚠️ **Domain mapping** do Cloud Run pode não estar disponível em toda região; se o `apply` recusar em
 > `southamerica-east1`, a alternativa é um **Load Balancer + cert gerenciado** (te passo o ajuste). Sem

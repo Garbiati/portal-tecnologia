@@ -408,7 +408,7 @@ resource "google_cloud_run_v2_service_iam_member" "public" {
   member   = "allUsers"
 }
 
-# Domínio próprio (ex.: id.doctorhub.app.br). Pré-requisito: domínio VERIFICADO no Google
+# Domínio próprio (ex.: id.portaltecnologia.app.br). Pré-requisito: domínio VERIFICADO no Google
 # (Search Console) — ver runbook. O cert TLS é provisionado automaticamente pelo Google.
 # Os registros DNS a cadastrar no registrador saem do output `dns_records_dominio`.
 resource "google_cloud_run_domain_mapping" "kc" {
