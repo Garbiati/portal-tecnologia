@@ -49,11 +49,11 @@ Java customizado); **tema de login** com a identidade Doctor-Hub. Guard-rail **g
 Decisões: **P-003/P-004/P-005** (plataforma), **D-139..D-142** (doctor-hub), **I-001/I-002** (identidade).
 
 ## 5) Fios em aberto (prováveis próximos passos)
-- ✅ **OTP login (e-mail + SMS) — modo DEV: FEITO** (I-003). Fator alternativo à senha; flow
-  `browser-otp` (identificador → senha OU código por e-mail/SMS, 6díg/5min/5tent); código sai no
-  **log** do Keycloak (`grep OTP-DEV`). **Próximo:** plugar **SMTP** (e-mail real) + **gateway de SMS
-  pago** (Twilio/Zenvia…) → aí o "Esqueceu a senha?" também destrava. Spec em
-  `services/portal-identity/specs/otp-login-dev/spec.md`.
+- ✅ **OTP login (e-mail + SMS): FEITO com ENVIO REAL** (I-003 + I-005). Fator alternativo à senha; flow
+  `browser-otp` (identificador → senha OU código por e-mail/SMS, 6díg/5min/5tent). **E-mail** via SMTP
+  (`${SMTP_*}` do `.env`); **SMS** via **Twilio** (`TWILIO_*`); **"Esqueceu a senha?"** destravado.
+  Segredos só no `.env` (contrato em `services/portal-identity/.env.example`). E-mail provado E2E (Mailpit);
+  **falta** preencher `.env` com SMTP/Twilio reais e validar pela aplicação.
 - **GCP pessoal** (projeto `portal-tecnologia`, R$1.727 de crédito até 28/09/2026) → IaC/Terraform +
   Secret Manager; integrações lendo segredos por nome (swap fácil no repasse à empresa).
   - 🟡 **Produção do Keycloak (P-006): IaC desenhado, NÃO aplicado.** Plano + Terraform + Dockerfile em

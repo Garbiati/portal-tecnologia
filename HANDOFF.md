@@ -52,13 +52,15 @@ make down                            # derruba a stack (preserva o volume do Pos
 - Regra dura: zero segredo no git (o hook gitleaks bloqueia). Prod = GCP Secret Manager.
 
 ## 5) PENDENTE (fios em aberto)
-- ✅ **OTP login (e-mail + SMS) — modo DEV: FEITO (I-003, 2026-06-29).** Fator **alternativo à senha**
+- ✅ **OTP login (e-mail + SMS): FEITO, com ENVIO REAL (I-003 + I-005).** Fator **alternativo à senha**
   (passwordless opcional). Flow `browser-otp`: identificador → "tentar outra forma" entre **senha**,
-  **código por e-mail** e **código por SMS** (6 díg · 5 min · 5 tentativas). Em DEV o **código vai só
-  pro log** (`grep OTP-DEV` nos `docker logs portal-keycloak`). Spec:
-  `services/portal-identity/specs/otp-login-dev/spec.md`. **Provado E2E** (senha/e-mail/SMS/código
-  errado). **FALTA o envio real:** **SMTP** (e-mail) + **gateway de SMS pago** (Twilio/Zenvia…); o
-  "Esqueceu a senha?" também depende do SMTP. ⚠️ Caminho da senha agora tem **2 telas** (identificador→senha).
+  **código por e-mail** e **código por SMS** (6 díg · 5 min · 5 tentativas). **E-mail** via SMTP do
+  realm (`${SMTP_*}` do `.env`); **SMS** via **Twilio** (`TWILIO_*`). Segredos só no `.env`
+  (`.env.example` tem o contrato) / Secret Manager em prod. **"Esqueceu a senha?"** destravado pelo
+  SMTP. `OTP_DEV_LOG_CODE=true` loga o código (mascarado) em DEV. **Provado E2E**: e-mail (via Mailpit)
+  + reset de senha chegam e logam; SMS roda com erro amigável sem creds. **Falta você:** preencher
+  `.env` com SMTP/Twilio reais e validar pela aplicação. ⚠️ Caminho da senha tem **2 telas**
+  (identificador→senha). Spec: `services/portal-identity/specs/otp-login-dev/spec.md`.
 - **GCP pessoal** (`alessandro@garbiati.com`, projeto **`portal-tecnologia`**, **R$1.727** de crédito, 90d até **28/09/2026**). Estratégia: **construir pessoal → repassar à empresa** (IaC/Terraform + segredos no Secret Manager; Twilio/SMTP em seu nome, swap no repasse). Você tem **CNPJ** (prestador) → dá pra buscar **Google for Startups (faixa Start)** self-serve.
   - 🟡 **Produção do Keycloak planejada (P-006) — IaC pronto, NÃO aplicado.** Esqueleto em `infrastructure/` (Terraform: Cloud Run + Cloud SQL + Secret Manager + Artifact Registry, região `southamerica-east1`) + `services/portal-identity/Dockerfile` (prod). **Ler `infrastructure/README.md`** antes de aplicar (passo-a-passo, custo, perguntas abertas). ⚠️ O `gcloud` da máquina está logado na conta/projeto da **EMPRESA** (`coronavirus-272213`) — **trocar p/ a pessoal** antes de qualquer apply. **Pré-condição:** OTP real (SMTP/SMS) antes de prod (hoje I-003 é só log).
 - **IP/cessão**: código construído para a Portal, em repo pessoal → formalizar **cessão** no repasse (contador/advogado).
