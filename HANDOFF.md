@@ -67,6 +67,15 @@ make down                            # derruba a stack (preserva o volume do Pos
 - **GitHub**: agora em `Garbiati/`. (P-005 previa renomear `PortalTelemedicina/portal-platform`; em vez disso criamos os repos novos no seu user.)
 - **Migração física da pasta**: feita — este `~/portal-tecnologia` é o novo lar. A antiga `~/portal-platform` ainda existe (com os serviços desta sessão); pode apagar depois de confirmar que tudo roda daqui.
 
+- ✅ **Área Admin + CRUD de usuários (D-143): FEITO e provado E2E (no navegador).** O admin loga e cai
+  na **Início (Admin)** (KPIs por papel) + tela **Usuários**: listar/criar/editar/ativar-desativar/
+  reenviar convite — **todos os papéis**, multi-papel, convite por e-mail. Arquitetura `front →
+  doctor-hub-api (/api/admin/users, só papel admin) → Keycloak Admin API` via service account
+  `doctor-hub-admin` (secret no `.env`/Secret Manager). **Multi-papel** → seletor de jornada (login +
+  topbar "Trocar jornada"). Spec: `products/doctor-hub/specs/admin-gestao-usuarios/spec.md`. Testes:
+  API 41 + front 202 verdes. Pendente futuro: **escopo** (vínculo Regulação/Gestor ↔ secretaria/HC =
+  SPEC-001, em aberto).
+
 ## 6) Visão (não esquecer)
 `portal-tecnologia` = **nova plataforma greenfield** da empresa. **NÃO é big-bang rewrite**: ela absorve
 Teleconsulta/Telediagnóstico **incrementalmente** (strangler-fig). `doctor-hub` + `portal-identity` são o 1º tijolo.

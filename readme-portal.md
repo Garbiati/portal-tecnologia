@@ -49,6 +49,10 @@ Java customizado); **tema de login** com a identidade Doctor-Hub. Guard-rail **g
 Decisões: **P-003/P-004/P-005** (plataforma), **D-139..D-142** (doctor-hub), **I-001/I-002** (identidade).
 
 ## 5) Fios em aberto (prováveis próximos passos)
+- ✅ **Área Admin + CRUD de usuários: FEITO** (D-143). Admin loga → Início (KPIs) + Usuários (criar/
+  editar/ativar-desativar/reenviar convite, todos os papéis, multi-papel + seletor de jornada). Via
+  `front → doctor-hub-api → Keycloak` (service account). Provado E2E no navegador. Spec:
+  `products/doctor-hub/specs/admin-gestao-usuarios/spec.md`. Pendente: **escopo** (SPEC-001).
 - ✅ **OTP login (e-mail + SMS): FEITO com ENVIO REAL** (I-003 + I-005). Fator alternativo à senha; flow
   `browser-otp` (identificador → senha OU código por e-mail/SMS, 6díg/5min/5tent). **E-mail** via SMTP
   (`${SMTP_*}` do `.env`); **SMS** via **Twilio** (`TWILIO_*`); **"Esqueceu a senha?"** destravado.

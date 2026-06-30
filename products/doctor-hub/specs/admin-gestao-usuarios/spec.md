@@ -1,7 +1,7 @@
 ---
 id: SPEC-ADMIN-USERS
 title: Área Admin — Início + Gestão de Usuários (CRUD dos papéis)
-status: specified        # draft | specified | tested | implemented
+status: implemented      # draft | specified | tested | implemented
 owner: Alessandro
 area: Acesso
 clickup: ""
@@ -104,6 +104,15 @@ Cenário: Editar papéis reflete no acesso
 - 🟡 **Escopo (cliente/unidade)** de Regulação/Gestor segue **fora** desta fatia (depende da SPEC-001).
 - 🟡 **Unicidade do telefone:** validar formato; unicidade global a confirmar quando o telefone virar
   chave de OTP/identidade (por ora: obrigatório + validado, sem travar duplicado).
+
+## 8.1 Verificação (2026-06-30)
+- **API:** 41 testes verdes (RBAC 403, validação, multi-papel, conflito 409, anti-lockout, CRUD).
+  **E2E** contra o Keycloak: criar → convite (Mailpit) → listar → trocar papéis → desativar, com
+  role-mappings confirmados no realm. Service account oculto da lista.
+- **Front:** 202 testes verdes; `pnpm build` (check:ui+tsc+PWA) verde. **E2E no navegador** (admin-dh):
+  homepage → login (2 etapas) → **Início (Admin)** com KPIs (5 usuários, por papel) → **Usuários**
+  (lista real do Keycloak: Carla/inativa, Alessandro/admin, Aldair, Eronildes, Mariana) → modal
+  **Novo usuário** (nome/e-mail/CPF/telefone + papéis). Ações Editar/Ativar/Desativar/Reenviar por linha.
 
 ## 9. Plano de implementação (após validação)
 1. **Keycloak:** service account (client confidencial) com `realm-management` mínimo; segredo em `.env`/Secret Manager.
