@@ -62,7 +62,15 @@ make down                            # derruba a stack (preserva o volume do Pos
   `.env` com SMTP/Twilio reais e validar pela aplicação. ⚠️ Caminho da senha tem **2 telas**
   (identificador→senha). Spec: `services/portal-identity/specs/otp-login-dev/spec.md`.
 - **GCP pessoal** (`alessandro@garbiati.com`, projeto **`portal-tecnologia`**, **R$1.727** de crédito, 90d até **28/09/2026**). Estratégia: **construir pessoal → repassar à empresa** (IaC/Terraform + segredos no Secret Manager; Twilio/SMTP em seu nome, swap no repasse). Você tem **CNPJ** (prestador) → dá pra buscar **Google for Startups (faixa Start)** self-serve.
-  - 🟡 **Produção do Keycloak planejada (P-006) — IaC pronto, NÃO aplicado.** Esqueleto em `infrastructure/` (Terraform: Cloud Run + Cloud SQL + Secret Manager + Artifact Registry, região `southamerica-east1`) + `services/portal-identity/Dockerfile` (prod). **Ler `infrastructure/README.md`** antes de aplicar (passo-a-passo, custo, perguntas abertas). ⚠️ O `gcloud` da máquina está logado na conta/projeto da **EMPRESA** (`coronavirus-272213`) — **trocar p/ a pessoal** antes de qualquer apply. **Pré-condição:** OTP real (SMTP/SMS) antes de prod (hoje I-003 é só log).
+  - 🟢 **Produção do IdP (P-006) — TUDO CONFIGURADO, falta só você rodar o deploy (auth pessoal).**
+    Escopo escolhido: **só o Keycloak (IdP)** p/ validação interna. Pronto: `realms-prod/` (gerado, sem
+    seeds), `Dockerfile` (bake realm + `--import-realm` idempotente), **Terraform** finalizado
+    (`infrastructure/terraform`, `terraform validate` ok: Cloud Run + Cloud SQL + Secret Manager +
+    Artifact Registry, SMTP Gmail + Twilio por secret), scripts `criar-admin-prod.sh` + `smoke-test-prod.sh`.
+    **Runbook completo em `infrastructure/README.md` §4** (passo-a-passo). terraform instalado em `~/.local/bin`.
+    ⚠️ **Você roda:** `gcloud auth login` (conta pessoal — hoje está na da EMPRESA) + criar os 2 secrets
+    manuais (senha de app Gmail + Twilio token). Depois o resto (apply/build/push/criar admin) pode ser conduzido.
+    Decisões: **você = 1º admin via convite**; **SMTP = Gmail (senha de app)**; hostname `*.run.app`.
 - **IP/cessão**: código construído para a Portal, em repo pessoal → formalizar **cessão** no repasse (contador/advogado).
 - **GitHub**: agora em `Garbiati/`. (P-005 previa renomear `PortalTelemedicina/portal-platform`; em vez disso criamos os repos novos no seu user.)
 - **Migração física da pasta**: feita — este `~/portal-tecnologia` é o novo lar. A antiga `~/portal-platform` ainda existe (com os serviços desta sessão); pode apagar depois de confirmar que tudo roda daqui.
