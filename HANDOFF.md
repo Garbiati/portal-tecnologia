@@ -70,7 +70,9 @@ make down                            # derruba a stack (preserva o volume do Pos
     **Runbook completo em `infrastructure/README.md` §4** (passo-a-passo). terraform instalado em `~/.local/bin`.
     ⚠️ **Você roda:** `gcloud auth login` (conta pessoal — hoje está na da EMPRESA) + criar os 2 secrets
     manuais (senha de app Gmail + Twilio token). Depois o resto (apply/build/push/criar admin) pode ser conduzido.
-    Decisões: **você = 1º admin via convite**; **SMTP = Gmail (senha de app)**; hostname `*.run.app`.
+    Decisões: **você = 1º admin via convite**; **SMTP = Gmail (senha de app)**. **Domínio comprado:
+    `doctorhub.app.br`** → IdP em **`id.doctorhub.app.br`** (front `app.`, api `api.` — depois). Terraform
+    já tem domain mapping + output dos registros DNS (cadastrar no registro.br após verificar o domínio no Google).
 - **IP/cessão**: código construído para a Portal, em repo pessoal → formalizar **cessão** no repasse (contador/advogado).
 - **GitHub**: agora em `Garbiati/`. (P-005 previa renomear `PortalTelemedicina/portal-platform`; em vez disso criamos os repos novos no seu user.)
 - **Migração física da pasta**: feita — este `~/portal-tecnologia` é o novo lar. A antiga `~/portal-platform` ainda existe (com os serviços desta sessão); pode apagar depois de confirmar que tudo roda daqui.

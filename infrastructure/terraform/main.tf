@@ -10,6 +10,9 @@ locals {
     managed_by = "terraform"
     env        = "prod"
   }
+  # Hostname efetivo do Keycloak: domínio próprio (https) tem precedência; senão o que vier em
+  # keycloak_hostname (ex.: a URL *.run.app, preenchida após o 1º deploy); senão vazio (strict=false).
+  kc_hostname = var.keycloak_domain != "" ? "https://${var.keycloak_domain}" : var.keycloak_hostname
 }
 
 # ---------------------------------------------------------------------------
@@ -274,7 +277,7 @@ resource "google_cloud_run_v2_service" "kc" {
         value = "false"
       }
       dynamic "env" {
-        for_each = var.keycloak_hostname == "" ? [] : [var.keycloak_hostname]
+        for_each = local.kc_hostname == "" ? [] : [local.kc_hostname]
         content {
           name  = "KC_HOSTNAME"
           value = env.value
@@ -403,4 +406,20 @@ resource "google_cloud_run_v2_service_iam_member" "public" {
   location = google_cloud_run_v2_service.kc.location
   role     = "roles/run.invoker"
   member   = "allUsers"
+}
+
+# Domínio próprio (ex.: id.doctorhub.app.br). Pré-requisito: domínio VERIFICADO no Google
+# (Search Console) — ver runbook. O cert TLS é provisionado automaticamente pelo Google.
+# Os registros DNS a cadastrar no registrador saem do output `dns_records_dominio`.
+resource "google_cloud_run_domain_mapping" "kc" {
+  count    = var.keycloak_domain == "" ? 0 : 1
+  location = var.region
+  name     = var.keycloak_domain
+
+  metadata {
+    namespace = var.project_id
+  }
+  spec {
+    route_name = google_cloud_run_v2_service.kc.name
+  }
 }

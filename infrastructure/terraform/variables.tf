@@ -43,10 +43,16 @@ variable "cloud_run_memory" {
   default     = "1024Mi"
 }
 
-variable "front_base_url" {
-  description = "URL base do front (doctor-hub-web). Vazio até o front existir; usado nos redirect URIs do realm."
+variable "keycloak_domain" {
+  description = "Domínio próprio do IdP (ex.: id.doctorhub.app.br). Vazio = usa só a URL *.run.app."
   type        = string
-  default     = "https://exemplo-front.invalido" # placeholder; trocar quando o front for deployado
+  default     = ""
+}
+
+variable "front_base_url" {
+  description = "URL base do front (doctor-hub-web), usada nos redirect URIs do realm. Front é deployado depois."
+  type        = string
+  default     = "https://app.doctorhub.app.br"
 }
 
 # --- SMTP (Gmail) — só IDENTIFICADORES aqui; a SENHA é secret manual (ver runbook). ---

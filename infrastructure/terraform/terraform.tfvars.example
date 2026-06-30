@@ -7,7 +7,11 @@ region         = "southamerica-east1"           # São Paulo (LGPD / latência B
 # Imagem de prod do Keycloak (preencher após o 1º build/push — ver ../README.md):
 keycloak_image = "southamerica-east1-docker.pkg.dev/portal-tecnologia/portal-identity/keycloak:1.0.0"
 
-# Deixe vazio no 1º apply; depois preencha com a URL *.run.app gerada (output keycloak_url) e reaplique:
+# Domínio próprio do IdP (recomendado). Vazio = usa só a URL *.run.app.
+keycloak_domain = "id.doctorhub.app.br"
+front_base_url  = "https://app.doctorhub.app.br"   # front (deployado depois) — usado nos redirects do realm
+
+# Alternativa sem domínio: deixe keycloak_domain="" e preencha isto com a URL *.run.app após o 1º apply:
 keycloak_hostname = ""
 
 # Opcionais (têm default):

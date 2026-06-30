@@ -105,8 +105,22 @@ cd ../../infrastructure/terraform
 KC_URL=$(~/.local/bin/terraform output -raw keycloak_url); echo "$KC_URL"
 ```
 
-**7) (opcional) Fixar o hostname** (mais estrito): ponha `keycloak_hostname` e `front_base_url` no
-tfvars com a URL gerada e rode `terraform apply` de novo. Sem isso já funciona (hostname-strict=false).
+**7) Domínio próprio `id.doctorhub.app.br`** (recomendado — URL e TLS reais):
+```bash
+# (a) verifique a posse do domínio no Google (abre o navegador; adiciona um TXT de verificação):
+gcloud domains verify doctorhub.app.br        # ou verifique no Search Console (TXT no domínio)
+# (b) já está no tfvars: keycloak_domain="id.doctorhub.app.br". Aplique p/ criar o domain mapping:
+~/.local/bin/terraform apply
+# (c) pegue os registros DNS e cadastre-os no registro.br p/ o host id.doctorhub.app.br:
+~/.local/bin/terraform output dns_records_dominio
+#     (normalmente um CNAME id → ghs.googlehosted.com, ou A/AAAA — use exatamente o que vier)
+```
+Depois aguarde a propagação do DNS + o **certificado TLS gerenciado** (pode levar de minutos a ~1h).
+A `KC_HOSTNAME` já fica `https://id.doctorhub.app.br` (do `keycloak_domain`).
+
+> ⚠️ **Domain mapping** do Cloud Run pode não estar disponível em toda região; se o `apply` recusar em
+> `southamerica-east1`, a alternativa é um **Load Balancer + cert gerenciado** (te passo o ajuste). Sem
+> domínio, dá pra validar já pela URL `*.run.app` (output `keycloak_url`).
 
 **8) Criar o 1º admin (você) + convite, e validar:**
 ```bash

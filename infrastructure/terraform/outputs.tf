@@ -17,3 +17,13 @@ output "admin_password_secret" {
   description = "Nome do secret com a senha do admin bootstrap (leia via gcloud secrets versions access)."
   value       = google_secret_manager_secret.admin_password.secret_id
 }
+
+output "dns_records_dominio" {
+  description = "Registros DNS a cadastrar no registrador (registro.br) p/ o domínio próprio do IdP."
+  value       = var.keycloak_domain == "" ? [] : google_cloud_run_domain_mapping.kc[0].status[0].resource_records
+}
+
+output "idp_url" {
+  description = "URL final do IdP (domínio próprio se configurado; senão a *.run.app)."
+  value       = var.keycloak_domain != "" ? "https://${var.keycloak_domain}" : google_cloud_run_v2_service.kc.uri
+}
