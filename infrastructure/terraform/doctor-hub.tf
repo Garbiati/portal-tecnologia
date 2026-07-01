@@ -247,6 +247,7 @@ resource "google_cloud_run_v2_service" "web" {
   ingress  = "INGRESS_TRAFFIC_ALL"
 
   template {
+    service_account = google_service_account.doctor_hub[0].email
     scaling {
       min_instance_count = var.cloud_run_min_instances
       max_instance_count = 2
