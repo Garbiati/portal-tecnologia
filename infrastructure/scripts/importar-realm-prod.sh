@@ -19,6 +19,7 @@ SMTP_FROM="$(val smtp_from)"
 FRONT_BASE_URL="$(val front_base_url)"
 SMTP_HOST="$(val smtp_host)"; SMTP_HOST="${SMTP_HOST:-smtp.gmail.com}"
 SMTP_PORT="$(val smtp_port)"; SMTP_PORT="${SMTP_PORT:-587}"
+SMTP_USER_V="$(val smtp_user)"; SMTP_USER_V="${SMTP_USER_V:-$SMTP_FROM}"
 
 # Segredos (não impressos).
 SMTP_PASSWORD="$(gcloud secrets versions access latest --secret=portal-identity-smtp-password)"
@@ -30,7 +31,7 @@ if [ "$SMTP_PORT" = "465" ]; then SMTP_SSL=true; SMTP_STARTTLS=false; else SMTP_
 # Substitui os placeholders num arquivo temporário (removido no fim).
 TMP="$(mktemp)"; trap 'rm -f "$TMP"' EXIT
 SMTP_HOST="$SMTP_HOST" SMTP_PORT="$SMTP_PORT" SMTP_FROM_DISPLAY="Portal Telemedicina" \
-SMTP_USER="$SMTP_FROM" SMTP_AUTH=true SMTP_STARTTLS="$SMTP_STARTTLS" SMTP_SSL="$SMTP_SSL" \
+SMTP_USER="$SMTP_USER_V" SMTP_AUTH=true SMTP_STARTTLS="$SMTP_STARTTLS" SMTP_SSL="$SMTP_SSL" \
 SMTP_FROM="$SMTP_FROM" FRONT_BASE_URL="$FRONT_BASE_URL" \
 SMTP_PASSWORD="$SMTP_PASSWORD" ADMIN_CLIENT_SECRET="$ADMIN_CLIENT_SECRET" \
 python3 - "$REALM_SRC" "$TMP" <<'PY'

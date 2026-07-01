@@ -333,7 +333,7 @@ resource "google_cloud_run_v2_service" "kc" {
       }
       env {
         name  = "SMTP_USER"
-        value = var.smtp_from
+        value = coalesce(var.smtp_user, var.smtp_from)
       }
       env {
         name  = "SMTP_AUTH"

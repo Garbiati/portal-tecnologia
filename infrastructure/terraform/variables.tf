@@ -71,8 +71,13 @@ variable "smtp_port" {
   default = "587"
 }
 variable "smtp_from" {
-  description = "Remetente (e o usuário SMTP do Gmail). Ex.: voce@gmail.com."
+  description = "Remetente (from). Ex.: nao-responda@doctorhub.app.br."
   type        = string
+}
+variable "smtp_user" {
+  description = "Usuário SMTP. Vazio = usa smtp_from. Para SendGrid use a string literal \"apikey\"."
+  type        = string
+  default     = ""
 }
 variable "smtp_from_display" {
   type    = string
