@@ -19,3 +19,9 @@ _SESSION-START.md
 *.swp
 .idea/
 .vscode/
+.secrets/
+# Documentos pessoais/temporários (PII — nunca versionar)
+temp/
+
+# Arquivos prontos p/ upload (PII — nunca versionar)
+output/

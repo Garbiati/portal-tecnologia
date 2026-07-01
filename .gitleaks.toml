@@ -174,7 +174,7 @@ keywords = ["password", "pwd"]
     '''xxx''',
     # Terraform/HCL: `password = random_password.<x>.result` é REFERÊNCIA a um valor
     # gerado em runtime pelo provider random — não é um literal. (infrastructure/terraform)
-    '''random_password\.[A-Za-z0-9_]+\.result''',
+    '''random_password\.[A-Za-z0-9_]+(\[[0-9]+\])?\.result''',
     # Marcador deixado pelo git filter-repo ao purgar credenciais do
     # histórico (ver docs/runbooks/history-purge.md). Commits antigos ficam
     # com `password='__REDACTED_CREDENTIAL__'` — não é credencial, é a redação.

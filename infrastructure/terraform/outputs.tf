@@ -27,3 +27,25 @@ output "idp_url" {
   description = "URL final do IdP (domínio próprio se configurado; senão a *.run.app)."
   value       = var.keycloak_domain != "" ? "https://${var.keycloak_domain}" : google_cloud_run_v2_service.kc.uri
 }
+
+# --- Doctor-Hub ---
+output "doctor_hub_api_run_url" {
+  description = "URL *.run.app da API (antes do domínio api. propagar)."
+  value       = var.deploy_doctor_hub ? google_cloud_run_v2_service.api[0].uri : ""
+}
+output "doctor_hub_web_run_url" {
+  description = "URL *.run.app do front (antes do domínio doctorhub. propagar)."
+  value       = var.deploy_doctor_hub ? google_cloud_run_v2_service.web[0].uri : ""
+}
+output "doctor_hub_ar_repo" {
+  description = "Repositório Artifact Registry das imagens do Doctor-Hub."
+  value       = var.deploy_doctor_hub ? "${var.region}-docker.pkg.dev/${var.project_id}/doctor-hub" : ""
+}
+output "github_wif_provider" {
+  description = "Nome completo do WIF provider (usar em google-github-actions/auth workload_identity_provider)."
+  value       = var.deploy_doctor_hub ? google_iam_workload_identity_pool_provider.github[0].name : ""
+}
+output "github_deployer_sa" {
+  description = "E-mail da service account de deploy (usar em service_account do auth do GH Actions)."
+  value       = var.deploy_doctor_hub ? google_service_account.github_deployer[0].email : ""
+}

@@ -25,7 +25,9 @@ resource "google_project_service" "apis" {
     "secretmanager.googleapis.com",
     "artifactregistry.googleapis.com",
     "iam.googleapis.com",
-    "compute.googleapis.com", # Load Balancer p/ o domínio próprio (domain mapping não existe em SP)
+    "compute.googleapis.com",        # Load Balancer p/ o domínio próprio (domain mapping não existe em SP)
+    "sts.googleapis.com",            # Workload Identity Federation (CI keyless)
+    "iamcredentials.googleapis.com", # impersonação da SA de deploy
   ])
   service            = each.value
   disable_on_destroy = false
@@ -462,9 +464,53 @@ resource "google_compute_backend_service" "kc" {
 }
 
 resource "google_compute_url_map" "kc" {
-  count           = var.keycloak_domain == "" ? 0 : 1
-  name            = "portal-identity-urlmap"
-  default_service = google_compute_backend_service.kc[0].id
+  count = var.keycloak_domain == "" ? 0 : 1
+  name  = "portal-identity-urlmap"
+  # Sem Doctor-Hub: tudo cai no IdP. Com Doctor-Hub: roteia por host (id./api./doctorhub).
+  default_service = var.deploy_doctor_hub ? google_compute_backend_service.web[0].id : google_compute_backend_service.kc[0].id
+
+  dynamic "host_rule" {
+    for_each = var.deploy_doctor_hub ? [1] : []
+    content {
+      hosts        = [var.keycloak_domain]
+      path_matcher = "idp"
+    }
+  }
+  dynamic "host_rule" {
+    for_each = var.deploy_doctor_hub ? [1] : []
+    content {
+      hosts        = [var.api_domain]
+      path_matcher = "api"
+    }
+  }
+  dynamic "host_rule" {
+    for_each = var.deploy_doctor_hub ? [1] : []
+    content {
+      hosts        = [var.web_domain]
+      path_matcher = "web"
+    }
+  }
+  dynamic "path_matcher" {
+    for_each = var.deploy_doctor_hub ? [1] : []
+    content {
+      name            = "idp"
+      default_service = google_compute_backend_service.kc[0].id
+    }
+  }
+  dynamic "path_matcher" {
+    for_each = var.deploy_doctor_hub ? [1] : []
+    content {
+      name            = "api"
+      default_service = google_compute_backend_service.api[0].id
+    }
+  }
+  dynamic "path_matcher" {
+    for_each = var.deploy_doctor_hub ? [1] : []
+    content {
+      name            = "web"
+      default_service = google_compute_backend_service.web[0].id
+    }
+  }
 }
 
 resource "google_compute_managed_ssl_certificate" "kc" {
@@ -476,10 +522,17 @@ resource "google_compute_managed_ssl_certificate" "kc" {
 }
 
 resource "google_compute_target_https_proxy" "kc" {
-  count            = var.keycloak_domain == "" ? 0 : 1
-  name             = "portal-identity-https-proxy"
-  url_map          = google_compute_url_map.kc[0].id
-  ssl_certificates = [google_compute_managed_ssl_certificate.kc[0].id]
+  count   = var.keycloak_domain == "" ? 0 : 1
+  name    = "portal-identity-https-proxy"
+  url_map = google_compute_url_map.kc[0].id
+  # cert do id. sempre; + api./doctorhub. quando o Doctor-Hub está ligado (multi-cert por SNI).
+  ssl_certificates = concat(
+    [google_compute_managed_ssl_certificate.kc[0].id],
+    var.deploy_doctor_hub ? [
+      google_compute_managed_ssl_certificate.api[0].id,
+      google_compute_managed_ssl_certificate.web[0].id,
+    ] : []
+  )
 }
 
 resource "google_compute_global_forwarding_rule" "kc" {

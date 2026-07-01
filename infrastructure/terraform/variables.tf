@@ -61,6 +61,38 @@ variable "front_base_url" {
   default     = "https://doctorhub.app.br"
 }
 
+# --- Doctor-Hub (API .NET + Front React) — deploy no mesmo projeto/LB do IdP ---
+variable "deploy_doctor_hub" {
+  description = "Liga o deploy do Doctor-Hub (API + Front). Precisa das imagens já no Artifact Registry."
+  type        = bool
+  default     = false
+}
+variable "doctor_hub_api_image" {
+  description = "Imagem da API .NET (Artifact Registry). Ex.: southamerica-east1-docker.pkg.dev/PROJ/doctor-hub/api:TAG"
+  type        = string
+  default     = ""
+}
+variable "doctor_hub_web_image" {
+  description = "Imagem do Front (nginx) no Artifact Registry."
+  type        = string
+  default     = ""
+}
+variable "api_domain" {
+  description = "Domínio próprio da API (plataforma). Ex.: api.portaltecnologia.app.br."
+  type        = string
+  default     = "api.portaltecnologia.app.br"
+}
+variable "web_domain" {
+  description = "Domínio próprio do site Doctor-Hub. Ex.: doctorhub.app.br."
+  type        = string
+  default     = "doctorhub.app.br"
+}
+variable "github_owner" {
+  description = "Owner do GitHub dos repos (WIF / CI). Ex.: Garbiati."
+  type        = string
+  default     = "Garbiati"
+}
+
 # --- SMTP (Gmail) — só IDENTIFICADORES aqui; a SENHA é secret manual (ver runbook). ---
 variable "smtp_host" {
   type    = string
