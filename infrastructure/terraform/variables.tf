@@ -43,6 +43,12 @@ variable "cloud_run_memory" {
   default     = "1024Mi"
 }
 
+variable "cloud_run_min_instances" {
+  description = "Instâncias mínimas. 0 = liga sob demanda (mais barato; cold start ~15s). 1 = sempre pronto."
+  type        = number
+  default     = 0
+}
+
 variable "keycloak_domain" {
   description = "Domínio próprio do IdP (ex.: id.portaltecnologia.app.br — plataforma). Vazio = usa só a URL *.run.app."
   type        = string

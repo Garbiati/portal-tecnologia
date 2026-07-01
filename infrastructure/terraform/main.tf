@@ -51,6 +51,7 @@ resource "google_sql_database_instance" "kc" {
   region           = var.region
 
   settings {
+    edition           = "ENTERPRISE" # permite os tiers shared-core baratos (db-f1-micro); ENTERPRISE_PLUS não
     tier              = var.db_tier
     availability_type = "ZONAL" # subir p/ REGIONAL (HA) quando justificar custo
     disk_autoresize   = true
@@ -61,7 +62,9 @@ resource "google_sql_database_instance" "kc" {
       point_in_time_recovery_enabled = true
     }
     ip_configuration {
-      ipv4_enabled = false # sem IP público; acesso só via socket do Cloud SQL connector
+      # IP público habilitado, mas SEM redes autorizadas → só o Cloud SQL Auth Proxy (connector, via IAM)
+      # consegue conectar; não há acesso "raw" pela internet.
+      ipv4_enabled = true
     }
     user_labels = local.labels
   }
@@ -181,10 +184,10 @@ resource "google_secret_manager_secret_iam_member" "kc_admin_secret" {
 }
 
 # ---------------------------------------------------------------------------
-# Cloud Run (v2) — o serviço Keycloak
-#   - min=max=1: 1 instância (cache Infinispan simples; evita cold start). Escalar exige config de cache.
-#   - Cloud SQL conectado via socket /cloudsql/<conn>; o JDBC usa o SocketFactory do Cloud SQL
-#     (a imagem precisa trazer o connector — ver Dockerfile/README).
+# Cloud Run (v2) — o serviço Keycloak + sidecar Cloud SQL Auth Proxy
+#   - min configurável (0 = sob demanda, mais barato); max=1 (cache Infinispan simples).
+#   - O banco é acessado via SIDECAR (cloud-sql-proxy) em localhost:5432 → driver Postgres padrão
+#     do Keycloak (sem jar extra). O proxy conecta no Cloud SQL pelo connector (IAM).
 # ---------------------------------------------------------------------------
 resource "google_cloud_run_v2_service" "kc" {
   name     = "portal-identity"
@@ -195,21 +198,44 @@ resource "google_cloud_run_v2_service" "kc" {
     service_account                  = google_service_account.kc.email
     max_instance_request_concurrency = 80
     scaling {
-      min_instance_count = 1
+      min_instance_count = var.cloud_run_min_instances
       max_instance_count = 1
     }
 
-    volumes {
-      name = "cloudsql"
-      cloud_sql_instance {
-        instances = [google_sql_database_instance.kc.connection_name]
+    # Sidecar: Cloud SQL Auth Proxy. Expõe o banco em localhost:5432 dentro da instância.
+    containers {
+      name  = "cloudsql-proxy"
+      image = "gcr.io/cloud-sql-connectors/cloud-sql-proxy:2.14.1"
+      args = [
+        "--port=5432",
+        "--http-address=0.0.0.0",
+        "--http-port=9090",
+        "--health-check",
+        google_sql_database_instance.kc.connection_name,
+      ]
+      resources {
+        limits = {
+          cpu    = "1"
+          memory = "512Mi"
+        }
+      }
+      startup_probe {
+        http_get {
+          path = "/startup"
+          port = 9090
+        }
+        initial_delay_seconds = 5
+        timeout_seconds       = 5
+        period_seconds        = 5
+        failure_threshold     = 20
       }
     }
 
     containers {
-      image = var.keycloak_image
-      # Keycloak roda atrás do proxy do Cloud Run (TLS terminado lá): HTTP interno + headers de proxy.
-      args = ["start", "--optimized"]
+      name       = "keycloak"
+      image      = var.keycloak_image
+      depends_on = ["cloudsql-proxy"] # só sobe o Keycloak depois do proxy pronto
+      args       = ["start", "--optimized"]
 
       ports {
         container_port = 8080
@@ -222,19 +248,14 @@ resource "google_cloud_run_v2_service" "kc" {
         cpu_idle = false # Keycloak não pode "dormir" a CPU (sessões/cache)
       }
 
-      volume_mounts {
-        name       = "cloudsql"
-        mount_path = "/cloudsql"
-      }
-
       env {
         name  = "KC_DB"
         value = "postgres"
       }
-      # JDBC via SocketFactory do Cloud SQL (sem IP público). Requer o connector na imagem.
+      # Banco via sidecar (proxy) em localhost:5432 — driver Postgres padrão, sem jar extra.
       env {
         name  = "KC_DB_URL"
-        value = "jdbc:postgresql:///keycloak?cloudSqlInstance=${google_sql_database_instance.kc.connection_name}&socketFactory=com.google.cloud.sql.postgres.SocketFactory"
+        value = "jdbc:postgresql://localhost:5432/keycloak"
       }
       env {
         name  = "KC_DB_USERNAME"
