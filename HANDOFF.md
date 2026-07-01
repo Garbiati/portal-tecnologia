@@ -62,18 +62,26 @@ make down                            # derruba a stack (preserva o volume do Pos
   `.env` com SMTP/Twilio reais e validar pela aplicação. ⚠️ Caminho da senha tem **2 telas**
   (identificador→senha). Spec: `services/portal-identity/specs/otp-login-dev/spec.md`.
 - **GCP pessoal** (`alessandro@garbiati.com`, projeto **`portal-tecnologia`**, **R$1.727** de crédito, 90d até **28/09/2026**). Estratégia: **construir pessoal → repassar à empresa** (IaC/Terraform + segredos no Secret Manager; Twilio/SMTP em seu nome, swap no repasse). Você tem **CNPJ** (prestador) → dá pra buscar **Google for Startups (faixa Start)** self-serve.
-  - 🟢 **Produção do IdP (P-006) — TUDO CONFIGURADO, falta só você rodar o deploy (auth pessoal).**
-    Escopo escolhido: **só o Keycloak (IdP)** p/ validação interna. Pronto: `realms-prod/` (gerado, sem
-    seeds), `Dockerfile` (bake realm + `--import-realm` idempotente), **Terraform** finalizado
-    (`infrastructure/terraform`, `terraform validate` ok: Cloud Run + Cloud SQL + Secret Manager +
-    Artifact Registry, SMTP Gmail + Twilio por secret), scripts `criar-admin-prod.sh` + `smoke-test-prod.sh`.
-    **Runbook completo em `infrastructure/README.md` §4** (passo-a-passo). terraform instalado em `~/.local/bin`.
-    ⚠️ **Você roda:** `gcloud auth login` (conta pessoal — hoje está na da EMPRESA) + criar os 2 secrets
-    manuais (senha de app Gmail + Twilio token). Depois o resto (apply/build/push/criar admin) pode ser conduzido.
-    Decisões: **você = 1º admin via convite**; **SMTP = Gmail (senha de app)**. **Domínios (2):**
-    **`portaltecnologia.app.br`** = plataforma (IdP/APIs por subdomínio) → IdP em **`id.portaltecnologia.app.br`**,
-    API depois em `api.`; **`doctorhub.app.br`** = o **site** (front Doctor-Hub). Terraform já tem domain
-    mapping + output dos registros DNS (cadastrar no registro.br após verificar `portaltecnologia.app.br` no Google).
+  - 🟢🚀 **PRODUÇÃO DO IdP (P-006) — NO AR em `https://id.portaltecnologia.app.br`** (2026-07-01).
+    Projeto GCP pessoal **`portal-tecnologia-500920`** (billing on; budget R$150/mês c/ alertas).
+    **Cloud Run** (Keycloak 26, `min=0`, sidecar **Cloud SQL Auth Proxy** em localhost:5432) + **Cloud SQL**
+    Postgres (edition **ENTERPRISE**, db-f1-micro) + **Secret Manager** + **Artifact Registry**, tudo em
+    `southamerica-east1`. **Domínio via Load Balancer HTTPS** (domain mapping NÃO existe em SP → erro 501)
+    + **cert gerenciado** (IP `136.68.142.130`, registro A `id` no registro.br). **E-mail: SendGrid**
+    (não Gmail/Zoho — `garbiati.com` é Zoho, sem SMTP Gmail; SendGrid é transacional/free/parceiro GCP),
+    enviando como **`nao-responda@doctorhub.app.br`** (domínio autenticado no SendGrid, CNAMEs no registro.br).
+    **Realm importado** por `infrastructure/scripts/importar-realm-prod.sh` (⚠️ `start --optimized` IGNORA
+    `--import-realm` → import é passo de deploy via Admin API, idempotente). **Admin = Alessandro**
+    (username = CPF `35922911813`, logou por senha e por OTP-email). Segredos no Secret Manager:
+    `portal-identity-{db,admin,admin-client}-password` (gerados) + `-smtp-password` (=API key SendGrid) +
+    `-twilio-token`. Runbook: `infrastructure/README.md §4`.
+    - ⚠️ **Gotcha gcloud/ADC:** a conta ativa/ADC volta pra da EMPRESA sozinha. Antes de qualquer `terraform`/`gcloud`:
+      `gcloud config set account alessandro@garbiati.com` + `export GOOGLE_OAUTH_ACCESS_TOKEN=$(gcloud auth print-access-token)`.
+    - ⚠️ **Meu ambiente não completa TLS pro IP do LB** (bloqueio de rede) — validar sempre pelo navegador do Alessandro.
+    - ⏳ **SMS pendente:** BR exige **Alphanumeric Sender ID pré-registrado** na Twilio (nº local BR não faz SMS A2P).
+      Registrar via Trust Hub + Sender IDs (contato do amigo agiliza). `TwilioSms` já usa o `from` verbatim →
+      basta pôr o Sender ID em `twilio_from` + `terraform apply` quando aprovar. **Domínios:** `portaltecnologia.app.br`
+      = plataforma (IdP `id.`, API `api.` depois); `doctorhub.app.br` = site.
 - **IP/cessão**: código construído para a Portal, em repo pessoal → formalizar **cessão** no repasse (contador/advogado).
 - **GitHub**: agora em `Garbiati/`. (P-005 previa renomear `PortalTelemedicina/portal-platform`; em vez disso criamos os repos novos no seu user.)
 - **Migração física da pasta**: feita — este `~/portal-tecnologia` é o novo lar. A antiga `~/portal-platform` ainda existe (com os serviços desta sessão); pode apagar depois de confirmar que tudo roda daqui.
