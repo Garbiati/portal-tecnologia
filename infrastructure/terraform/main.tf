@@ -25,6 +25,7 @@ resource "google_project_service" "apis" {
     "secretmanager.googleapis.com",
     "artifactregistry.googleapis.com",
     "iam.googleapis.com",
+    "compute.googleapis.com", # Load Balancer p/ o domínio próprio (domain mapping não existe em SP)
   ])
   service            = each.value
   disable_on_destroy = false
@@ -429,18 +430,63 @@ resource "google_cloud_run_v2_service_iam_member" "public" {
   member   = "allUsers"
 }
 
-# Domínio próprio (ex.: id.portaltecnologia.app.br). Pré-requisito: domínio VERIFICADO no Google
-# (Search Console) — ver runbook. O cert TLS é provisionado automaticamente pelo Google.
-# Os registros DNS a cadastrar no registrador saem do output `dns_records_dominio`.
-resource "google_cloud_run_domain_mapping" "kc" {
-  count    = var.keycloak_domain == "" ? 0 : 1
-  location = var.region
-  name     = var.keycloak_domain
+# ---------------------------------------------------------------------------
+# Domínio próprio via LOAD BALANCER HTTPS global + cert gerenciado.
+# (O domain mapping simples do Cloud Run NÃO existe em southamerica-east1 → erro 501.)
+# DNS: aponte `id.portaltecnologia.app.br` (registro A) para o IP global (output `idp_ip`) no
+# registro.br. O certificado gerenciado provisiona sozinho depois que o DNS resolver para o IP.
+# ---------------------------------------------------------------------------
+resource "google_compute_global_address" "kc" {
+  count = var.keycloak_domain == "" ? 0 : 1
+  name  = "portal-identity-ip"
+}
 
-  metadata {
-    namespace = var.project_id
+resource "google_compute_region_network_endpoint_group" "kc" {
+  count                 = var.keycloak_domain == "" ? 0 : 1
+  name                  = "portal-identity-neg"
+  region                = var.region
+  network_endpoint_type = "SERVERLESS"
+  cloud_run {
+    service = google_cloud_run_v2_service.kc.name
   }
-  spec {
-    route_name = google_cloud_run_v2_service.kc.name
+}
+
+resource "google_compute_backend_service" "kc" {
+  count                 = var.keycloak_domain == "" ? 0 : 1
+  name                  = "portal-identity-backend"
+  load_balancing_scheme = "EXTERNAL_MANAGED"
+  protocol              = "HTTPS"
+  backend {
+    group = google_compute_region_network_endpoint_group.kc[0].id
   }
+}
+
+resource "google_compute_url_map" "kc" {
+  count           = var.keycloak_domain == "" ? 0 : 1
+  name            = "portal-identity-urlmap"
+  default_service = google_compute_backend_service.kc[0].id
+}
+
+resource "google_compute_managed_ssl_certificate" "kc" {
+  count = var.keycloak_domain == "" ? 0 : 1
+  name  = "portal-identity-cert"
+  managed {
+    domains = [var.keycloak_domain]
+  }
+}
+
+resource "google_compute_target_https_proxy" "kc" {
+  count            = var.keycloak_domain == "" ? 0 : 1
+  name             = "portal-identity-https-proxy"
+  url_map          = google_compute_url_map.kc[0].id
+  ssl_certificates = [google_compute_managed_ssl_certificate.kc[0].id]
+}
+
+resource "google_compute_global_forwarding_rule" "kc" {
+  count                 = var.keycloak_domain == "" ? 0 : 1
+  name                  = "portal-identity-fr"
+  load_balancing_scheme = "EXTERNAL_MANAGED"
+  target                = google_compute_target_https_proxy.kc[0].id
+  ip_address            = google_compute_global_address.kc[0].id
+  port_range            = "443"
 }

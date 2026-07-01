@@ -18,9 +18,9 @@ output "admin_password_secret" {
   value       = google_secret_manager_secret.admin_password.secret_id
 }
 
-output "dns_records_dominio" {
-  description = "Registros DNS a cadastrar no registrador (registro.br) p/ o domínio próprio do IdP."
-  value       = var.keycloak_domain == "" ? [] : google_cloud_run_domain_mapping.kc[0].status[0].resource_records
+output "idp_ip" {
+  description = "IP global do Load Balancer — cadastre um registro A `id` → este IP no registro.br."
+  value       = var.keycloak_domain == "" ? "" : google_compute_global_address.kc[0].address
 }
 
 output "idp_url" {
