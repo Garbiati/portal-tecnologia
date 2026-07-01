@@ -78,9 +78,14 @@ make down                            # derruba a stack (preserva o volume do Pos
     - ⚠️ **Gotcha gcloud/ADC:** a conta ativa/ADC volta pra da EMPRESA sozinha. Antes de qualquer `terraform`/`gcloud`:
       `gcloud config set account alessandro@garbiati.com` + `export GOOGLE_OAUTH_ACCESS_TOKEN=$(gcloud auth print-access-token)`.
     - ⚠️ **Meu ambiente não completa TLS pro IP do LB** (bloqueio de rede) — validar sempre pelo navegador do Alessandro.
-    - ⏳ **SMS pendente:** BR exige **Alphanumeric Sender ID pré-registrado** na Twilio (nº local BR não faz SMS A2P).
-      Registrar via Trust Hub + Sender IDs (contato do amigo agiliza). `TwilioSms` já usa o `from` verbatim →
-      basta pôr o Sender ID em `twilio_from` + `terraform apply` quando aprovar. **Domínios:** `portaltecnologia.app.br`
+    - ⏳ **SMS — Sender ID `PortalTech` SUBMETIDO na Twilio em 2026-07-01** (BR/DOMESTIC/TRANSACTIONAL, brand=yes,
+      1000/mês). Modelo=plataforma (1 Sender ID p/ todos os produtos; por-produto é aditivo depois via mapa
+      `client_id→sender` no authenticator). Docs enviados: Authorization Term assinado (gov.br) + Contrato Social
+      (JUCESP) + Cartão CNPJ (apoio). **Aguardando aprovação** (Twilio+operadoras, dias–2sem; acompanhar em
+      e-mail/Zendesk/aba "Global registrations"). Se pedirem prova da marca: CNAE 63.19-4-00 "Portais…" no Cartão CNPJ.
+      **QUANDO APROVAR:** `twilio_from="PortalTech"` no tfvars → `terraform apply` → testar SMS (token já no Secret
+      Manager; `TwilioSms` usa o `from` verbatim, aceita alfanumérico — nada a mudar no código). Conta Twilio no
+      CNPJ da **Garbiati** (LTDA de Osasco/SP; nº pessoal é só destinatário de teste). **Domínios:** `portaltecnologia.app.br`
       = plataforma (IdP `id.`, API `api.` depois); `doctorhub.app.br` = site.
 - **IP/cessão**: código construído para a Portal, em repo pessoal → formalizar **cessão** no repasse (contador/advogado).
 - **GitHub**: agora em `Garbiati/`. (P-005 previa renomear `PortalTelemedicina/portal-platform`; em vez disso criamos os repos novos no seu user.)
