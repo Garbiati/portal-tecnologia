@@ -12,7 +12,7 @@
 
 ### URLs e logins
 - **App:** `https://doctorhub.app.br` · **IdP:** `https://id.portaltecnologia.app.br` · **API:** `https://api.portaltecnologia.app.br/health`
-- **Seu admin:** CPF `35922911813` · senha `PortalIdP@2026` (ou OTP por e-mail).
+- **Seu admin:** CPF `35922911813` · senha `PortalIdP@2026` — **temporária (I-007): no próximo login o Keycloak obriga a trocar** (defina uma só sua). Ou entre por OTP e-mail.
 - **Personas de demo criadas em PROD** (senha de todas: `102030@302010`; aceitam login por username/CPF/telefone):
   | login | papel | jornada |
   |---|---|---|
