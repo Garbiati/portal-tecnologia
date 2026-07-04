@@ -6,6 +6,44 @@
 
 ---
 
+## 🎬 DEMO DE SEGUNDA (2026-07-07, antes do meio-dia) — TUDO PRONTO (preparado 2026-07-04)
+
+**Objetivo:** apresentação navegável p/ validação ("elas" criam usuários, logam, passeiam nas telas).
+
+### URLs e logins
+- **App:** `https://doctorhub.app.br` · **IdP:** `https://id.portaltecnologia.app.br` · **API:** `https://api.portaltecnologia.app.br/health`
+- **Seu admin:** CPF `35922911813` · senha `PortalIdP@2026` (ou OTP por e-mail).
+- **Personas de demo criadas em PROD** (senha de todas: `102030@302010`; aceitam login por username/CPF/telefone):
+  | login | papel | jornada |
+  |---|---|---|
+  | `mariana` (CPF 044.876.219-30) | demandas | Início/Pendências, Médicos, Escala, Solicitações… |
+  | `aldair` (CPF 233.490.661-05) | regulacao | Minhas Solicitações, De Acordo |
+  | `eronildes` (CPF 825.640.173-06) | gestor (**rótulo: Supervisor**, D-144) | Assunção de Vagas |
+  | `admin-dh` (CPF 318.224.905-11) | admin | Administração, Usuários |
+
+### Roteiro sugerido
+1. **Login** (mostrar CPF + "tentar outra forma" = código por e-mail). 2. **Admin → Usuários**: criar
+um usuário REAL na hora (e-mail verdadeiro) → convite chega por e-mail (SendGrid, from
+`nao-responda@doctorhub.app.br`) → pessoa define senha e loga. 3. **Jornadas** com as personas acima.
+4. **Médicos**: em PROD há **4.523 médicos REAIS da Teleconsulta** (busca funciona — ex. "Abel").
+
+### O que foi preparado (2026-07-04, Alessandro offline)
+- ✅ **Seed de médicos em PROD**: 4.523 doutores reais carregados via código de seed rodando LOCAL
+  contra o banco de prod (cloud-sql-proxy). ⚠️ **LGPD:** `doctors-demo.json` é **gitignored e
+  local-only** (dados reais!) — restaurado de `~/portal-platform` p/ `services/doctor-hub-api/src/DoctorHub.Api/Data/Seeds/`;
+  NUNCA commitar; a imagem de CI não o contém (por design).
+- ✅ **Personas criadas** no realm prod (acima) — login da mariana validado E2E (CPF formatado → token com role).
+- ✅ **min-instances=1** nos 3 serviços até a demo (sem cold start). **REVERTER depois** (custo):
+  `gcloud run services update {portal-identity,doctor-hub-api,doctor-hub-web} --region=southamerica-east1 --min-instances=0`
+  (ou próximo `terraform apply` já reverte — o TF tem min=0).
+- ✅ Rótulo **Supervisor** (D-144) deployado; 202 testes verdes; CI verde nos 2 repos.
+- ✅ TLS do LB agora alcançável também deste ambiente (era propagação).
+- ℹ️ Telas ainda com dado FIXTURE (ok p/ validação): Solicitações, Clientes & HCs, Contratação,
+  Escala (a tela existe; backend de escala é a Fatia 1, pós-demo). SMS aguarda Sender ID `PortalTech`.
+- ℹ️ Se alguém abrir o app e vier versão velha: é o service worker do PWA — recarregar a página resolve.
+
+---
+
 ## 0) Onde estamos / como rodar
 Polyrepo: o umbrella (este repo) + 3 services em `services/` (repos git independentes, gitignored).
 
