@@ -395,3 +395,14 @@
 - 🟡 **Mapeamento doutor→especialidade (Core-Api):** chave do doutor = `doctor_profiles.id`; especialidade
   via `doctor_profiles.specialization` (enum) → nossa Especialidade por `ExternalId` (legacy id). CRM via
   `doctor_profile_licenses.license` (confirmar CRM×RQE). Multi-especialidade é raro (quase todos 1).
+
+## 📅 Escala avançada + Indisponibilidade + Plantão de Reposição (sessão de Figma, 2026-07-04)
+> Anotações completas em [`12-escala-avancada-e-indisponibilidade.md`](12-escala-avancada-e-indisponibilidade.md).
+> A SPEC-MEDICOS-ESCALA v2 NÃO cobre: blocos por dia, quinzenal/semana-do-mês, indisponibilidade, plantão. NÃO inferir:
+- 🔴 **"2ª semana do mês não atendo"** = semana-calendário (dias 8–14) ou 2ª ocorrência do dia (2ª segunda)? E **quinzenal** ancora em quê (data-início? semana par/ímpar)?
+- 🔴 **Indisponibilidade → 1ª consulta vai pra "fila/pool"**: essa fila é a Disponibilização/pool que o Supervisor assume (`/assuncao`) ou uma fila NOVA de reagendamento? Quem decide o "se necessário alocar novo especialista"?
+- 🔴 **Retorno → "próxima escala de reposição do doutor"**: e se o doutor não tiver plantão de reposição futuro? (fila? alerta? quem age?)
+- 🔴 **Plantão de reposição — "analisar a regra"** (marcado pelo Alessandro): só reagendados do PRÓPRIO doutor ou da especialidade? Conta no estoque/capacidade (D-005/D-111/D-112)? Quem enxerga?
+- 🟡 **Cancelar/reagendar na TC**: existe API de cancelamento/reagendamento (além do POST /integration/appointment)? Notifica paciente por qual canal? (dependência externa tipo DEP-TC)
+- 🟡 **Indisponibilidade**: tem tipo/motivo (férias, atestado, pontual)? Quem registra (Demandas? o próprio médico no futuro)? Precisa aprovação?
+- 🟢 **Renomeação "Supervisor" (D-144)**: alcance = rótulo de exibição; a role técnica `gestor` no Keycloak permanece (migração de role só com decisão específica).
