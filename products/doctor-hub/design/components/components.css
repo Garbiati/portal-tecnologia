@@ -289,6 +289,21 @@ body {
   color: var(--color-text-muted);
 }
 
+/* Linha de formulário responsiva: empilha no mobile, 3 colunas no ≥sm.
+   Uso: <div class="field-row"> campo · campo · <div class="field-row__action">botão</div> </div> */
+.field-row {
+  display: grid;
+  gap: var(--space-3);
+  grid-template-columns: 1fr;
+}
+@media (min-width: 640px) {
+  .field-row {
+    grid-template-columns: minmax(160px, 2fr) minmax(110px, 1fr) auto;
+    align-items: start;
+  }
+  .field-row .field-row__action { padding-top: var(--space-6); } /* alinha o botão à altura do input */
+}
+
 /* Input com ícone (lupa de busca) — wrapper .input-group */
 .input-group { position: relative; }
 .input-group .input { padding-left: var(--space-10); }
@@ -498,6 +513,7 @@ body {
   padding-top: var(--space-4);
   border-top: 1px solid var(--color-border);
   display: flex;
+  flex-wrap: wrap;             /* mobile: botões quebram linha em vez de estourar */
   gap: var(--space-2);
 }
 
@@ -580,15 +596,22 @@ body {
   }
   .table.table--stack tbody td {
     display: flex;
+    flex-wrap: wrap;           /* conteúdo largo (e-mail etc.) desce p/ a linha seguinte */
     justify-content: space-between;
     gap: var(--space-4);
     border-bottom: 1px solid var(--color-border);
+  }
+  .table.table--stack tbody td > * {
+    min-width: 0;
+    overflow-wrap: anywhere;
   }
   .table.table--stack tbody td::before {
     content: attr(data-label);
     font-weight: var(--fw-medium);
     color: var(--color-text-secondary);
   }
+  /* Badge pode quebrar linha no modo stack (célula estreita no mobile) */
+  .table.table--stack tbody td .badge { white-space: normal; }
 }
 
 /* =============================================================================
@@ -619,6 +642,10 @@ body {
 .kpi__delta {
   font-size: var(--text-xs);
   color: var(--color-text-muted);
+}
+/* < sm: célula ~148px em grids 2-col (Disponibilização/Reservado) — valor 40px não cabe */
+@media (max-width: 639px) {
+  .kpi__value { font-size: var(--text-2xl); }
 }
 
 /* Tons — faixa esquerda + valor coloridos conforme severidade */
@@ -670,6 +697,13 @@ body {
   opacity: 0.5;
   cursor: not-allowed;
   pointer-events: none;
+}
+
+/* Alvo de toque ≥44px em dispositivos de toque (meta AA do cabeçalho).
+   Desktop denso (pointer fino) mantém a altura compacta de 36px. */
+@media (pointer: coarse) {
+  .btn--sm,
+  .chip { min-height: var(--control-height); }
 }
 
 /* =============================================================================
@@ -768,6 +802,10 @@ body {
   font-size: var(--text-lg);
   font-weight: var(--fw-semibold);
   color: var(--color-text);
+  min-width: 0;                /* mobile: encolhe e trunca em vez de quebrar o header */
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 .topbar__spacer { flex: 1 1 auto; }            /* empurra ações para a direita */
 .topbar__actions {
@@ -823,6 +861,7 @@ body {
 .toast__title { font-weight: var(--fw-semibold); }
 .toast__close {
   flex: 0 0 auto;
+  position: relative;          /* âncora da hit-area expandida (::before) */
   width: 24px;
   height: 24px;
   display: inline-flex;
@@ -833,6 +872,11 @@ body {
   border-radius: var(--radius-sm);
   color: var(--color-text-muted);
   cursor: pointer;
+}
+.toast__close::before {
+  content: '';
+  position: absolute;
+  inset: calc((100% - var(--control-height)) / 2);
 }
 .toast__close:hover { background: var(--color-surface-muted); color: var(--color-text); }
 .toast__close:focus-visible {
@@ -935,7 +979,8 @@ body {
   grid-template-areas:
     "sidebar topbar"
     "sidebar main";
-  min-height: 100vh;
+  min-height: 100vh;   /* fallback p/ browsers sem dvh */
+  min-height: 100dvh;  /* viewport dinâmico mobile — mesmo padrão de shell.css */
 }
 .app-shell > .sidebar { grid-area: sidebar; }
 .app-shell > .topbar  { grid-area: topbar; }
@@ -943,6 +988,10 @@ body {
   grid-area: main;
   padding: var(--space-6);
   overflow: auto;
+}
+/* < md: reduz respiro do conteúdo p/ sobrar largura útil no celular */
+@media (max-width: 767px) {
+  .app-shell > .app-main { padding: var(--space-4); }
 }
 /* < lg: empilha (sidebar vira drawer controlado pelo app, fora do fluxo do grid) */
 @media (max-width: 1023px) {
