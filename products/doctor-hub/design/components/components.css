@@ -1001,3 +1001,323 @@ body {
   }
   .app-shell > .sidebar { display: none; }     /* app reexibe como drawer */
 }
+
+/* =============================================================================
+   16. MOBILE APP PATTERNS — .bottom-nav · .list / .list-item · .action-sheet
+   Padrões estruturais mobile-first (PWA instalável): barra de navegação
+   inferior, lista estilo app e menu de ações (sheet no mobile, dropdown no
+   desktop). Camadas: bottom-nav (40) < drawer (50) < modal/sheet (60–61).
+   ============================================================================= */
+
+/* --- 16a. BOTTOM NAV — barra fixa inferior, SÓ mobile (< md) ----------------- */
+.bottom-nav {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 40;                                   /* abaixo do drawer (50) e do modal (60) */
+  display: flex;
+  align-items: stretch;
+  background: var(--color-surface);
+  border-top: 1px solid var(--color-border);
+  padding-bottom: env(safe-area-inset-bottom);   /* PWA iOS: respeita a home indicator */
+}
+.bottom-nav__item {
+  position: relative;
+  flex: 1 1 0;
+  background: transparent;                        /* reset p/ o item-botão ("Mais") */
+  border: none;
+  font-family: var(--font-family);
+  cursor: pointer;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  min-height: var(--control-height);             /* alvo de toque ≥44px (AA 2.5.8) */
+  padding: var(--space-1) var(--space-2);
+  font-size: var(--text-xs);
+  line-height: var(--lh-xs);
+  font-weight: var(--fw-medium);
+  color: var(--color-text-secondary);
+  text-decoration: none;
+  -webkit-tap-highlight-color: transparent;
+  transition: color var(--transition-fast);
+}
+.bottom-nav__icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  font-size: 20px;
+  line-height: 1;
+}
+.bottom-nav__label {
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.bottom-nav__item:focus-visible {
+  outline: var(--focus-ring-width) solid var(--color-focus-ring);
+  outline-offset: -2px;                          /* anel p/ dentro: a barra encosta nas bordas */
+  border-radius: var(--radius-sm);
+}
+/* Ativo — cor de destaque + indicador (barrinha no topo do item) */
+.bottom-nav__item.is-active { color: var(--color-accent-text); }
+.bottom-nav__item.is-active::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 28px;
+  height: 3px;
+  border-radius: 0 0 var(--radius-sm) var(--radius-sm);
+  background: var(--color-accent);
+}
+/* ≥ md: some (a navegação volta p/ sidebar/drawer) */
+@media (min-width: 768px) {
+  .bottom-nav { display: none; }
+}
+/* Respiro no fim do conteúdo rolável quando a barra está montada (senão ela
+   cobre as últimas linhas). Aplicar no scroller (ex.: .app-main). */
+@media (max-width: 767px) {
+  .has-bottom-nav,
+  .app-shell > .app-main.has-bottom-nav {
+    padding-bottom: calc(var(--control-height) + env(safe-area-inset-bottom) + var(--space-6));
+  }
+}
+
+/* --- 16b. LIST / LIST ITEM — lista estilo app (leading · corpo · trailing) --- */
+.list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-xl);
+  overflow: hidden;                              /* recorta hover/foco no raio */
+}
+.list > li + li { border-top: 1px solid var(--color-border); }   /* dividers */
+
+.list-item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  width: 100%;
+  min-height: 56px;                              /* linha confortável no toque */
+  padding: var(--space-2) var(--space-4);
+  font: inherit;
+  text-align: left;
+  color: var(--color-text);
+  background: transparent;
+  border: none;
+}
+/* Item inteiro clicável (renderizado como <button>) */
+.list-item--button {
+  cursor: pointer;
+  transition: background var(--transition-fast);
+}
+@media (hover: hover) {
+  .list-item--button:hover:not([disabled]) { background: var(--color-surface-muted); }
+}
+.list-item--button:focus-visible {
+  outline: var(--focus-ring-width) solid var(--color-focus-ring);
+  outline-offset: -2px;                          /* anel p/ dentro (overflow hidden do .list) */
+}
+.list-item--button[disabled] { opacity: 0.5; cursor: not-allowed; }
+
+.list-item__leading {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-text-muted);
+}
+.list-item__body {
+  flex: 1 1 auto;
+  min-width: 0;                                  /* permite truncar título/subtítulo */
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.list-item__title {
+  font-size: var(--text-base);
+  line-height: var(--lh-base);
+  font-weight: var(--fw-medium);
+  color: var(--color-text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.list-item__subtitle {
+  font-size: var(--text-sm);
+  line-height: var(--lh-sm);
+  color: var(--color-text-muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.list-item__trailing {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
+}
+
+/* --- 16c. ACTION SHEET — sheet no mobile (< md) · dropdown no desktop (≥ md) - */
+.action-sheet { position: relative; display: inline-flex; }   /* âncora do dropdown */
+
+/* Overlay — mesmo escurecimento/camada do Modal (z-index 60) */
+.action-sheet__overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  background: rgba(15, 23, 42, .45);
+}
+
+/* Painel MOBILE: sheet ancorado embaixo, desliza de baixo p/ cima */
+.action-sheet__panel {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 61;                                   /* acima do próprio overlay */
+  max-height: 70dvh;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: var(--space-2) var(--space-2)
+           calc(var(--space-2) + env(safe-area-inset-bottom));   /* PWA iOS */
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-bottom: none;
+  border-radius: var(--radius-2xl) var(--radius-2xl) 0 0;
+  box-shadow: var(--shadow-lg);
+  animation: action-sheet-up var(--transition-base);
+}
+@keyframes action-sheet-up {
+  from { transform: translateY(100%); }
+  to   { transform: translateY(0); }
+}
+/* a11y vestibular: sem deslizamento p/ quem pede menos movimento */
+@media (prefers-reduced-motion: reduce) {
+  .action-sheet__panel { animation: none; }
+}
+
+.action-sheet__title {
+  padding: var(--space-2) var(--space-4);
+  font-size: var(--text-xs);
+  line-height: var(--lh-xs);
+  font-weight: var(--fw-semibold);
+  text-align: center;                            /* estilo sheet iOS no mobile */
+  color: var(--color-text-muted);
+}
+.action-sheet__item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  width: 100%;
+  min-height: 48px;                              /* alvo ≥48px no sheet */
+  padding: 0 var(--space-4);
+  font-family: var(--font-family);
+  font-size: var(--text-md);
+  font-weight: var(--fw-medium);
+  text-align: left;
+  color: var(--color-text);
+  background: transparent;
+  border: none;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: background var(--transition-fast);
+}
+@media (hover: hover) {
+  .action-sheet__item:hover:not([disabled]) { background: var(--color-surface-muted); }
+}
+.action-sheet__item:focus-visible {
+  outline: var(--focus-ring-width) solid var(--color-focus-ring);
+  outline-offset: -2px;
+}
+.action-sheet__item[disabled] { opacity: 0.5; cursor: not-allowed; }
+/* Ação destrutiva (excluir, cancelar emissão…) */
+.action-sheet__item--danger { color: var(--color-danger); }
+.action-sheet__icon {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+}
+/* Cancelar — só no sheet mobile (no desktop, clicar fora já fecha) */
+.action-sheet__cancel {
+  margin-top: var(--space-2);
+  border-top: 1px solid var(--color-border);
+  border-radius: 0;
+  justify-content: center;
+  text-align: center;
+  font-weight: var(--fw-semibold);
+  color: var(--color-accent-text);
+}
+
+/* ≥ md: vira dropdown ancorado ao trigger (mesmo conteúdo) */
+@media (min-width: 768px) {
+  .action-sheet__overlay { background: transparent; }   /* clique-fora sem escurecer */
+  .action-sheet__panel {
+    position: absolute;
+    left: auto;
+    right: 0;
+    bottom: auto;
+    top: calc(100% + var(--space-2));
+    min-width: 220px;
+    max-width: 320px;
+    max-height: none;
+    padding: var(--space-2);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-lg);
+    animation: none;
+  }
+  .action-sheet__title { text-align: left; }
+  .action-sheet__item { min-height: var(--control-height); font-size: var(--text-base); }
+  .action-sheet__cancel { display: none; }
+}
+
+/* ── 16d. FAB (extended) — ação primária de CRIAR nas telas de lista (M3) ──
+   Flutuante acima da bottom-nav no mobile; some no desktop (o header tem o botão). */
+.fab {
+  position: fixed;
+  right: var(--space-4);
+  bottom: calc(72px + env(safe-area-inset-bottom, 0px)); /* acima da bottom-nav */
+  z-index: 39;                                    /* sob a bottom-nav (40) e modais */
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: 56px;
+  padding: 0 var(--space-5);
+  border: none;
+  border-radius: var(--radius-lg);
+  background: var(--color-cta);
+  color: var(--color-text-on-cta);
+  font-family: var(--font-family);
+  font-size: var(--text-base);
+  font-weight: var(--fw-semibold);
+  box-shadow: var(--shadow-lg);
+  cursor: pointer;
+}
+.fab:hover { background: var(--color-cta-hover); }
+.fab:focus-visible {
+  outline: var(--focus-ring-width) solid var(--color-focus-ring);
+  outline-offset: 2px;
+}
+@media (min-width: 768px) {
+  .fab { display: none; }                         /* desktop: botão no header */
+}
+
+/* Utilitário: esconde no mobile (o topbar já mostra o título da página). */
+.hide-mobile { display: none; }
+@media (min-width: 768px) { .hide-mobile { display: revert; } }
