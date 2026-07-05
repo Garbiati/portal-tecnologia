@@ -408,3 +408,5 @@
 - 🟢 **Renomeação "Supervisor" (D-144)**: alcance = rótulo de exibição; a role técnica `gestor` no Keycloak permanece (migração de role só com decisão específica).
 
 - **[Cadastro de usuário] Cliente/Projeto e Unidade são OBRIGATÓRIOS para papéis Regulação/Supervisor?** O form de Usuários diz que o vínculo é "escopo das jornadas Regulação e Supervisor", mas hoje o `salvar()` não exige `clienteId`/`unidade` mesmo com esses papéis marcados. Se a regra for "esses papéis precisam de vínculo", falta a validação; se é opcional, está certo. (Levantado no QA de 2026-07-05 — NÃO inferido no código.)
+
+- **[Painel/déficit] Quais STATUS de solicitação contam como "demanda a cobrir"?** Hoje o painel usa **ABERTO + RESERVADO** (canceladas/entregues fora) — marcado PROVISÓRIO no código (constante `DEMANDA_ATIVA`). Confirmar com negócio/Diretoria (ex.: incluir ENTREGUE? tratar retornos?). Levantado no quick win #1 (2026-07-05).
