@@ -1321,3 +1321,31 @@ body {
 /* Utilitário: esconde no mobile (o topbar já mostra o título da página). */
 .hide-mobile { display: none; }
 @media (min-width: 768px) { .hide-mobile { display: revert; } }
+
+/* Corpo clicável do list-item (tap = detalhe; o trailing fica fora do botão). */
+.list-item__press {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: 0;
+  background: transparent;
+  border: none;
+  font: inherit;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+  border-radius: var(--radius-sm);
+}
+.list-item__press:disabled { cursor: not-allowed; opacity: .6; }
+.list-item__press:focus-visible {
+  outline: var(--focus-ring-width) solid var(--color-focus-ring);
+  outline-offset: 2px;
+}
+
+/* Páginas com FAB: o último list-item precisa passar por cima da faixa do FAB. */
+@media (max-width: 767.98px) {
+  .app-main.has-bottom-nav { padding-bottom: calc(72px + 56px + var(--space-4) + env(safe-area-inset-bottom, 0px)); }
+  .toast-stack { bottom: calc(64px + var(--space-3) + env(safe-area-inset-bottom, 0px)); }
+}
