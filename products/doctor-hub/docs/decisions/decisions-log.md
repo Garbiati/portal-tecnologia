@@ -186,3 +186,8 @@ INICIAIS** (guard LGPD) → cria agendamento → **para no TC** (`EnviadoTc=fals
 modelo do painel de déficit), tornando o ciclo 100% real até o agendamento. A **busca de paciente
 real no TC fica adiada** (PROVISÓRIO: paciente por iniciais manual) até o Alessandro estar presente.
 
+### D-152 ✅ CONFIRMADO (2026-07-05) — "semana do mês" = n-ésima OCORRÊNCIA do dia
+Alessandro cravou: "folgo na 2ª semana" = a **2ª ocorrência daquele dia** (2ª segunda = 13/jul/2026),
+não semana-calendário. O código já implementava (`ocorrenciaNoMes = ceil(dia/7)`); removido o PROVISÓRIO.
+Crítico para o cadastro REAL de escalas (capacidade correta).
+
