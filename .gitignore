@@ -26,3 +26,6 @@ temp/
 # Arquivos prontos p/ upload (PII — nunca versionar)
 output/
 .e2e-env
+
+# python cache dos scripts de homologação
+infrastructure/scripts/__pycache__/
