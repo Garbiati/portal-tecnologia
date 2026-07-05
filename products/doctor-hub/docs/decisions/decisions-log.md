@@ -173,3 +173,16 @@
 - **M-002** Zero inferência de regra de negócio; dúvida vira pergunta aberta (Diretriz Suprema, `CLAUDE.md`).
 - **M-003** Enforcement por hooks spec-first/TDD (desenho em `docs/method/spec-first-hook.md`).
 - **M-004** SDD+TDD alinhados ao que a própria Teleconsulta já pratica (monorepo com `/specs`).
+
+### D-157 — Fluxo assunção→agendamento: real até o TC; busca de paciente real POR ÚLTIMO (2026-07-05)
+**Contexto:** Alessandro reafirmou o foco (assumir slot → paciente → agendamento) e pediu para deixar
+a **busca de paciente REAL no Teleconsulta por último** — envolve dados reais do TC + secrets, e ele
+quer estar **presente na máquina** pra analisar código e segredos (está remoto).
+**Estado:** o fluxo JÁ existe ponta-a-ponta — `POST /agendamentos` assume vaga → paciente **por
+INICIAIS** (guard LGPD) → cria agendamento → **para no TC** (`EnviadoTc=false`, DEP-TC-1). A tela
+`assuncao` fecha ④+⑤ com gate de aceite (D-116).
+**Gap (nada de mock):** as **vagas** da tela vêm de fixture (`./data`), não da capacidade real.
+**Decisão:** próximo passo real = **derivar as vagas da capacidade REAL** (escalas×solicitações, o
+modelo do painel de déficit), tornando o ciclo 100% real até o agendamento. A **busca de paciente
+real no TC fica adiada** (PROVISÓRIO: paciente por iniciais manual) até o Alessandro estar presente.
+
