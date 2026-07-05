@@ -294,6 +294,12 @@ resource "google_cloud_run_v2_service" "kc" {
         name  = "KC_HTTP_ENABLED"
         value = "true"
       }
+      # Cache do tema no navegador: baixo p/ homologação (mudanças de CSS/logo aparecem em ~60s sem
+      # aba anônima). Opção RUNTIME (não exige rebuild). Subir depois p/ perf em produção estável.
+      env {
+        name  = "KC_SPI_THEME_STATIC_MAX_AGE"
+        value = "60"
+      }
       # Hostname: no 1º deploy a URL *.run.app ainda não é conhecida → strict=false deixa o Keycloak
       # derivar do proxy (X-Forwarded-Host). Depois, opcionalmente, fixe keycloak_hostname e reaplique.
       env {
