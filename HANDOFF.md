@@ -47,15 +47,13 @@
   UC-COBRE). Aceite real NÃO gera vaga real (regra de emissão não existe ainda).
 - **[M3] Personas demo caem no fallback C1 (SES-PI), que está DESATIVADO no banco** — funcional,
   mas o ideal é vinculá-las a clientes reais pela tela de Usuários (2 min, faça pelo app).
-- **[M5] URL fura isolamento de persona** (ex.: Supervisor digitando /usuarios vê a UI; API nega).
-- **[M8] corrida rara**: excluir indisponibilidade durante o POST pode ressuscitá-la no reload.
 - **[M10] tap no item**: usuários abre EDITAR, clientes abre DETALHES (inconsistência aceita por ora).
 - 🔴 Regras "depois": recorrência quinzenal/semana-do-mês; fila da 1ª consulta; retorno sem plantão;
   quem vincula no plantão de reposição; FLEX (conversa marcada — D-151); reserva de capacidade
   dedicada×pool; valores por TIPO DE SERVIÇO (hoje valores são por especialidade — D-125).
 
 ### 🧪 Estado dos gates (01h50)
-API 64 testes ✓ · Front 284 ✓ · CIs verdes ✓ · E2E prod das 3 ondas ✓ (com limpeza) ·
+API 64 testes ✓ · Front 284 ✓ · CIs verdes ✓ · M5 (guarda de persona) e M8 (corrida) corrigidos às 02h ✓ · E2E prod das 3 ondas ✓ (com limpeza) ·
 uptime checks + tripwire + rotina smoke de hora em hora ativos.
 
 ---
