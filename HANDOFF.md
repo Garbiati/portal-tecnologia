@@ -6,6 +6,60 @@
 
 ---
 
+## 🌙 RELATÓRIO DA MADRUGADA 2026-07-05 (missão noturna — leia isto primeiro)
+
+> Objetivo dado antes de dormir: "sistema de escalas que atende as necessidades de um projeto,
+> alocando médicos, dando previsibilidade da capacidade médica… valores… tipo de serviço".
+> Foco ajustado às 01h: **FIXA é certeza; FLEX congelada (D-151)**; regras "depois" NÃO inferidas.
+
+### ✅ O que entrou EM PRODUÇÃO esta noite (tudo com CI verde + E2E real)
+1. **Tipo de serviço na escala** (D-150): catálogo extensível (teleatendimento default, atendimento,
+   plantão, laudo, exame) + select no form + badge nos cards. `GET /api/tipos-servico`.
+2. **Escala vinculada a PROJETO**: select "Projeto (opcional)" (— pool geral — ou cliente ativo);
+   é o "alocar médico à necessidade do projeto". Campos expostos em todos os GETs.
+3. **FIXA com horários POR DIA** ("seg 8–15 · ter 11–16" — exemplo textual da reunião): switch no
+   form, INV-1/INV-4 validadas POR DIA no backend (provado em prod: "INV-4: blocos do dia Ter se
+   sobrepõem"), cards e estoque com blocos efetivos por dia.
+4. **Plantão de reposição**: checkbox na escala (hint "não fica disponível p/ Supervisores");
+   SEM vínculo de paciente (aguarda regra, como você aprovou). Painel mostra em linha própria.
+5. **Indisponibilidade do médico**: seção no perfil (faixa de datas + motivo), CRUD real; efeito
+   textual: **desconta a capacidade no painel** (efeitos sobre agendamentos = aguardam regras).
+6. **Painel de capacidade REAL**: derivado das escalas de verdade (fórmula spec §5) por
+   especialidade × tipo de serviço × projeto, MÊS CORRENTE, com desconto de indisponibilidade.
+7. **6 escalas FIXAS reais semeadas** (Clínico Geral, Cardio POR-DIA, Derma/laudo, Orto/atendimento,
+   Neuro/pool, Psiquiatria/REPOSIÇÃO) distribuídas entre Piauí SD/AM/AL/AP/pool → o painel de
+   segunda mostra números reais. Desfazer: `infrastructure/scripts/limpar-escalas-demo.sh`.
+
+### 🔍 Revisão adversarial (agente) — CORRIGIDO esta noite
+- [C1] bloco de horário vazio gerava estoque NaN → barrado na validação.
+- [C2] De Acordo não recalculava o cliente ao hidratar → vínculo real funciona no deep-link.
+- [C3] **relógio demo × dados reais**: KPIs/form/arquivar/lista usavam junho/2026 fixo — médicos
+  REAIS agora usam o calendário real (o painel já usava, fix da 01h30).
+- [C4] escalas da fixture "grudavam" nos 2 primeiros médicos reais → seed zerado na hidratação.
+- [M2] Configurações e Inbox resolviam cliente pela fixture → agora pela store real.
+- [M4] excluir cliente agora bloqueia também com ESCALAS vinculadas; [M9] GET /escalas exclui
+  médicos inativos; [M6] exclusões de admin auditadas; [M7] duração vazia mostra erro.
+- Cosméticos: bottom-nav some com <2 destinos, FAB não cobre o último item, toast acima da barra,
+  título em /medico/:id, textos de EmptyState.
+
+### ⚠️ PENDÊNCIAS CONHECIDAS (não corrigidas — decisão sua ou risco de mexer de madrugada)
+- **[M1] Corredor Regulação→Supervisor**: vagas da Assunção ainda são fixture (VG-001/002 ↔
+  UC-COBRE). Aceite real NÃO gera vaga real (regra de emissão não existe ainda).
+- **[M3] Personas demo caem no fallback C1 (SES-PI), que está DESATIVADO no banco** — funcional,
+  mas o ideal é vinculá-las a clientes reais pela tela de Usuários (2 min, faça pelo app).
+- **[M5] URL fura isolamento de persona** (ex.: Supervisor digitando /usuarios vê a UI; API nega).
+- **[M8] corrida rara**: excluir indisponibilidade durante o POST pode ressuscitá-la no reload.
+- **[M10] tap no item**: usuários abre EDITAR, clientes abre DETALHES (inconsistência aceita por ora).
+- 🔴 Regras "depois": recorrência quinzenal/semana-do-mês; fila da 1ª consulta; retorno sem plantão;
+  quem vincula no plantão de reposição; FLEX (conversa marcada — D-151); reserva de capacidade
+  dedicada×pool; valores por TIPO DE SERVIÇO (hoje valores são por especialidade — D-125).
+
+### 🧪 Estado dos gates (01h50)
+API 64 testes ✓ · Front 284 ✓ · CIs verdes ✓ · E2E prod das 3 ondas ✓ (com limpeza) ·
+uptime checks + tripwire + rotina smoke de hora em hora ativos.
+
+---
+
 ## 🎬 DEMO DE SEGUNDA (2026-07-07, antes do meio-dia) — TUDO PRONTO (preparado 2026-07-04)
 
 **Objetivo:** apresentação navegável p/ validação ("elas" criam usuários, logam, passeiam nas telas).
