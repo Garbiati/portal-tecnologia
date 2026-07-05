@@ -84,6 +84,25 @@ Quando o médico fica indisponível numa faixa que já tem compromissos:
 - Sem ambiente de homologação/desenvolvimento: **dev local usa o IdP de PROD** (I-006) + Postgres
   local; o restante (API/front) roda local.
 
+## 5b. Status das perguntas (2026-07-05, madrugada — respostas do Alessandro no app)
+
+Perguntadas antes da noite de construção; TODAS respondidas como **"depois"**:
+recorrência avançada ("depois eu explico"), fila da 1ª consulta ("depois vemos"),
+retorno sem plantão futuro ("depois vemos"), vínculo do plantão de reposição ("analisar depois" —
+mas com aval explícito: *criar o plantão não-assumível pelo Supervisor SEM vínculo por ora*).
+
+**Consequência (escopo da noite):** construir só o TEXTUAL — (a) escala fixa com horários POR DIA;
+(b) indisponibilidade: cadastro + efeito "remove da disponibilidade" (slots sem paciente);
+(c) plantão de reposição: flag na escala, fora da assunção do Supervisor, sem vínculo de paciente.
+Recorrência quinzenal/semana-do-mês e os fluxos com paciente ficam BLOQUEADOS até as respostas.
+
+### Perguntas novas (agente da onda 2 — painel/tipos):
+- Escala dedicada a projeto deve RESERVAR capacidade (descontar do pool nas solicitações) ou é rótulo por ora?
+- Tipo de serviço muda cálculo/validação (laudo exige faturamento de laudo? plantão muda vagas)?
+- Tipo/projeto podem ser EDITADOS numa escala existente?
+- Período canônico do painel real (mês corrente?) — hoje herda o PERIODO_DEMO (junho/2026).
+- Cliente desativado com escalas apontando pra ele: como exibir?
+
 ## 6. Próximos passos combinados
 
 1. Adiantar **tudo que der local** (sem tocar na GCP nova): backend da escala v2 (spec já
