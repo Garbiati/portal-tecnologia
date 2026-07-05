@@ -11,6 +11,14 @@ maior caso de uso), **não** a marca de marketing. Ou seja: a landing, o SEO e a
 para outra empresa, a marca do produto (doc hub) é o que se promove; a marca do cliente vive no app
 dele (tema — P-009).
 
+## 🎯 FOCO ATUAL (MVP — a dor da Portal Telemedicina) — 2026-07-05
+Reafirmado pelo Alessandro: **criar escalas de forma FÁCIL** + **gestão de solicitações de atendimento
+alocando recursos médicos**. Inicialmente na dor concreta da Portal: **alocar médicos de teleconsulta
+a ESPECIALIDADES**, para que cada CLIENTE tenha disponibilidade de agenda conforme sua **necessidade
+DINÂMICA por cliente e por mês**. Ou seja o ciclo: escala fácil (oferta) → solicitação do cliente
+(demanda por especialidade/mês) → **capacidade × demanda = déficit** → alocação. Sem integrar a
+Teleconsulta ainda (para na criação do agendamento — DEP-TC-1). Tudo com DADOS REAIS.
+
 ## Posicionamento (o que é, em uma frase)
 **doc hub = o sistema médico que facilita a GESTÃO e a DISTRIBUIÇÃO da capacidade médica** — escalas,
 médicos e agendamentos — **para clientes públicos ou privados.** Diferenciais que a pesquisa apontou
