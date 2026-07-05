@@ -6,55 +6,69 @@
 
 ---
 
-## 🌙 RELATÓRIO DA MADRUGADA 2026-07-05 (missão noturna — leia isto primeiro)
+## 🌙 RELATÓRIO FINAL DA MADRUGADA 2026-07-05 (missão noturna — leia isto primeiro)
 
-> Objetivo dado antes de dormir: "sistema de escalas que atende as necessidades de um projeto,
-> alocando médicos, dando previsibilidade da capacidade médica… valores… tipo de serviço".
-> Foco ajustado às 01h: **FIXA é certeza; FLEX congelada (D-151)**; regras "depois" NÃO inferidas.
+> Objetivo: "me entregue o sistema mais auto homologado possível… escala fácil de criar… valide
+> todas as telas". Foco: **FIXA é certeza; FLEX congelada (D-151)**; regras "depois" NÃO inferidas.
+> Placar da noite: **API 68 testes · Front 318 testes · CI verde · tudo deployado · E2E prod provado.**
 
-### ✅ O que entrou EM PRODUÇÃO esta noite (tudo com CI verde + E2E real)
-1. **Tipo de serviço na escala** (D-150): catálogo extensível (teleatendimento default, atendimento,
-   plantão, laudo, exame) + select no form + badge nos cards. `GET /api/tipos-servico`.
-2. **Escala vinculada a PROJETO**: select "Projeto (opcional)" (— pool geral — ou cliente ativo);
-   é o "alocar médico à necessidade do projeto". Campos expostos em todos os GETs.
-3. **FIXA com horários POR DIA** ("seg 8–15 · ter 11–16" — exemplo textual da reunião): switch no
-   form, INV-1/INV-4 validadas POR DIA no backend (provado em prod: "INV-4: blocos do dia Ter se
-   sobrepõem"), cards e estoque com blocos efetivos por dia.
-4. **Plantão de reposição**: checkbox na escala (hint "não fica disponível p/ Supervisores");
-   SEM vínculo de paciente (aguarda regra, como você aprovou). Painel mostra em linha própria.
-5. **Indisponibilidade do médico**: seção no perfil (faixa de datas + motivo), CRUD real; efeito
-   textual: **desconta a capacidade no painel** (efeitos sobre agendamentos = aguardam regras).
-6. **Painel de capacidade REAL**: derivado das escalas de verdade (fórmula spec §5) por
-   especialidade × tipo de serviço × projeto, MÊS CORRENTE, com desconto de indisponibilidade.
-7. **6 escalas FIXAS reais semeadas** (Clínico Geral, Cardio POR-DIA, Derma/laudo, Orto/atendimento,
-   Neuro/pool, Psiquiatria/REPOSIÇÃO) distribuídas entre Piauí SD/AM/AL/AP/pool → o painel de
-   segunda mostra números reais. Desfazer: `infrastructure/scripts/limpar-escalas-demo.sh`.
+### ✅ O que entrou EM PRODUÇÃO esta noite (CI verde + E2E real, com limpeza)
+1. **Tipo de serviço** (D-150): catálogo extensível (teleatendimento, atendimento, plantão, laudo,
+   exame) — `GET /api/tipos-servico` — + select no form + badge nos cards.
+2. **Escala vinculada a PROJETO** (— pool geral — ou cliente). É o "alocar médico à necessidade do projeto".
+3. **FIXA com horários POR DIA** ("seg 8–14 · ter 10–18"): INV-1/INV-4 validadas por dia no backend.
+4. **⭐ Semanas do mês SEM atendimento** (D-152): chips 1ª–5ª — "na 2ª semana o doutor folga".
+   **E2E provado em prod:** criei a escala EXATA do seu exemplo (seg 8–14, ter 10–18 por-dia, sem a
+   2ª semana, teleatendimento, Piauí SD) → persistiu e apareceu certo no GET global.
+5. **Plantão de reposição** (flag; Supervisor não assume; sem vínculo de paciente — aguarda regra).
+6. **Indisponibilidade do médico** (CRUD real; desconta capacidade no painel).
+7. **Painel de capacidade REAL** por especialidade × tipo × projeto, MÊS CORRENTE, com descontos.
+8. **6 escalas FIXAS reais semeadas** p/ o painel mostrar números de verdade. Desfazer:
+   `infrastructure/scripts/limpar-escalas-demo.sh`.
 
-### 🔍 Revisão adversarial (agente) — CORRIGIDO esta noite
-- [C1] bloco de horário vazio gerava estoque NaN → barrado na validação.
-- [C2] De Acordo não recalculava o cliente ao hidratar → vínculo real funciona no deep-link.
-- [C3] **relógio demo × dados reais**: KPIs/form/arquivar/lista usavam junho/2026 fixo — médicos
-  REAIS agora usam o calendário real (o painel já usava, fix da 01h30).
-- [C4] escalas da fixture "grudavam" nos 2 primeiros médicos reais → seed zerado na hidratação.
-- [M2] Configurações e Inbox resolviam cliente pela fixture → agora pela store real.
-- [M4] excluir cliente agora bloqueia também com ESCALAS vinculadas; [M9] GET /escalas exclui
-  médicos inativos; [M6] exclusões de admin auditadas; [M7] duração vazia mostra erro.
-- Cosméticos: bottom-nav some com <2 destinos, FAB não cobre o último item, toast acima da barra,
-  título em /medico/:id, textos de EmptyState.
+### 🔬 AUTO-HOMOLOGAÇÃO POR TELA (68 agentes: QA × UX × design em 14 telas + verificação adversarial)
+Achados: **24 críticos confirmados · 114 médios · 70 cosméticos**. Status:
+- **24 críticos → CORRIGIDOS e no ar** (+ os C1–C4/M-diversos da 1ª revisão). Destaques: criar
+  escala dava "sucesso" com a API falhando (agora reverte + erro real); corrida que trocava o
+  médico exibido por outro; lista "sem escala" falsa; `/api/me` sem token; disponibilização somava
+  capacidade em dobro; `<Button>` aninhado em `<Link>`.
+- **~15 médios baratos → CORRIGIDOS e no ar**: **jargão interno tirado da tela** (INV-1, D-103,
+  D-148, D-123 — importante pra validação externa), teclado numérico no mobile, **bug de data em
+  UTC** (default do período vinha 1 dia à frente no BR), scroll-lock com menu aberto, EmptyStates,
+  login sem erro OIDC em inglês, alvos de toque 44px, filtro de especialidade real.
+- **~99 médios + 70 cosméticos restantes → CATALOGADOS** em
+  `scratchpad/homolog.json` (não versionado; peça que eu recupere quando quiser priorizar). São
+  quase todos polimento (a11y, textos, paginação, máscara de CNPJ) — nenhum bloqueia a validação.
 
-### ⚠️ PENDÊNCIAS CONHECIDAS (não corrigidas — decisão sua ou risco de mexer de madrugada)
-- **[M1] Corredor Regulação→Supervisor**: vagas da Assunção ainda são fixture (VG-001/002 ↔
-  UC-COBRE). Aceite real NÃO gera vaga real (regra de emissão não existe ainda).
-- **[M3] Personas demo caem no fallback C1 (SES-PI), que está DESATIVADO no banco** — funcional,
-  mas o ideal é vinculá-las a clientes reais pela tela de Usuários (2 min, faça pelo app).
-- **[M10] tap no item**: usuários abre EDITAR, clientes abre DETALHES (inconsistência aceita por ora).
-- 🔴 Regras "depois": recorrência quinzenal/semana-do-mês; fila da 1ª consulta; retorno sem plantão;
-  quem vincula no plantão de reposição; FLEX (conversa marcada — D-151); reserva de capacidade
-  dedicada×pool; valores por TIPO DE SERVIÇO (hoje valores são por especialidade — D-125).
+### 🔎 PESQUISA DE MERCADO (virou discovery oficial — base pra decidir a "escala fácil")
+- **`docs/discovery/14-escalas-medicas-mercado.md`** — o padrão vencedor pro seu pedido:
+  1) **regra semanal + override por data** (UM mecanismo cobre folga E extensão "segunda até 18h");
+  2) **PREVIEW das próximas datas antes de salvar** (defesa nº1 contra recorrência errada — nem
+  Google/Outlook resolvem "2ª semana" bem); 3) **IA como INTÉRPRETE** (você fala a disponibilidade,
+  ela propõe a regra, você confirma — motor determinístico gera). **Ninguém no mercado médico faz
+  isso** = nosso diferencial. Anti-padrões dos líderes (QGenda/Amion): automação que quebra em regra
+  complexa, sem auditoria de escala, app mobile ruim.
+- **`docs/discovery/15-agendamentos-cancelamentos-mercado.md`** — valida suas regras com evidência:
+  psiquiatria/psicologia NÃO troca de médico (dropout OR 4,59; CFM 2.314 art.6º §2º = presencial a
+  cada ≤180d com o assistente); doutor-de-plantão = modelo Teladoc; benchmark de "bump" 4,9%;
+  **remarcação escolhida pelo paciente melhora adesão, imposta piora** → mensagem sempre com opções.
+  Já tem as 4 mensagens-modelo PT-BR (incluindo a de "imprevisto, prioridade máxima").
 
-### 🧪 Estado dos gates (01h50)
-API 64 testes ✓ · Front 284 ✓ · CIs verdes ✓ · M5 (guarda de persona) e M8 (corrida) corrigidos às 02h ✓ · E2E prod das 3 ondas ✓ (com limpeza) ·
-uptime checks + tripwire + rotina smoke de hora em hora ativos.
+### 🔴 PROVISÓRIOs / perguntas que dependem SÓ de você (nada inferido)
+1. **"2ª semana do mês"** hoje = n-ésima ocorrência do dia (2ª segunda…). Confirmar? (o preview de
+   datas — rec. da pesquisa — vai deixar isso à prova de erro; posso construir amanhã.)
+2. **Quinzenal / algumas quintas do mês**: papel da FLEX (extensão pontual) — falta a conversa FLEX.
+3. **Agendamentos/faltas** (discovery 13/15): fila da 1ª consulta, quem vincula no plantão de
+   reposição, plantonista fixo×rodízio, atestado entra ou não na métrica do médico, psicologia(CFP)
+   segue psiquiatria(CFM)? — tudo aguardando sua decisão p/ virar spec.
+4. **Reserva de capacidade** dedicada×pool e **valores por TIPO DE SERVIÇO** (hoje valor é por
+   especialidade — D-125): estender?
+5. **Personas demo** ainda caem no fallback C1 (SES-PI desativado) — vincule-as a clientes reais
+   pela tela de Usuários (2 min, pelo app) OU eu faço se você confirmar em quais projetos.
+
+### 🧪 Estado dos gates (04h25)
+API 68 testes ✓ · Front 318 testes ✓ · CI verde nos 2 repos ✓ · E2E prod (escala completa) ✓ ·
+uptime checks + tripwire + rotina smoke de hora em hora ativos. Decisões novas: D-150/D-151/D-152.
 
 ---
 
