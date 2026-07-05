@@ -51,9 +51,11 @@ Exemplos de keys: `tipo-servico:teleatendimento`, `tipo-servico:telediagnostico`
 - **Fase 2:** módulos/telas do app no mesmo mecanismo + features futuras. "Até feature por feature."
 
 ## Perguntas abertas (NÃO inferir — confirmar)
-1. **Papel `super-admin`**: hoje `admin` = você (single-tenant), então na Fase 1 a tela de config fica
-   atrás de `admin`. Formalizar um papel `super-admin` distinto do `admin`-do-tenant quando houver 2º
-   tenant. OK assim?
+1. **Papel `super-admin` ✅ RESOLVIDO (2026-07-05):** papel PRÓPRIO (client role `super-admin` em
+   doctor-hub-api), distinto do `admin`. Atribuído SÓ ao usuário do Alessandro; **sem tela de criação/
+   edição** — é invisível/não-atribuível no gerenciamento de usuários; atribuição só fora da UI
+   (Keycloak/seed). **1 único super-admin no sistema** (por ora). A tela de config de tenant/features
+   e os endpoints `/api/tenants/*` exigem a política `super-admin`.
 2. **`telediagnóstico`**: não está no catálogo atual (hoje: teleatendimento, atendimento, plantão,
    laudo, exame). É um tipo NOVO (slug `telediagnostico`) ou mapeia p/ um existente? Vou adicionar como
    novo, salvo indicação.
