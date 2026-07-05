@@ -1,31 +1,28 @@
 #!/usr/bin/env python3
 """
-Sonda de AUTORIZAÇÃO/ESCOPO da API do Doctor-Hub em PRODUÇÃO — relatório de risco (AppSec).
+Homologação de SEGURANÇA da API do Doctor-Hub em PRODUÇÃO — teste NEGATIVO que TRAVA (D-142/D-154).
 
-POR QUE EXISTE: a matriz papel×ação×escopo (D-142) NÃO está confirmada. Este harness NÃO afirma
-pass/fail contra ela — ele MEDE o que a API realmente permite hoje e reporta cada comportamento como
-"RISCO A CONFIRMAR" com a expectativa provável (docs/product/27-seguranca-gestao-de-risco.md · G-1..G-4).
-Complementa os homolog-*-e2e.py (que provam PERSISTÊNCIA); aqui a pergunta é LIMITE, não persistência.
+ANTES (era medição): media o que a API permitia e reportava "RISCO A CONFIRMAR" — sempre saía 0.
+AGORA (matriz D-142 confirmada 2026-07-05): AFIRMA o comportamento CORRETO com check()/report() —
+se um limite for violado, a verificação FALHA e o script sai 1 (vira gate de CI, igual aos demais
+homolog-*-e2e.py). Prova, contra a infra REAL (Keycloak + API em prod), que:
+
+  · RBAC por papel  — base médica (escala/ficha) só Admin/Demandas; solicitações (criar+status) só
+    Admin/Regulação; assumir vaga só Supervisor(gestor)/Admin; admin-only nos endpoints de admin.
+  · ESCOPO por cliente (G-1) — Regulação do cliente A NÃO lê nem altera nem cria dado do cliente B (403/
+    lista sem B). Fail-closed: Regulação sem clienteId no token → lista vazia.
+  · ESCOPO por unidade (G-3) — Supervisor só vê agendamentos da sua unidade; sem unidade → vazio.
+  · Não autenticado → 401.
 
 O QUE FAZ:
-  1. PROVISIONA (Keycloak master admin, mesma trilha do e2e-user.sh) usuários EFÊMEROS `sec-*` com
-     papel/escopo específico e senha conhecida não-temporária:
-        sec-demandas (só demandas) · sec-rega (regulacao, clienteId=A) · sec-regb (regulacao,
-        clienteId=B) · sec-gestor (gestor).
-  2. LOGA cada um (fluxo OIDC 2-etapas reusado de e2e_common, parametrizado por user/senha) e SONDA:
-        · Vertical  (elevação de privilégio): papel comum tenta endpoints de ADMIN.
-        · Horizontal (escopo de cliente, G-1): regA lê/altera dado do cliente de regB.
-        · LGPD/escopo (G-3): qualquer papel faz GET /agendamentos (lista global de iniciais).
-        · Não autenticado: chamadas sem token → 401?
-        · RBAC (G-2): quem consegue POST /solicitacoes, POST /doctors/{id}/escalas, DELETE destrutivo.
-     Sondas destrutivas usam id FALSO ou corpo INVÁLIDO de propósito: 403=bloqueado (limite existe),
-     404/400=chegou no handler (limite NÃO aplicado) — mede autorização SEM mutar/criar dado real.
-  3. RELATÓRIO em texto: tabela (ator → ação → status observado → é RISCO? severidade) + resumo dos
-     RISCOS ALTOS com evidência. Sempre sai 0 (é medição, não pass/fail).
-  4. LIMPA: cancela as solicitações de teste (não há DELETE — vira CANCELADO) e EXCLUI todos os `sec-*`.
-     Idempotente: uma nova execução varre `sec-*` residual. O realm volta a ter só o dono.
+  1. PROVISIONA (Keycloak master admin) usuários EFÊMEROS `sec-*` com papel/escopo conhecidos.
+  2. LOGA cada um (OIDC 2-etapas de e2e_common) e AFIRMA o comportamento da matriz por endpoint.
+     Sondas destrutivas usam id FALSO/corpo INVÁLIDO de propósito → 403 = bloqueado pelo RBAC ANTES de
+     tocar dado (é o que afirmamos); nunca mutam dado real.
+  3. LIMPA: cancela as solicitações de teste (não há DELETE — vira CANCELADO) e EXCLUI todos os `sec-*`.
+     Idempotente. O realm volta a ter só o dono.
 
-Uso:  cd infrastructure/scripts && python3 homolog-seguranca-e2e.py
+Uso:  cd infrastructure/scripts && python3 homolog-seguranca-e2e.py   (exit 0 = passou; 1 = violação)
 Zero segredo no código: senha do master admin vem do Secret Manager (gcloud); senhas dos sec-* são
 aleatórias por execução e ficam só em memória.
 """
@@ -39,7 +36,7 @@ import urllib.error
 import urllib.request
 
 import e2e_common
-from e2e_common import API, api_raw, cpf_valido
+from e2e_common import API, api_raw, cpf_valido, check, report
 
 KC = os.environ.get("KC_BASE", "https://id.portaltecnologia.app.br")
 REALM = os.environ.get("KC_REALM", "portal")
@@ -47,18 +44,7 @@ ADMIN_SECRET = os.environ.get("KC_ADMIN_SECRET", "portal-identity-admin-password
 DONO_USERNAME = "35922911813"  # Alessandro — o ÚNICO usuário humano que deve sobrar no realm.
 
 SUF = str(int(time.time()))[-6:] + str(secrets.randbelow(1000))
-
-# ─────────────────────────────────────────────────────────────────────────────
-# Coleta de achados. risk ∈ {ALTO, MÉDIO, BAIXO, OK, INFO}. Nada aqui é "fail" —
-# é medição. OK = comportamento esperado observado; os demais = risco a confirmar.
-# ─────────────────────────────────────────────────────────────────────────────
-findings = []  # (ator, acao, status, risk, esperado)
-
-
-def add(ator, acao, status, risk, esperado=""):
-    findings.append((ator, acao, str(status), risk, esperado))
-    tag = "" if risk in ("OK", "INFO") else f"   <<< RISCO {risk}"
-    print(f"    [{ator:11}] {acao:54} -> {str(status):5}{tag}")
+UNI_A = "Unidade Alpha"  # unidade do sec-gestor (escopo de Supervisor)
 
 
 # ── Keycloak master admin (idêntico ao e2e-user.sh: gcloud secret + password grant) ──
@@ -107,7 +93,6 @@ _sec_pw = {}  # senhas geradas na provisão — só em memória, nunca em disco.
 
 
 def _senha():
-    # Aleatória por execução; sufixo garante classes de caractere se houver política de senha.
     return secrets.token_urlsafe(20) + "Aa1!"
 
 
@@ -172,154 +157,143 @@ FAKE_GUID = "00000000-0000-0000-0000-000000000000"
 
 def main():
     global ATOK
-    print(f"SONDA DE SEGURANÇA (autorização/escopo) · API={API} · realm={REALM}")
-    print("  NOTA: mede o comportamento atual como RISCO A CONFIRMAR — a matriz D-142 não está fechada.\n")
+    print(f"HOMOLOGAÇÃO DE SEGURANÇA (RBAC + escopo · matriz D-142) · API={API} · realm={REALM}\n")
 
     ATOK = kc_admin_token()
     cuid = client_uuid()
-    print("  ✓ Keycloak master admin OK · client doctor-hub-api =", cuid[:8], "…")
+    print("  ✓ Keycloak master admin OK · client doctor-hub-api =", cuid[:8], "…\n")
 
     tokens = {}
     sidA = sidB = None
     try:
-        # ── 1) PROVISIONA sec-demandas e loga p/ escolher 2 clientes reais (A, B) ──
-        print("\n1) PROVISIONAMENTO + DESCOBERTA DE ESCOPO")
+        # ── 1) PROVISIONA sec-demandas e loga p/ descobrir 2 clientes reais (A, B) ──
+        print("1) PROVISIONAMENTO + DESCOBERTA DE ESCOPO")
         provision("sec-demandas", "SecDemandas", ["demandas"], cuid)
         tokens["sec-demandas"] = login_as("sec-demandas", _sec_pw["sec-demandas"])
-        if not tokens["sec-demandas"]:
-            print("  ✗ login sec-demandas falhou — abortando sondas (limpeza segue).", file=sys.stderr)
-            return
+        if not check(tokens["sec-demandas"], "login sec-demandas"):
+            report("HOMOLOGAÇÃO DE SEGURANÇA")  # aborta cedo (limpeza roda no finally)
         st, clientes = call(tokens["sec-demandas"], "GET", "/clientes")
         clientes = clientes if isinstance(clientes, list) else []
         ativos = [c for c in clientes if c.get("ativo")] or clientes
+        if not check(len(ativos) >= 2, "há ao menos 2 clientes p/ testar escopo horizontal"):
+            report("HOMOLOGAÇÃO DE SEGURANÇA")
         A, B = ativos[0], ativos[1]
-        print(f"  ✓ cliente A = {A['sigla']} ({A['id']}) · cliente B = {B['sigla']} ({B['id']})")
+        print(f"  cliente A = {A['sigla']} ({A['id']}) · cliente B = {B['sigla']} ({B['id']})")
 
-        provision("sec-rega", "SecRegA", ["regulacao"], cuid, cliente_id=A["id"], unidade="Unidade Alpha")
+        provision("sec-rega", "SecRegA", ["regulacao"], cuid, cliente_id=A["id"], unidade=UNI_A)
         provision("sec-regb", "SecRegB", ["regulacao"], cuid, cliente_id=B["id"], unidade="Unidade Beta")
-        provision("sec-gestor", "SecGestor", ["gestor"], cuid, cliente_id=A["id"], unidade="Unidade Alpha")
-        for u in ("sec-rega", "sec-regb", "sec-gestor"):
+        provision("sec-regc", "SecRegC", ["regulacao"], cuid)              # SEM vínculo (fail-closed)
+        provision("sec-gestor", "SecGestor", ["gestor"], cuid, cliente_id=A["id"], unidade=UNI_A)
+        provision("sec-gestc", "SecGestC", ["gestor"], cuid)              # gestor SEM unidade (fail-closed)
+        for u in ("sec-rega", "sec-regb", "sec-regc", "sec-gestor", "sec-gestc"):
             tokens[u] = login_as(u, _sec_pw[u])
-            print(f"  {'✓' if tokens[u] else '✗'} login {u}")
+            check(tokens[u], f"login {u}")
 
-        # doutor real p/ a sonda de escalas (id só é usado; corpo inválido não cria nada)
+        # doutor real p/ a sonda de escalas (id só é usado; corpo/id inválido não cria nada)
         _, docs = call(tokens["sec-demandas"], "GET", "/doctors")
         doc_id = docs[0]["id"] if isinstance(docs, list) and docs else FAKE_GUID
 
-        # ── 2) VERTICAL — elevação de privilégio (papel comum → endpoints de ADMIN) ──
-        # Esperado provável: 403 (só admin). 2xx/400/404 = chegou no handler = elevação.
-        print("\n2) VERTICAL — elevação de privilégio (sec-demandas tenta ADMIN)")
+        # ── 2) VERTICAL — elevação de privilégio (papel comum → endpoints de ADMIN) → 403 ──
+        print("\n2) VERTICAL — só Admin alcança os endpoints de admin (esperado 403)")
         td = tokens["sec-demandas"]
-        st, body = call(td, "GET", "/admin/users?page=1&pageSize=5")
-        add("sec-demandas", "GET /admin/users (lista de usuários)", st,
-            "OK" if st == 403 else "ALTO", "esperado 403 (admin) — 2xx vaza a lista de usuários")
+        st, _ = call(td, "GET", "/admin/users?page=1&pageSize=5")
+        check(st == 403, "sec-demandas NÃO lista usuários (GET /admin/users → 403)")
         st, _ = call(td, "POST", "/admin/users", {})
-        add("sec-demandas", "POST /admin/users (criar usuário)", st,
-            "OK" if st == 403 else "ALTO", "esperado 403 — 400 já provou que alcançou o criar-usuário")
-        st, _ = call(td, "POST", "/clientes", {"sigla": "", "nome": "", "natureza": "invalida"})
-        add("sec-demandas", "POST /clientes (criar cliente)", st,
-            "OK" if st == 403 else "ALTO", "esperado 403 (admin)")
+        check(st == 403, "sec-demandas NÃO cria usuário (POST /admin/users → 403)")
+        st, _ = call(td, "POST", "/clientes", {"sigla": "x", "nome": "x", "natureza": "publico"})
+        check(st == 403, "sec-demandas NÃO cria cliente (POST /clientes → 403)")
         st, _ = call(td, "PUT", f"/clientes/{FAKE_C}", {"sigla": "x", "nome": "x", "natureza": "publico"})
-        add("sec-demandas", "PUT /clientes/{id} (editar cliente)", st,
-            "OK" if st == 403 else "ALTO", "esperado 403 — 404 provou que alcançou o editar")
+        check(st == 403, "sec-demandas NÃO edita cliente (PUT /clientes/{id} → 403)")
         st, _ = call(td, "DELETE", f"/clientes/{FAKE_C}")
-        add("sec-demandas", "DELETE /clientes/{id} (excluir cliente)", st,
-            "OK" if st == 403 else "ALTO", "esperado 403 — 404 provou que alcançou o excluir")
-        # cruzamento: gestor/regulação também não deveriam ler a lista de usuários
+        check(st == 403, "sec-demandas NÃO exclui cliente (DELETE /clientes/{id} → 403)")
         st, _ = call(tokens["sec-gestor"], "GET", "/admin/users?page=1&pageSize=5")
-        add("sec-gestor", "GET /admin/users (lista de usuários)", st,
-            "OK" if st == 403 else "ALTO", "esperado 403 (admin)")
+        check(st == 403, "sec-gestor NÃO lista usuários (GET /admin/users → 403)")
 
-        # ── 3) HORIZONTAL — escopo de cliente (G-1): regA ↔ dado de regB ──
-        print("\n3) HORIZONTAL — vazamento entre clientes (G-1)")
+        # ── 3) RBAC por papel — base médica / solicitações / assumir vaga → 403 ──
+        print("\n3) RBAC por papel (matriz D-142)")
+        # Base médica (escala + ficha) = só Admin/Demandas → Regulação/Supervisor 403
+        st, _ = call(tokens["sec-rega"], "POST", f"/doctors/{doc_id}/escalas", {"especialidade": "X"})
+        check(st == 403, "sec-rega NÃO cria escala (base médica → 403)")
+        st, _ = call(tokens["sec-gestor"], "POST", f"/doctors/{doc_id}/escalas", {"especialidade": "X"})
+        check(st == 403, "sec-gestor NÃO cria escala (base médica → 403)")
+        st, _ = call(tokens["sec-rega"], "DELETE", f"/escalas/{FAKE_GUID}")
+        check(st == 403, "sec-rega NÃO exclui escala (base médica → 403)")
+        st, _ = call(tokens["sec-gestor"], "PUT", f"/doctors/{FAKE_GUID}", {"cpf": "12345678909"})
+        check(st == 403, "sec-gestor NÃO edita ficha/CPF do médico (base médica → 403)")
+        # Solicitações (criar + status) = só Admin/Regulação → Demandas/Supervisor 403
+        st, _ = call(td, "POST", "/solicitacoes", {"clienteSigla": A["sigla"], "especialidade": "X", "qtd": 1})
+        check(st == 403, "sec-demandas NÃO cria solicitação (criar = Admin/Regulação → 403)")
+        st, _ = call(tokens["sec-gestor"], "POST", "/solicitacoes", {"clienteSigla": A["sigla"], "especialidade": "X", "qtd": 1})
+        check(st == 403, "sec-gestor NÃO cria solicitação (→ 403)")
+        # Assumir vaga (POST agendamento) = só Supervisor/Admin → Regulação/Demandas 403
+        ag = {"vagaId": "sec-x", "pacienteIniciais": "M. S.", "especialidade": "X", "unidade": UNI_A}
+        st, _ = call(tokens["sec-rega"], "POST", "/agendamentos", ag)
+        check(st == 403, "sec-rega NÃO assume vaga (POST /agendamentos = Supervisor/Admin → 403)")
+        st, _ = call(td, "POST", "/agendamentos", ag)
+        check(st == 403, "sec-demandas NÃO assume vaga (→ 403)")
+
+        # ── 4) HORIZONTAL — escopo de cliente (G-1): regA ⟂ dado de regB ──
+        print("\n4) HORIZONTAL — Regulação A não toca no cliente B (G-1)")
         sA = {"clienteSigla": A["sigla"], "especialidade": "Cardiologia", "qtd": 1,
               "apelido": f"SEC-E2E-A-{SUF}", "aPartirDe": "05/07", "ate": "31/07", "retorno": 0}
         sB = {"clienteSigla": B["sigla"], "especialidade": "Cardiologia", "qtd": 1,
               "apelido": f"SEC-E2E-B-{SUF}", "aPartirDe": "05/07", "ate": "31/07", "retorno": 0}
         st, rA = call(tokens["sec-rega"], "POST", "/solicitacoes", sA)
         sidA = rA.get("id") if isinstance(rA, dict) else None
-        add("sec-rega", f"POST /solicitacoes (cliente A={A['sigla']})", st, "INFO", "setup: cria dado de A")
+        check(st == 201 and sidA, f"sec-rega CRIA no seu cliente A={A['sigla']} (setup)")
         st, rB = call(tokens["sec-regb"], "POST", "/solicitacoes", sB)
         sidB = rB.get("id") if isinstance(rB, dict) else None
-        add("sec-regb", f"POST /solicitacoes (cliente B={B['sigla']})", st, "INFO", "setup: cria dado de B")
+        check(st == 201 and sidB, f"sec-regb CRIA no seu cliente B={B['sigla']} (setup)")
 
-        # regA LÊ /solicitacoes → enxerga o dado do cliente B?
+        # regA tenta CRIAR para o cliente B → 403 (não deixa criar p/ outro cliente)
+        st, _ = call(tokens["sec-rega"], "POST", "/solicitacoes", sB)
+        check(st == 403, "sec-rega NÃO cria solicitação para o cliente B (POST cross-cliente → 403)")
+
+        # regA LÊ /solicitacoes → NÃO enxerga o dado do cliente B, e só vê o seu cliente
         st, lst = call(tokens["sec-rega"], "GET", "/solicitacoes")
         lst = lst if isinstance(lst, list) else []
-        ve_B = any(s.get("id") == sidB for s in lst)
         siglas_vis = sorted({s.get("clienteSigla") for s in lst if s.get("clienteSigla")})
-        add("sec-rega", f"GET /solicitacoes (vê o cliente B? {ve_B}; {len(siglas_vis)} clientes na lista)",
-            st, "ALTO" if ve_B else "OK",
-            "esperado ver SÓ o cliente A — vê B = vazamento horizontal de leitura")
+        check(not any(s.get("id") == sidB for s in lst),
+              "sec-rega NÃO vê a solicitação do cliente B na lista (leitura horizontal bloqueada)")
+        check(siglas_vis in ([A["sigla"]], []),
+              f"sec-rega só vê o seu cliente na lista (viu {siglas_vis}, esperado ⊆ [{A['sigla']}])")
 
-        # regA ALTERA a solicitação do cliente B (PATCH)?
+        # regA ALTERA a solicitação do cliente B (PATCH) → 403; e B fica intacto
         marca = f"SEC-E2E-XW-{SUF}"
-        st, pr = call(tokens["sec-rega"], "PATCH", f"/solicitacoes/{sidB}", {"subEstado": marca})
-        escreveu = st == 200
-        # confirma pela ótica de B
-        confirmado = False
-        if escreveu and tokens.get("sec-regb"):
-            _, lb = call(tokens["sec-regb"], "GET", "/solicitacoes")
-            confirmado = any(s.get("id") == sidB and s.get("subEstado") == marca
-                             for s in (lb if isinstance(lb, list) else []))
-        add("sec-rega", f"PATCH /solicitacoes/{{B}} (alterar dado de B; confirmado={confirmado})",
-            st, "ALTO" if escreveu else "OK",
-            "esperado 403/404 (fora do escopo) — 2xx = escrita horizontal cross-cliente")
+        st, _ = call(tokens["sec-rega"], "PATCH", f"/solicitacoes/{sidB}", {"subEstado": marca})
+        check(st == 403, "sec-rega NÃO altera a solicitação do cliente B (PATCH cross-cliente → 403)")
+        _, lb = call(tokens["sec-regb"], "GET", "/solicitacoes")
+        b_intacto = not any(s.get("id") == sidB and s.get("subEstado") == marca
+                            for s in (lb if isinstance(lb, list) else []))
+        check(b_intacto, "a solicitação do cliente B permaneceu intacta (nenhuma escrita vazou)")
 
-        # ── 4) LGPD / escopo de agendamentos (G-3) ──
-        print("\n4) LGPD — GET /agendamentos global (G-3)")
-        st, ld = call(tokens["sec-demandas"], "GET", "/agendamentos")
-        n_dem = len(ld) if isinstance(ld, list) else 0
-        st2, lg = call(tokens["sec-gestor"], "GET", "/agendamentos")
-        n_ges = len(lg) if isinstance(lg, list) else 0
-        # mesma contagem p/ papéis de escopos diferentes = lista global, sem filtro por unidade
-        risco_g3 = "ALTO" if (st == 200 and n_dem == n_ges and n_dem > 0) else (
-            "MÉDIO" if st == 200 else "OK")
-        add("sec-demandas", f"GET /agendamentos (retorna {n_dem} itens — iniciais de paciente)", st,
-            risco_g3, "esperado filtrar por unidade do token")
-        add("sec-gestor", f"GET /agendamentos (retorna {n_ges} itens — mesma lista? {n_dem == n_ges})",
-            st2, "INFO" if st2 == 200 else "MÉDIO",
-            "contagem igual à de demandas = escopo por unidade NÃO aplicado")
+        # fail-closed: Regulação SEM clienteId no token → lista vazia (não a global)
+        st, lc = call(tokens["sec-regc"], "GET", "/solicitacoes")
+        check(st == 200 and isinstance(lc, list) and len(lc) == 0,
+              "sec-regc (Regulação SEM vínculo) recebe lista VAZIA (fail-closed)")
 
-        # ── 5) NÃO AUTENTICADO — sem token deve dar 401 ──
-        print("\n5) NÃO AUTENTICADO (sem token → 401?)")
+        # ── 5) ESCOPO por unidade — agendamentos (G-3, LGPD: iniciais) ──
+        print("\n5) ESCOPO por unidade — Supervisor só vê a sua unidade (G-3)")
+        _, dem_all = call(td, "GET", "/agendamentos")  # Demandas vê tudo (referência)
+        dem_all = dem_all if isinstance(dem_all, list) else []
+        _, ges = call(tokens["sec-gestor"], "GET", "/agendamentos")
+        ges = ges if isinstance(ges, list) else []
+        alpha_ids = {a.get("id") for a in dem_all if a.get("unidade") == UNI_A}
+        check(all(a.get("unidade") == UNI_A for a in ges),
+              f"sec-gestor só vê agendamentos da sua unidade ({UNI_A})")
+        check({a.get("id") for a in ges} == alpha_ids,
+              "sec-gestor vê EXATAMENTE os agendamentos da sua unidade (nem mais, nem menos)")
+        st, lg = call(tokens["sec-gestc"], "GET", "/agendamentos")
+        check(st == 200 and isinstance(lg, list) and len(lg) == 0,
+              "sec-gestc (Supervisor SEM unidade) recebe lista VAZIA (fail-closed)")
+
+        # ── 6) NÃO AUTENTICADO — sem token deve dar 401 ──
+        print("\n6) NÃO AUTENTICADO (sem token → 401)")
         for p in ["/clientes", "/solicitacoes", "/agendamentos", "/doctors", "/admin/users"]:
             st, _ = call(None, "GET", p)
-            add("anon", f"GET {p} (sem token)", st,
-                "OK" if st == 401 else "ALTO", "esperado 401")
+            check(st == 401, f"GET {p} sem token → 401")
         st, _ = call(None, "POST", "/solicitacoes", sA)
-        add("anon", "POST /solicitacoes (sem token)", st, "OK" if st == 401 else "ALTO", "esperado 401")
-
-        # ── 6) RBAC por papel em solicitações/escalas/destrutivos (G-2) ──
-        # Corpo inválido de propósito: 400/404 = alcançou o handler (papel aceito) = RBAC não aplicado.
-        print("\n6) RBAC por papel (G-2) — quem alcança o quê")
-        st, _ = call(td, "POST", "/solicitacoes", {"clienteSigla": A["sigla"], "especialidade": "X", "qtd": 0})
-        add("sec-demandas", "POST /solicitacoes (papel demandas)", st,
-            "OK" if st == 403 else "MÉDIO", "prop. matriz: cria = Regulação — 400 = demandas alcança")
-        st, _ = call(tokens["sec-gestor"], "POST", "/solicitacoes", {"clienteSigla": A["sigla"], "especialidade": "X", "qtd": 0})
-        add("sec-gestor", "POST /solicitacoes (papel gestor)", st,
-            "OK" if st == 403 else "MÉDIO", "prop. matriz: cria = Regulação — 400 = gestor alcança")
-
-        escala_inv = {"especialidade": "Cardiologia", "tipo": "FLEX", "dias": [], "blocos": [],
-                      "duracaoMin": 20, "vigencia": {"inicio": "2026-07-10", "fim": "2026-07-11"}}
-        st, er = call(tokens["sec-rega"], "POST", f"/doctors/{doc_id}/escalas", escala_inv)
-        if st == 200 and isinstance(er, dict) and er.get("id"):  # criou por acaso → limpa
-            call(tokens["sec-rega"], "DELETE", f"/escalas/{er['id']}")
-        add("sec-rega", "POST /doctors/{id}/escalas (papel regulacao)", st,
-            "OK" if st == 403 else "MÉDIO", "prop. matriz: cria escala = Demandas/Admin — 400 = alcança")
-        st, er = call(tokens["sec-gestor"], "POST", f"/doctors/{doc_id}/escalas", escala_inv)
-        if st == 200 and isinstance(er, dict) and er.get("id"):
-            call(tokens["sec-gestor"], "DELETE", f"/escalas/{er['id']}")
-        add("sec-gestor", "POST /doctors/{id}/escalas (papel gestor)", st,
-            "OK" if st == 403 else "MÉDIO", "prop. matriz: cria escala = Demandas/Admin — 400 = alcança")
-
-        # destrutivos sensíveis: DELETE escala e PUT ficha do médico (PII/CPF) — id falso, sem mutar
-        st, _ = call(tokens["sec-rega"], "DELETE", f"/escalas/{FAKE_GUID}")
-        add("sec-rega", "DELETE /escalas/{id} (excluir escala)", st,
-            "OK" if st == 403 else "ALTO", "esperado restrito — 404 = qualquer autenticado alcança o excluir")
-        st, _ = call(tokens["sec-gestor"], "PUT", f"/doctors/{FAKE_GUID}", {"cpf": "12345678909"})
-        add("sec-gestor", "PUT /doctors/{id} (editar ficha/CPF do médico)", st,
-            "OK" if st == 403 else "MÉDIO", "esperado restrito — 404 = qualquer autenticado alcança editar PII")
+        check(st == 401, "POST /solicitacoes sem token → 401")
 
     finally:
         # ── 7) LIMPEZA — cancela dados de teste + exclui todos os sec-* ──
@@ -330,37 +304,14 @@ def main():
                 print(f"  · solicitação de teste {sid} → CANCELADO (não há DELETE no contrato)")
         roster = purge_sec_users()
         secs = [u for u in roster if str(u).startswith("sec-")]
-        print(f"  · usuários sec-* removidos · restam no realm: {roster}")
         if secs:
             print(f"  ⚠ AINDA HÁ sec-* no realm: {secs} — reexecute a limpeza!")
         elif DONO_USERNAME in roster:
             print(f"  ✓ realm limpo de sec-* (dono {DONO_USERNAME} presente)")
+        else:
+            print(f"  · realm sem sec-*; roster: {roster}")
 
-    _relatorio()
-
-
-def _relatorio():
-    print("\n" + "═" * 100)
-    print("RELATÓRIO DE RISCO — AUTORIZAÇÃO/ESCOPO (Doctor-Hub API · prod)")
-    print("Cada linha = comportamento MEDIDO. 'Risco' = A CONFIRMAR contra a matriz D-142 (não fechada).")
-    print("═" * 100)
-    print(f"{'ATOR':12} {'AÇÃO':56} {'STATUS':7} {'RISCO':7} EXPECTATIVA PROVÁVEL")
-    print("─" * 100)
-    ordem = {"ALTO": 0, "MÉDIO": 1, "BAIXO": 2, "INFO": 3, "OK": 4}
-    for ator, acao, status, risk, esp in sorted(findings, key=lambda f: (ordem.get(f[3], 9), f[0])):
-        print(f"{ator:12} {acao[:56]:56} {status:7} {risk:7} {esp}")
-
-    altos = [f for f in findings if f[3] == "ALTO"]
-    medios = [f for f in findings if f[3] == "MÉDIO"]
-    print("\n" + "═" * 100)
-    print(f"RESUMO: {len(altos)} risco(s) ALTO · {len(medios)} MÉDIO · "
-          f"{sum(1 for f in findings if f[3] == 'OK')} controle(s) OK observado(s).")
-    if altos:
-        print("\nRISCOS ALTOS (evidência = status observado):")
-        for ator, acao, status, _, esp in altos:
-            print(f"  ⚠ [{ator}] {acao} → HTTP {status}. {esp}")
-    print("\nLembrete: isto é MEDIÇÃO, não veredito. Feche a matriz D-142 → vira teste negativo que trava.")
-    print("═" * 100)
+    report("HOMOLOGAÇÃO DE SEGURANÇA (RBAC + escopo D-142)")
 
 
 if __name__ == "__main__":
