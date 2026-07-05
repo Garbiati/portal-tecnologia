@@ -27,6 +27,19 @@ um usuário REAL na hora (e-mail verdadeiro) → convite chega por e-mail (SendG
 `nao-responda@doctorhub.app.br`) → pessoa define senha e loga. 3. **Jornadas** com as personas acima.
 4. **Médicos**: em PROD há **4.523 médicos REAIS da Teleconsulta** (busca funciona — ex. "Abel").
 
+### 🧪 HOMOLOGAÇÃO (sábado à noite — ondas do 100%, D-145): o que testar
+Tudo abaixo agora PERSISTE em prod (recarregue e confira que ficou):
+1. **Escala** (Demandas): /escala → escolher médico REAL → criar FIXA (início ≥ amanhã!) e FLEX;
+   tentar FLEX em cima da FIXA → deve BLOQUEAR (INV-1); arquivar/reativar; badge "com escala" na lista.
+2. **Solicitações** (Regulação/aldair): Minhas Solicitações → Nova solicitação → recarregar (persistiu);
+   De Acordo → "Dou meu de acordo" → recarregar (aceite persiste).
+3. **Assunção** (Supervisor/eronildes): assumir vaga (paciente por INICIAIS) → recarregar (badge
+   "assumida" volta do banco). TC = stub por decisão (enviadoTc=false).
+4. **Auditoria** (Demandas): tela lista a trilha REAL (quem = usuário do token).
+5. **Inbox/Home**: os 6 UC-* da fixture agora vêm do banco (+ teste E2E cancelado à vista).
+⚠️ PROVISÓRIO (regra não decidida — não é bug): transições finas por papel; vagas da assunção
+derivadas; painel/contratação/cobertura numérica seguem da fixture; sobrepor sem persistência.
+
 ### O que foi preparado (2026-07-04, Alessandro offline)
 - ✅ **Seed de médicos em PROD**: 4.523 doutores reais carregados via código de seed rodando LOCAL
   contra o banco de prod (cloud-sql-proxy). ⚠️ **LGPD:** `doctors-demo.json` é **gitignored e

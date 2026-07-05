@@ -32,3 +32,21 @@
   `/medicos-escala` hidrata.
 - `temEscala` hardcoded `false` p/ médicos da API (api.ts:190) — filtro "Com escala" vazio.
 - Busca/filtro/paginação de médicos são client-side (ok p/ 4,5k, mas mover pro servidor).
+
+
+---
+
+## ATUALIZAÇÃO 2026-07-04 (noite) — pós "ondas do 100%" (D-145)
+
+Backend + front das ondas 1–3 EM PRODUÇÃO (E2E 8/8 verde). Estimativa revisada:
+
+| Perfil | Antes | Agora | O que virou REAL |
+|---|---|---|---|
+| Admin | 100% | **100%** | (já era) |
+| Demandas | 13% | **~70%** | escalas (CRUD+invariantes+persistência), inbox de solicitações, home (KPIs), auditoria, clientes; ficha/médicos já eram |
+| Regulação | 0% | **~90%** | minhas solicitações (lista + CRIAÇÃO persiste), de acordo (aceite = flag persistida) |
+| Supervisor | 0% | **~60%** | assunção/agendamento persiste e re-hidrata (LGPD só iniciais); vagas seguem derivadas (PROVISÓRIO) |
+
+Segue fixture/derivado (com regra pendente — NÃO inferir): painel (capacidade), contratação
+(fórmula D-113×v2 em aberto), sobrepor (regras de reserva), monitor-integração, vagas da assunção,
+cobertura numérica (`coberturaDe`). TC real = DEP-TC-1.
