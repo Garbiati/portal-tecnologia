@@ -36,3 +36,36 @@ Secretário (Solicitante) abre solicitação  →  Admin/Demandas simula/reserva
 - ✅ ~~Escopo de dados~~ **RESOLVIDO → D-038**: Gestor Solicitante vê só o seu estado; Gestor possui a unidade e vê o pool do seu estado.
 - 🟡 De onde vem a **lista de pacientes** que o Gestor seleciona ao agendar? (D-012: vem da TC por **unidade**/profile_tag — localizar o endpoint exato).
 - ✅ Quem cadastra os Gestores? **Admin**, na tela Usuários (com escopo estado/unidade).
+
+---
+
+# 🎯 MODELO CANÔNICO DE ATORES & FLUXO (Alessandro, 2026-07-05) — D-159
+
+> Articulação completa do Alessandro. Fonte da verdade dos papéis, vínculos e do fluxo. Substitui as
+> hipóteses provisórias acima. Deltas vs. build atual anotados ao fim.
+
+## Atores (papéis)
+| Papel | Vínculo | Responsabilidade |
+|---|---|---|
+| **super-admin** | doc hub (global, 1 no sistema) | cria **tenants** e configura as **features** de cada tenant (toggle feature) |
+| **admin** | um **TENANT** | cria **usuários** (demandas e outros perfis) e cria **clientes = healthcenters (HC)**; configura cada HC (ex.: **quais especialidades ofertamos** para ele) |
+| **demandas** | tenant | **gestão de escalas e médicos** — o **principal usuário** da plataforma |
+| **regulação** | um **healthcenter** | **solicita consultas** por especialidade (ex.: "1000 de cardio p/ o próximo mês"); pode **adicionar mais durante o mês**; fácil pedir/entender a necessidade; **quem pede primeiro tem prioridade** |
+| **supervisor** | um **HC** + **1 ou mais UNIDADES** do HC | **agenda as consultas** a partir dos **slots vagos atribuíveis** ao seu HC/unidade |
+
+## Fluxo (o ciclo que fecha)
+1. **Demandas cria escalas** (oferta = capacidade médica).
+2. **Analisa os pedidos** (solicitações da Regulação).
+3. **Recruta mais médicos** se necessário.
+4. **Disponibiliza** os slots para os **healthcenters**.
+5. **O HC aprova** o início da **liberação dos slots** para os supervisores.
+6. **Supervisores agendam** as consultas (a partir dos slots liberados).
+
+## Deltas vs. build atual (a reconciliar — vira spec/fatias)
+- **admin tenant-scoped:** hoje o `admin` é global → passa a ser **vinculado a um tenant**.
+- **Config de HC (especialidades ofertadas por HC):** NOVO nível de config (espelha o toggle de tenant, mas por HC). Hoje não existe.
+- **Prioridade "quem pede primeiro":** regra FIFO por data do pedido na alocação (relaciona com D-011).
+- **supervisor ↔ unidade(s):** vínculo a formalizar (a `unidade` já existe no token — I-011).
+- **Gate de aprovação do HC** antes de liberar slots aos supervisores (relaciona com o "de acordo" D-116).
+- **Naming:** o papel atual **`gestor`** (política `assume-vaga`, faz agendamento) = **`supervisor`** deste modelo? (confirmar rename).
+

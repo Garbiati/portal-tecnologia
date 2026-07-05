@@ -198,3 +198,10 @@ habilitar/desabilitar features **por tenant** (ex.: Portal → só teleatendimen
 **(b)** Configurado só pelo **super-admin do doc hub** (você). Design/spec: doc 32. Fase 1 = tenant +
 tipos de serviço por tenant + tela de config. Fundação multi-tenant → também P-013.
 
+### D-159 — Modelo canônico de atores & fluxo (2026-07-05)
+Alessandro articulou o modelo completo: super-admin (cria tenants+features) · admin (tenant: cria
+usuários e HCs, configura especialidades por HC) · demandas (escalas+médicos, usuário principal) ·
+regulação (HC: solicita consultas, quem pede primeiro tem prioridade) · supervisor (HC+unidades:
+agenda os slots). Fluxo: escala → analisa pedidos → recruta → disponibiliza p/ HC → HC aprova
+liberação → supervisor agenda. Detalhe + deltas: discovery/02-roles.md. Vira spec por fatia.
+
