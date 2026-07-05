@@ -35,6 +35,15 @@ body {
   text-rendering: optimizeLegibility;
 }
 
+/* Utilitários de texto -------------------------------------------------------
+   .muted  — texto secundário/de apoio (notas de rodapé, legendas, contadores).
+   .tabular-nums — dígitos de largura fixa p/ colunas/indicadores alinharem. */
+.muted {
+  color: var(--color-text-muted);
+  font-size: var(--text-sm);
+}
+.tabular-nums { font-variant-numeric: tabular-nums; }
+
 /* Anel de foco AA reutilizável — aplicado via :focus-visible em cada componente.
    2px sólido + offset 2px garante contraste ≥3:1 sobre superfícies claras. */
 .focus-ring,
@@ -564,6 +573,7 @@ body {
   color: var(--color-text);
   border-bottom: 1px solid var(--color-border);
   vertical-align: middle;
+  font-variant-numeric: tabular-nums;   /* números de colunas alinhados */
 }
 .table tbody tr:last-child td { border-bottom: none; }
 
@@ -638,6 +648,7 @@ body {
   line-height: var(--lh-2xl);
   font-weight: var(--fw-semibold);
   color: var(--color-text);
+  font-variant-numeric: tabular-nums;   /* dígitos alinhados entre KPIs */
 }
 .kpi__delta {
   font-size: var(--text-xs);
