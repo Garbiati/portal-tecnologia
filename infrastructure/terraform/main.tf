@@ -68,6 +68,9 @@ resource "google_sql_database_instance" "kc" {
       # IP público habilitado, mas SEM redes autorizadas → só o Cloud SQL Auth Proxy (connector, via IAM)
       # consegue conectar; não há acesso "raw" pela internet.
       ipv4_enabled = true
+      # Pentest interno (2026-07-05): exigir SSL/TLS — o proxy usa mTLS; conexão raw não-encriptada é
+      # recusada. Desligar o IP público exigiria IP privado + VPC connector (não há) — fica como dívida.
+      ssl_mode = "ENCRYPTED_ONLY"
     }
     user_labels = local.labels
   }
