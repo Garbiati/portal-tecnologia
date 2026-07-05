@@ -50,7 +50,10 @@ resource "google_secret_manager_secret" "doctorhub_db" {
 resource "google_secret_manager_secret_version" "doctorhub_db" {
   count       = var.deploy_doctor_hub ? 1 : 0
   secret      = google_secret_manager_secret.doctorhub_db[0].id
-  secret_data = "Host=localhost;Port=5432;Database=doctorhub;Username=doctorhub;Password=${random_password.doctorhub_db[0].result};SSL Mode=Disable"
+  # Maximum Pool Size limita o pool Npgsql por instância (default seria 100) — evita exaustão do
+  # Cloud SQL compartilhado (f1-micro, ~25-50 conexões). Aplicar em JANELA SEGURA (novo secret version
+  # + restart da API lê o `latest`). Tuning fino do pool vs. tier do banco = item de escala (🟡, P-010).
+  secret_data = "Host=localhost;Port=5432;Database=doctorhub;Username=doctorhub;Password=${random_password.doctorhub_db[0].result};SSL Mode=Disable;Maximum Pool Size=15;Timeout=15"
 }
 
 # --- Service Account de runtime (API precisa de Cloud SQL + secrets) ---
