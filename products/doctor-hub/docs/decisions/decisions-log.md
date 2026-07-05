@@ -214,3 +214,13 @@ p/ o build do D-159):** (a) vínculo vaga↔solicitação p/ o gate de aceite D-
 clienteId → fail-closed vazio; a demo roda como Admin/Demandas=VeTudo). Busca de paciente real no TC
 segue adiada (paciente por iniciais manual).
 
+### D-160 — i18n multi-idioma (2026-07-05, registrado)
+Detectar idioma + traduzir a UI (PT default · EN · ES · DE · …) quando houver tradução. Código em
+inglês mantém-se. Framework próprio (chaves + arquivos). Detalhe: doc 28. Imediato feito: strings
+soltas em inglês → PT ("Tenants & Features" → "Tenants e Funcionalidades").
+
+### D-161 — White-label de identidade por tenant + tela de detalhe do tenant (2026-07-05, registrado)
+Evolução de P-013: identidade visual por tenant (logo/cores/e-mail/telefone/CNPJ próprios; ocultar a
+marca doc hub) — "separar tech de healthtech". 1ª fatia = tela de detalhe do tenant (CNPJ/endereço/
+telefones/e-mails, não-CRUD). Direção registrada; não construir agora. Detalhe: doc 28.
+

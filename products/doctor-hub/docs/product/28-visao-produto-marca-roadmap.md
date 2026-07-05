@@ -41,6 +41,21 @@ capacidade × demanda **por cliente do tenant**; o RBAC isola por cliente (D-142
 Evoluir de "gestão de escala/capacidade" para um **HUB de soluções médicas**, com **estratégia e IA
 para tomada de decisão e alocação** — o cérebro que decide *quem atende o quê, quando e por quanto*.
 
+## 🌐 i18n — multi-idioma (Alessandro, 2026-07-05)
+Detectar o idioma do usuário e **traduzir a UI** quando houver tradução. Começar por **PT (default) ·
+EN · ES · DE** e ir somando. **Código continua em inglês** (obrigatório/ok); só o texto voltado ao
+usuário é traduzido. Hoje há strings soltas em inglês (ex.: "Tenants & Features" — já corrigida). Vira
+um framework de i18n (chaves + arquivos de tradução + detecção/troca de idioma) — iniciativa própria.
+
+## 🏷️ White-label de IDENTIDADE por tenant (evolução de P-013 — Alessandro, 2026-07-05)
+Levar o white-label ao ponto de **configurar a identidade visual por tenant**: logos, cores, e-mails,
+telefones e CNPJ **da empresa/clínica**, e **ocultar TODA a marca "doc hub"** — o cliente usa como se
+fosse um sistema dele. Tese: **separar o "tech" do "healthtech"** — o doc hub atende a necessidade de
+TI de qualquer operação de saúde, invisível por baixo. Requer: tema/tokens/logo/manifest por tenant
+(runtime, não build), remetente de e-mail por tenant, dados legais por tenant. **1ª fatia:** uma tela
+de **detalhe do tenant** com CNPJ, endereço, telefones e e-mails de contato (não precisa ser CRUD
+completo). Não construir agora — registrado como direção.
+
 ## Roadmap de produtos futuros (do case atual podem surgir)
 > Não inferir/priorizar sem decisão — registro como visão. Cada um vira discovery próprio quando for a vez.
 1. **Pareamento médico ↔ hospital** — alocar médicos plantonistas à demanda de hospitais/PS.
