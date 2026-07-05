@@ -191,3 +191,10 @@ Alessandro cravou: "folgo na 2ª semana" = a **2ª ocorrência daquele dia** (2�
 não semana-calendário. O código já implementava (`ocorrenciaNoMes = ceil(dia/7)`); removido o PROVISÓRIO.
 Crítico para o cadastro REAL de escalas (capacidade correta).
 
+### D-158 — Feature flags por TENANT (white-label), configurados pelo super-admin (2026-07-05)
+Alessandro: diferenciar **clientes do doc hub (tenants)** dos **clientes dos clientes (HCs)** e
+habilitar/desabilitar features **por tenant** (ex.: Portal → só teleatendimento + telediagnóstico).
+**(a)** Sistema GENÉRICO de flags (tipos de serviço + módulos + features futuras), não hardcode.
+**(b)** Configurado só pelo **super-admin do doc hub** (você). Design/spec: doc 32. Fase 1 = tenant +
+tipos de serviço por tenant + tela de config. Fundação multi-tenant → também P-013.
+
