@@ -31,6 +31,16 @@ para tomada de decisão e alocação** — o cérebro que decide *quem atende o 
    (evolução do painel de capacidade + das solicitações).
 4. **Marketplace/hub** — vários produtos médicos sob a mesma plataforma/identidade.
 
+## Onboarding do médico — self-service (evolução futura — só ideia, D-156)
+> Registrado a pedido do Alessandro (2026-07-05) como visão; NÃO desenvolver agora.
+- **Cadastro do próprio médico** (self-signup), saindo da fase atual em que só **médicos indicados**
+  participam. A landing já terá um CTA "candidate-se" em estado **"em breve"** + captura de e-mail
+  (notify-me) para avisar quando as inscrições abrirem.
+- **Perfil do doutor**: o médico gerencia seus dados/especialidades/valores.
+- **Autoproposta de escala**: o próprio médico PROPÕE sua escala → entra num **fluxo de APROVAÇÃO**
+  (Demandas/Admin aprova/ajusta) antes de virar oferta de capacidade.
+- Conecta com a north-star (hub) e com o produto futuro de pareamento médico↔hospital (D-155).
+
 ## Landing & identidade visual (fase 2 — primeiros passos)
 - **Objetivo:** landing pública (raiz do doctorhub.app.br, antes do app) que apresenta o PRODUTO,
   indexável (SEO — doc 27/§SEO + este), com a Portal como case.
