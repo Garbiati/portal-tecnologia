@@ -25,3 +25,4 @@ temp/
 
 # Arquivos prontos p/ upload (PII — nunca versionar)
 output/
+.e2e-env
