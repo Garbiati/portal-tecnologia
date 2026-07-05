@@ -205,3 +205,12 @@ regulação (HC: solicita consultas, quem pede primeiro tem prioridade) · super
 agenda os slots). Fluxo: escala → analisa pedidos → recruta → disponibiliza p/ HC → HC aprova
 liberação → supervisor agenda. Detalhe + deltas: discovery/02-roles.md. Vira spec por fatia.
 
+### D-157 ✅ FEITO (2026-07-05) — assunção com vagas REAIS + demo blindada
+`GET /api/vagas` deriva 944 vagas reais da capacidade (escalas), substituindo a fixture — o ciclo
+fecha sem mock. + Error Boundary (fim da tela branca), banner "dados de demonstração" (sem mock
+silencioso), Monitor de Integração fora da nav (DEP-TC-1). **2 itens PROVISÓRIO abertos (não inferidos,
+p/ o build do D-159):** (a) vínculo vaga↔solicitação p/ o gate de aceite D-116 em vagas reais
+(hoje solicitacaoId=null → vaga disponível); (b) mapeamento vaga↔unidade do gestor (gestor sem
+clienteId → fail-closed vazio; a demo roda como Admin/Demandas=VeTudo). Busca de paciente real no TC
+segue adiada (paciente por iniciais manual).
+
