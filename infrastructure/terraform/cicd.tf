@@ -56,9 +56,17 @@ resource "google_service_account_iam_member" "deployer_actas_runtime" {
   member             = "serviceAccount:${google_service_account.github_deployer[0].email}"
 }
 
+# CI do IdP (portal-identity): o deployer precisa actAs na SA que o Keycloak roda.
+resource "google_service_account_iam_member" "deployer_actas_kc" {
+  count              = var.deploy_doctor_hub ? 1 : 0
+  service_account_id = google_service_account.kc.name
+  role               = "roles/iam.serviceAccountUser"
+  member             = "serviceAccount:${google_service_account.github_deployer[0].email}"
+}
+
 # Liga cada repo do GitHub à SA de deploy (impersonação via WIF).
 resource "google_service_account_iam_member" "deployer_wif_bind" {
-  for_each           = var.deploy_doctor_hub ? toset(["doctor-hub-api", "doctor-hub-web"]) : []
+  for_each           = var.deploy_doctor_hub ? toset(["doctor-hub-api", "doctor-hub-web", "portal-identity"]) : []
   service_account_id = google_service_account.github_deployer[0].name
   role               = "roles/iam.workloadIdentityUser"
   member             = "principalSet://iam.googleapis.com/${google_iam_workload_identity_pool.github[0].name}/attribute.repository/${var.github_owner}/${each.value}"
