@@ -1,0 +1,19 @@
+{
+  "_doc": "BASELINE do tenant fundador (Portal Telemedicina — P-009): os HCs da Teleconsulta como clientes reais do doc hub (external_id = health_centers.id). Parte da carga inicial que o reset SEMPRE recria (junto com doutores + catálogo); o transacional (escalas/solicitações/…) é limpo. Fonte: JSON do Alessandro 2026-07-04. SEM dado de paciente — só identificadores de organização. natureza publico/privado revisável pela tela.",
+  "clientes": [
+    { "externalId": "a1c8e688-bf2b-4d45-ab34-556c505aee42", "nome": "Piauí Saúde Digital", "natureza": "publico" },
+    { "externalId": "770c5438-bbdc-47b8-be57-f48d04d5d82e", "nome": "Saúde Am Digital", "natureza": "publico" },
+    { "externalId": "7523edb8-e9e7-4ca7-8577-369cf637fc97", "nome": "Saúde até você digital", "natureza": "publico" },
+    { "externalId": "b240a790-7afc-414e-b932-8ff6f0d0047c", "nome": "Saúde da gente digital", "natureza": "publico" },
+    { "externalId": "4ba0046e-2837-4c72-9199-9eff1f75c3d5", "nome": "IASEP-PARA", "natureza": "publico" },
+    { "externalId": "5db4ebad-f699-472c-939e-dc08a412cca3", "nome": "Conexão Povos da Floresta", "natureza": "privado" },
+    { "externalId": "c58903a0-3de4-43f0-9999-af819406400b", "nome": "HC-SAMPA", "natureza": "privado" },
+    { "externalId": "bcc172ad-a196-41eb-a75d-4f7f77e58409", "nome": "Genesis Saude", "natureza": "privado" },
+    { "externalId": "c5b4aa5e-f8b2-47d7-89e7-8b57eeb51d1d", "nome": "VCMED", "natureza": "privado" },
+    { "externalId": "ccebe173-9824-4c00-9bcb-f4ebd1cbbb55", "nome": "UpaWeb", "natureza": "privado" },
+    { "externalId": "886ac242-a504-4588-b59c-7866612a0751", "nome": "Vanty Medicina", "natureza": "privado" },
+    { "externalId": "5462d118-f93e-435f-91b0-a88e488106e9", "nome": "Portal Telemedicina", "natureza": "privado" },
+    { "externalId": "f87eb7c3-9101-415d-982b-338ea9ad7f05", "nome": "test_dev", "natureza": "privado" },
+    { "externalId": "684fdf16-ddf1-4c7d-aacb-133857acfc01", "nome": "HOMOLOG", "natureza": "privado" }
+  ]
+}

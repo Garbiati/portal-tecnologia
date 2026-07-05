@@ -8,7 +8,7 @@ dado NÃO dá a volta de verdade (ex.: o Keycloak descartava clienteId/unidade e
 vínculo, desativa/reativa e exclui — afirmando persistência via GET a cada passo — e limpa no fim.
 
 Uso:
-  E2E_ADMIN_USER=admin-dh E2E_ADMIN_PASS='***' python3 homolog-usuarios-e2e.py
+  E2E_ADMIN_USER=<seu-cpf> E2E_ADMIN_PASS='***' python3 homolog-usuarios-e2e.py
   (ou API_BASE / KC_BASE para apontar p/ outro ambiente; default = produção)
 
 Sai com código != 0 em qualquer falha (serve p/ CI/pre-deploy smoke). Zero segredo no código.
