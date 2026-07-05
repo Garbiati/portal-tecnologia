@@ -26,6 +26,17 @@ médicos e agendamentos — **para clientes públicos ou privados.** Diferenciai
 previsibilidade de capacidade, e (north-star) **IA como intérprete/assistente** — ninguém no mercado
 médico faz. Anti-posicionamento: não somos "mais um" gerador de escala que quebra em regra complexa.
 
+## 💎 O DIFERENCIAL (o núcleo — Alessandro, 2026-07-05)
+Três coisas, juntas, que ninguém no mercado médico faz bem:
+1. **Gerenciar recursos médicos com FACILIDADE** — criar escala de forma **simples e intuitiva**
+   (a agenda real do médico, sem fricção). ← *é o maior lever ainda a lapidar.*
+2. **Visão em TEMPO REAL da capacidade médica** — oferta viva das escalas.
+3. **Solicitações + NECESSIDADES por cliente** — demanda e déficit **por cliente do tenant**.
+
+**Hierarquia:** doc hub (produto) → **tenant** (empresa white-label, ex.: Portal) → **clientes do
+tenant** (HCs/secretarias) → necessidade dinâmica por cliente/mês. O painel de déficit já cruza
+capacidade × demanda **por cliente do tenant**; o RBAC isola por cliente (D-142).
+
 ## North-star
 Evoluir de "gestão de escala/capacidade" para um **HUB de soluções médicas**, com **estratégia e IA
 para tomada de decisão e alocação** — o cérebro que decide *quem atende o quê, quando e por quanto*.
