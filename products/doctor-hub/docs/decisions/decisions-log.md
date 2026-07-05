@@ -224,3 +224,18 @@ Evolução de P-013: identidade visual por tenant (logo/cores/e-mail/telefone/CN
 marca doc hub) — "separar tech de healthtech". 1ª fatia = tela de detalhe do tenant (CNPJ/endereço/
 telefones/e-mails, não-CRUD). Direção registrada; não construir agora. Detalhe: doc 28.
 
+### D-162 — Hierarquia de 4 níveis afiada + "Regulação"/"Supervisor" a renomear (2026-07-05)
+Alessandro (homologação): o papel "regulação" NÃO é regulação — na prática é o **admin do cliente do
+tenant**. Hierarquia real:
+- **doc hub** (produto, Portal Tecnologia/Garbiati = super-admin)
+- **TENANT** = cliente do doc hub (ex.: Portal Telemedicina) — tem contratos com estados, municípios,
+  e privados (ex.: rede de academias). Papéis internos: admin (tenant), demandas (escalas+médicos).
+- **CLIENTE do tenant** (o estado/município/academia = HC) — precisa de um **ADMIN próprio** (o atual
+  "regulação"): cria os usuários do cliente (os "operadores"), **solicita atendimentos**, acompanha as
+  solicitações, e **vê as especialidades contratadas** (futuro: preços por especialidade).
+- **OPERADOR** do cliente (o atual "supervisor"/"gestor"): **realiza o agendamento** dos slots.
+**Pendente:** renomear os papéis (regulação → admin-do-cliente; supervisor → operador) — decisão do
+Alessandro entre 10 nomes propostos. Rename = refactor real (client role Keycloak + políticas + claims).
+**UI relacionada:** "Meus dados" mostra "Órgão" (errado — assume governo; cliente pode ser academia) →
+trocar por "Vínculo"/"Cliente". Logo do cliente ausente → liga com D-161 (identidade por tenant/cliente).
+
