@@ -16,9 +16,9 @@ trap 'rm -rf "$SCRATCH"' EXIT
 
 # ── 1. PULL read-only dos HCs (ferramental oficial; nada é escrito na TC) ────
 echo "▸ lendo health_centers da Teleconsulta (read-only)…"
-bash "$HUB/scripts/db/query-prod-ro.sh" core \
-  "SELECT id, name, COALESCE(domain,'') FROM health_centers ORDER BY name;" \
-  --csv > "$SCRATCH/hcs.csv"
+bash "$HUB/scripts/db/query-prod-ro.sh" -c \
+  "COPY (SELECT id, name, COALESCE(domain,'') FROM health_centers ORDER BY name) TO STDOUT WITH (FORMAT csv)" \
+  > "$SCRATCH/hcs.csv"
 N=$(wc -l < "$SCRATCH/hcs.csv")
 echo "  $N HCs lidos."
 
