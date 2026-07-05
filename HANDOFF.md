@@ -72,6 +72,31 @@ uptime checks + tripwire + rotina smoke de hora em hora ativos. Decisões novas:
 
 ---
 
+## 🧪 HOMOLOGAÇÃO E2E — TODAS AS TELAS (2026-07-05)
+
+Modelo D-153 ("pronto = testado contra infra real") estendido a todas as telas. Cada fluxo tem
+harness E2E versionado em `infrastructure/scripts/homolog-<tela>-e2e.py` (login OIDC real + CRUD/
+fluxo real contra API+Keycloak, afirmando persistência). Helper comum: `e2e_common.py`. Conta de
+automação provisionável: `e2e-user.sh up|down` (fica fora do realm por padrão — só o Alessandro).
+
+| Tela | Harness | Status |
+|---|---|---|
+| Usuários | homolog-usuarios-e2e.py | ✅ (achou I-009: vínculo descartado pelo Keycloak → corrigido) |
+| Clientes & Projetos | homolog-clientes-e2e.py | ✅ (achou PUT/tipo legado → corrigido) |
+| **Escala FIXA** (core) | homolog-escalas-e2e.py | ✅ por-dia+semana+tipo+projeto persistem; INV bloqueia; zero bug |
+| Solicitações + De Acordo | homolog-solicitacoes-e2e.py | ✅ criar→reservar→aceite(D-116) persiste; zero bug |
+| Assunção / Agendamentos | homolog-agendamentos-e2e.py | ✅ criar+validação LGPD das iniciais; zero bug |
+
+**Achados PROVISÓRIOS (não bugs — decisão/design):** agendamentos sem DELETE + GET global sem
+filtro por unidade (qualquer autenticado lê as iniciais — revisar escopo/RBAC); solicitações
+POST/PATCH sem RBAC por papel (matriz papel×ação D-142 pendente). Nada bloqueia a apresentação.
+
+**Rodar tudo:** `cd infrastructure/scripts && ./e2e-user.sh up && for h in usuarios clientes escalas solicitacoes agendamentos; do python3 homolog-$h-e2e.py; done && ./e2e-user.sh down`
+
+---
+
+---
+
 ## 🎬 DEMO DE SEGUNDA (2026-07-07, antes do meio-dia) — TUDO PRONTO (preparado 2026-07-04)
 
 **Objetivo:** apresentação navegável p/ validação ("elas" criam usuários, logam, passeiam nas telas).
