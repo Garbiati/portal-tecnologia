@@ -313,3 +313,19 @@ técnico `teleatendimento` FICA** (Escala.TipoServico, feature keys, ids) — se
 **modo (por consulta / por hora)**, o **valor (R$)** e os **minutos** por atendimento; se null, orientar a
 configurar na ficha. 'Parte principal': previsibilidade de capacidade + valores. Faturamento continua sendo
 editado na ficha (D-125) — a escala só EXIBE (não duplica a edição, sem override por escala por ora).
+
+### D-169 — Faturamento por (médico × especialidade × TIPO DE SERVIÇO); obrigatório na escala; editável inline (revisa D-125) (2026-07-06)
+Alessandro (homologação): o telediagnóstico expôs que o faturamento NÃO é só por especialidade (D-125 era
+teleconsulta/especialidade). Decisões confirmadas:
+- **Granularidade:** faturamento por **(médico, especialidade, tipo de serviço)** — teleconsulta e
+  telediagnóstico da mesma especialidade têm valores/modo próprios. Novo `DoctorFaturamento` (doctorId,
+  especialidadeId, tipoServico, modo [consulta/hora], valor, tempoMin, ativo), único por (doctor,esp,tipo).
+- **Quais serviços o médico faz = DERIVADO do faturamento**: ele 'faz' (esp,tipo) sse há DoctorFaturamento
+  ativo. O tipo de serviço no wizard é FILTRADO ao que ele faz (não mostra telediagnóstico se não atende).
+- **OBRIGATÓRIO na escala** (Alessandro: 'sem essa config a escala não faz sentido' — capacidade sem valor):
+  criar escala p/ (médico,esp,tipo) exige DoctorFaturamento; POST /escalas valida (400 claro se faltar).
+- **Editável INLINE na criação da escala**, SEM duplicar código: componente COMPARTILHADO com a ficha,
+  salvando no MESMO DoctorFaturamento (endpoint único). Nunca é beco: se falta, configura ali e segue.
+- **Visual:** painel de faturamento com cores/ícones/destaque (estava difícil de ler).
+**Migração:** copiar o faturamento atual (DoctorEspecialidade.Modo/Valor/TempoMin, teleconsulta) → 
+DoctorFaturamento com tipo='teleatendimento', preservando; campos antigos ficam dormentes (dropar depois).
