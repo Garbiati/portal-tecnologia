@@ -369,3 +369,13 @@ Alessandro: os médicos já são cards; clientes/usuários são listas. Padroniz
 → N desktop), mobile-first. Usado por médicos (referência — extrair o card atual), clientes e usuários.
 Uma exibição só de entidade em todo o sistema (P-015). Fila: depois de abas+calendário (D-173) pra não
 conflitar no barrel do DS.
+
+### D-175 — Cadastro de usuário em ABAS por papel (dados comuns + config por papel ativo) (2026-07-06)
+Alessandro: o cadastro deve refletir o modelo real — **dados comuns** a todos (nome/e-mail/CPF/telefone)
++ **uma ABA por papel ATIVO** com a config daquele papel (usa o componente `Tabs`, D-173). Ativar o papel
+→ exibe a aba; a validação só cobra os campos dos papéis ativos. Decisões confirmadas:
+- **Cliente vinculado = do USUÁRIO** (mesmo cliente p/ Gestor do Contrato E Operador — não difere por papel);
+  aparece **uma vez**, **obrigatório** se um papel escopado (Gestor do Contrato/Operador) estiver ativo.
+- **Operador de Agendamento:** **Unidade OBRIGATÓRIA**.
+- **Admin / Demandas:** sem campos próprios — a aba deles só descreve o acesso (tenant, veem tudo).
+- Super Admin: sem UI (D-158). Substitui o form plano atual (Cliente/Unidade condicionais → abas por papel).
