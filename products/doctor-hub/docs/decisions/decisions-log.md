@@ -293,3 +293,12 @@ Alessandro: wizard é bom, mas quer explorar UX mais nova com IA numa PRÓXIMA v
 - **Norte (D-155):** planejar capacidade — 'preciso de 200 cardios a mais em julho' → IA propõe quais escalas criar/ajustar.
 **Sequência:** v1 = wizard determinístico (base, offline, auditável); v2 = camada de IA por cima. Mock conceitual
 interativo criado para tangibilizar. LGPD: escala não tem dado de paciente (nome/CRM do médico só) — risco baixo; still, confirmar tratamento antes de produção.
+
+**D-167 · IMPLEMENTAÇÃO (quando voltarmos) — ADIADO em 2026-07-05 (foco no wizard/D-166 primeiro):**
+IA de verdade NÃO vai no artifact (CSP bloqueia chamada externa) nem no frontend (chave em browser vaza).
+Fica no BACKEND: endpoint `POST /api/escala/interpretar` na doctor-hub-api → chama **Claude Haiku** (tarefa
+= extração estruturada, barata, ~fração de centavo/chamada) → devolve a escala em JSON → o wizard confirma
+(IA propõe, invariantes+humano dispõem). **Chave da Anthropic no GCP Secret Manager** (`anthropic-api-key`),
+injetada só na API — **zero segredo no git/front** (constituição). O Alessandro fornece a chave via Secret
+Manager quando construirmos (Claude não manuseia a chave em texto — regra de segurança). Dependência externa
+nova + custo por chamada (pequeno) — por isso é v2, não bloqueia a demo de segunda.
