@@ -302,3 +302,14 @@ Fica no BACKEND: endpoint `POST /api/escala/interpretar` na doctor-hub-api → c
 injetada só na API — **zero segredo no git/front** (constituição). O Alessandro fornece a chave via Secret
 Manager quando construirmos (Claude não manuseia a chave em texto — regra de segurança). Dependência externa
 nova + custo por chamada (pequeno) — por isso é v2, não bloqueia a demo de segunda.
+
+### D-168 — 'Teleatendimento' → 'Teleconsulta' + tipo de serviço lidera o wizard + faturamento à vista (2026-07-06)
+Alessandro (homologação): (1) renomear **Teleatendimento → Teleconsulta** no sistema inteiro — 'teleatendimento'
+é abrangente demais. É só o **NOME/display** (TipoServico.Nome, Feature.Nome, rótulos do front); o **slug
+técnico `teleatendimento` FICA** (Escala.TipoServico, feature keys, ids) — sem migração de dados de escala.
+(2) No wizard 'Criar escala', o **Tipo de serviço vem PRIMEIRO** e o form se **adapta** ao que for escolhido
+(hoje só telemedicina/teleconsulta; estrutura pronta p/ telediagnóstico etc.). (3) **Surfacing do faturamento
+(D-125)** na escala: mostrar (READ-ONLY, vindo do `DoctorEspecialidade` da dupla médico×especialidade) o
+**modo (por consulta / por hora)**, o **valor (R$)** e os **minutos** por atendimento; se null, orientar a
+configurar na ficha. 'Parte principal': previsibilidade de capacidade + valores. Faturamento continua sendo
+editado na ficha (D-125) — a escala só EXIBE (não duplica a edição, sem override por escala por ora).
