@@ -361,3 +361,11 @@ zona de risco). Componente `Tabs` novo no DS (tablist/tab/tabpanel, teclado, bar
 no mobile). O **calendário de folgas** (D-172: dias + repetir) entra AQUI (aba Escala) e substitui os chips
 de 'semanas sem atendimento' no wizard. Provisionamento/histórico DESCEM (aba Mais), como pedido. Feito
 junto com o calendário (D-170/D-172).
+
+### D-174 — `EntityCard`: exibição PADRONIZADA de entidades em cards (P-015), mobile-first (2026-07-06)
+Alessandro: os médicos já são cards; clientes/usuários são listas. Padronizar num componente único.
+**`EntityCard`** (novo no DS): [media = avatar OU logo, fallback iniciais] + título + subtítulo + badges
+(tags/status) + destaque opcional (métrica, ex.: '≈240 vagas') + ⋯ ações. **Grid responsivo** (1 col mobile
+→ N desktop), mobile-first. Usado por médicos (referência — extrair o card atual), clientes e usuários.
+Uma exibição só de entidade em todo o sistema (P-015). Fila: depois de abas+calendário (D-173) pra não
+conflitar no barrel do DS.
