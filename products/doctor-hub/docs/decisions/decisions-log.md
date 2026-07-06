@@ -239,3 +239,13 @@ Alessandro entre 10 nomes propostos. Rename = refactor real (client role Keycloa
 **UI relacionada:** "Meus dados" mostra "Órgão" (errado — assume governo; cliente pode ser academia) →
 trocar por "Vínculo"/"Cliente". Logo do cliente ausente → liga com D-161 (identidade por tenant/cliente).
 
+### D-163 — White-label por CLIENTE (logo + tema) + campo "Cliente" é identidade, não input (2026-07-05)
+Alessandro (homologação): o cliente (Gestor do Contrato) deve **sentir a ferramenta como dele**. O
+campo "Cliente" na Nova Solicitação aparece como INPUT desabilitado — errado: ele É o cliente. Vira
+**rótulo/identidade** (nome + LOGO do cliente), read-only. Evolução (estende D-161 para o nível CLIENTE):
+dentro do sistema, um **tenant cria um cliente/healthcenter e coloca o LOGO** e, dependendo, um **tema
+nas cores da empresa/estado**. Imediato: **puxar os logos dos HCs de produção** — ⚠️ envolve dados do
+Teleconsulta (D-157/DEP-TC-1: só com o Alessandro presente + secrets); registrar a possibilidade de
+subir/gerir o logo DENTRO do sistema (não depender do TC). Também: corrigir a duplicação "Portal
+Telemedicina — Portal Telemedicina" (sigla==nome → mostrar uma vez).
+
