@@ -273,3 +273,13 @@ não é dedicada a cliente. Capacidade = pool. A ligação escala↔cliente é E
 `escala.clienteId` fica DORMANTE no backend (sempre null) — dropar em migração futura. O painel mostra
 capacidade por especialidade × tipo de serviço (sem projeto).
 
+### D-166 — Criar escala vira WIZARD (cadastro por etapas) + modo UPLOAD EM LOTE (2026-07-05)
+Alessandro (homologação): o form de criar escala está muito complexo numa tela só. Quer **wizard**:
+cadastro por etapas, bem explicado, com **exemplos/guias** quando possível; e um **modo upload em lote**.
+Passos do wizard: (1) **O que** — tipo FIXA/FLEX (explicado) + especialidade + tipo de serviço;
+(2) **Quando** — dias da semana + semanas sem atendimento + vigência (início; fim se FLEX);
+(3) **Horários** — preset/modelo ou períodos do dia (+ horários diferentes por dia) + duração;
+(4) **Revisão** — resumo + prévia da capacidade gerada + criar. PRESERVA as regras/invariantes da
+escala (SPEC-MEDICOS-ESCALA INV-1..6, effective-dating, geração de slots) — muda só a APRESENTAÇÃO.
+**Upload em lote** = próximo (definir template de planilha: médico/CRM, especialidade, tipo, dias,
+horários, vigência) + validação linha-a-linha + preview antes de aplicar. Mobile-first (a dor é no mobile).
