@@ -390,3 +390,19 @@ semana-excluida (folga) > padrão. **VagaGerador GERA vagas** nesses dias (adici
 os horários da escala. **Popover do calendário:** dia ATENDE → opções de folga (atual); dia FOLGA → opções
 de ATENDER ('atender só neste dia'=datasIncluidas · 'atender toda Nª semana'=remove de semanasExcluidas ·
 'atender todo [dia]'=add ao padrão); dia com override (data-incluida) → 'voltar a folga'.
+
+### D-177 — Auditoria de maturidade do front + roadmap de dedup/componentização (2026-07-06)
+Auditoria (agente, só leitura) do doctor-hub-web. **Maturidade ~3.7/5 — 'bom, débito concentrado e
+endereçável'.** DS forte (45 componentes, check:ui mecânico), 511 testes, mobile-first sério, honestidade
+de dados (fixture-banner, //PROVISÓRIO, isolamento D-106). Teto segurado pela **falta da camada de PADRÕES
+DE PÁGINA** — cada tela remonta à mão o scaffold (CRUD, dashboard, async ladder) → duplicações + 465 estilos
+inline. **Correção importante:** `clientes-hcs` NÃO é fixture pura — bate no MESMO `GET /clientes` que
+`admin-clientes` (API-com-fallback); a divergência é **2 VISÕES tipadas do mesmo endpoint** (tipo estado/
+autarquia [legado] vs natureza privado/público [novo]), não fixture×API. Remédio = unificar visões.
+**Duplicações confirmadas:** (A) Clientes Demandas×Admin [flagship]; (B) scaffold CRUD gêmeo usuarios×admin-
+clientes; (C) 5 homes repetem ~70% do scaffold; (D) localizador de médico em escala×medicos-escala; (E) 4
+frames de demo fixture-hardcoded (sobrepor-*, disponibilizacao-reservado, monitor-integracao).
+**ROADMAP (ordem):** 1º `<AsyncSection>` (destrava tudo, baixo risco) → 2º **unificar Clientes** (uma tela,
+Admin edita/Demandas vê; reconciliar tipo×natureza = REGRA, perguntar ao Ale) → 3º scaffold CRUD
+(useEntityCrud + EntityDetailModal + ConfirmModal) → 4º scaffold de home → 5º useToggleOtimista/SwitchRow →
+6º PageHeader + primitivos de layout (Stack/Grid, matar 465 inline) → 7º higienizar frames de demo.
