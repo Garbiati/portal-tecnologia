@@ -337,3 +337,18 @@ Alessandro: clicar na escala abre um **calendário/agenda** (dias × horas) com 
 Assunção/Agendamento (P-015). **Não duplica backend:** consome as vagas (VagaGerador) e os agendamentos que
 já existem. Componente `EscalaCalendario` (+ `AgendamentoLupa`). Escopo/prioridade: após o pacote de
 faturamento (D-169) fechar. Detalhes finos (mês vs semana, fuso, passado) a confirmar ao construir.
+
+### D-171 — Médicos e Escala num MENU SÓ; o médico é o hub (revisa D-132, aplica P-015) (2026-07-06)
+Alessandro: 'a tela de escala e doutores poderia ser um menu só'. Como a gestão de escala já é UM
+componente (`PerfilEscalas`, D-132) com 2 pontos de entrada, fundir é baixo risco: **um menu 'Médicos'**
+→ detalhe do médico que COMPÕE cadastro + escala + faturamento + (futuro) calendário. Tira o item 'Escala'
+do menu lateral; a rota `/escala` fica acessível (deep-link) mas fora do menu. Alinha com P-015 (o médico
+é o hub das funcionalidades dele, não N telas soltas).
+
+### D-172 — Passo 'Quando' vira CALENDÁRIO visual; folgas = dias + repetir (substitui 'semanas sem atendimento') (2026-07-06)
+Alessandro: 'semanas do mês sem atendimento' ficou abstrato/confuso. Vira **calendário** (D-170 em modo
+EDIÇÃO): mês navegável, dias do padrão (Seg/Qua/…) acesos; **clicar marca folga** naquele dia. Folgas =
+**dias específicos + REPETIR** (semanal/mensal, ex.: 'toda 2ª semana'). Substitui o campo 'semanas sem
+atendimento' (D-152) AGORA. Componente **`EscalaCalendario` REUTILIZÁVEL** (P-015): edita folgas agora,
+mostra slots/agendamentos + lupa depois (D-170). Armazenamento das folgas: reusar 'indisponibilidade' se
+casar, senão exceções na escala — decidir na investigação (sem duplicar backend).
