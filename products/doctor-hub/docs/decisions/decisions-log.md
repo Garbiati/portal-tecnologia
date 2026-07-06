@@ -249,3 +249,15 @@ Teleconsulta (D-157/DEP-TC-1: só com o Alessandro presente + secrets); registra
 subir/gerir o logo DENTRO do sistema (não depender do TC). Também: corrigir a duplicação "Portal
 Telemedicina — Portal Telemedicina" (sigla==nome → mostrar uma vez).
 
+### D-164 — Gestão de clientes/HCs é a TELA CENTRAL do Admin: classificar + habilitar atividades por toggle (2026-07-05)
+Alessandro: a tela `admin-clientes` é a central do perfil Admin nesta entrega. Nela o Admin **classifica**
+(privado/projeto público) e **habilita as ATIVIDADES** de cada cliente/HC, no esquema de **feature-toggle
+por CLIENTE** (não por tenant — isso é D-158):
+- **Telemedicina?** → **quais especialidades** o cliente pode solicitar (= o que oferecemos a ele, o "contrato").
+- **Telediagnóstico?** → quais exames pode enviar (FUTURO).
+Decisões (confirmadas): (1) catálogo de especialidades = **o já existente no sistema** (mesmo da solicitação);
+(2) **GATE IMEDIATO** — a solicitação do Gestor do Contrato mostra **só as especialidades habilitadas** pra
+ele (o que está no contrato); (3) escopo desta entrega = **só Telemedicina** (telediagnóstico/exames depois).
+\+ a tela ganha **edição** do cliente e **logo** (D-163) num painel só. Persistência reset-safe (por sigla,
+como cliente_branding). Gate na tela = D-114/D-159 (o cliente só pede o que tem em contrato).
+
