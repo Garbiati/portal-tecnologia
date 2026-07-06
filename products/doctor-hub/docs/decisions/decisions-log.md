@@ -283,3 +283,13 @@ Passos do wizard: (1) **O que** — tipo FIXA/FLEX (explicado) + especialidade +
 escala (SPEC-MEDICOS-ESCALA INV-1..6, effective-dating, geração de slots) — muda só a APRESENTAÇÃO.
 **Upload em lote** = próximo (definir template de planilha: médico/CRM, especialidade, tipo, dias,
 horários, vigência) + validação linha-a-linha + preview antes de aplicar. Mobile-first (a dor é no mobile).
+
+### D-167 — Escala com IA (v2): descrever/colar em linguagem natural → IA rascunha → wizard confirma (2026-07-05)
+Alessandro: wizard é bom, mas quer explorar UX mais nova com IA numa PRÓXIMA versão. Direção confirmada:
+- **Descrever, não preencher:** um campo em linguagem natural (ou voz) → a IA **rascunha** a escala inteira
+  → o **wizard/revisão (D-166) é a tela de CONFIRMAÇÃO**. **IA propõe, humano dispõe**: as invariantes
+  (INV-1..6) + o humano validam; a IA NUNCA cria sozinha. Logo o wizard não é descartável — é a camada de revisão.
+- **Unifica single + LOTE:** colar horário em qualquer formato (WhatsApp/e-mail/planilha) → IA estrutura N escalas → grade de revisão.
+- **Norte (D-155):** planejar capacidade — 'preciso de 200 cardios a mais em julho' → IA propõe quais escalas criar/ajustar.
+**Sequência:** v1 = wizard determinístico (base, offline, auditável); v2 = camada de IA por cima. Mock conceitual
+interativo criado para tangibilizar. LGPD: escala não tem dado de paciente (nome/CRM do médico só) — risco baixo; still, confirmar tratamento antes de produção.
