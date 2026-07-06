@@ -415,3 +415,16 @@ UMA tela compartilhada (o CRUD do `admin-clientes`), renderizada pelas duas rota
 e Demandas `clientes-hcs`), com as AÇÕES gated pela persona atual (Admin=tudo · Demandas=read-only), como
 o PerfilEscalas (D-132). Aposenta a lista antiga de `clientes-hcs` + o botão 'Novo cliente' morto + o eixo
 estado/autarquia. Ambas as personas continuam com o item no menu (D-106).
+
+### D-179 — UX de modal à prova de perda: guard de alteração não salva + X sempre visível (2026-07-06)
+Alessandro: 'fechar tem que validar se tem alteração pendente; fechar ≠ cancelar; não perder edição sem
+querer'. Padrão de mercado (Google Docs/Notion), confirmado:
+- **X de fechar SEMPRE visível** no canto sup. dir. (todo modal) — já entregue.
+- **Form SUJO** (tem alteração) + QUALQUER saída (X · Esc · clique-fora · Cancelar) → confirma
+  **'Descartar alterações?'** [Continuar editando]/[Descartar]. **Todas** as saídas guardam (escolha do Ale).
+- **Form LIMPO** → fecha direto (sem nag). **Salvar** → grava e fecha (sem perguntar).
+- **Modais só-leitura / de confirmação** → X fecha direto (nada a perder).
+- **Semântica:** X = dispensar (canto) · Cancelar = decisão de sair (rodapé); ambos passam pelo guard se sujo.
+- **Rodapé = só DECISÕES** (Salvar/Excluir/Editar/Cancelar); o 'Fechar' solto redundante SAI dos modais de
+  detalhe (o X dispensa). Implementação: Modal ganha `dirty` + guard interno + footer render-prop (recebe o
+  fechar guardado p/ o Cancelar rotear pelo guard); forms computam o dirty.
