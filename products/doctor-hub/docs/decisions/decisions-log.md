@@ -352,3 +352,12 @@ EDIÇÃO): mês navegável, dias do padrão (Seg/Qua/…) acesos; **clicar marca
 atendimento' (D-152) AGORA. Componente **`EscalaCalendario` REUTILIZÁVEL** (P-015): edita folgas agora,
 mostra slots/agendamentos + lupa depois (D-170). Armazenamento das folgas: reusar 'indisponibilidade' se
 casar, senão exceções na escala — decidir na investigação (sem duplicar backend).
+
+### D-173 — Página do médico (hub) em ABAS, mobile-first; calendário na aba Escala (2026-07-06)
+Alessandro: reorganizar o hub do médico; recomendei ABAS (mobile-first: evita scroll gigante de 9 seções;
+toca e vai). Estrutura: **Perfil** (dados + faturamento) · **Escala** (capacidade + escalas + CALENDÁRIO +
+indisponibilidades) · **Atendimentos** · **Mais** (provisionamento·destinos + histórico de alterações +
+zona de risco). Componente `Tabs` novo no DS (tablist/tab/tabpanel, teclado, barra scrollável/segmentada
+no mobile). O **calendário de folgas** (D-172: dias + repetir) entra AQUI (aba Escala) e substitui os chips
+de 'semanas sem atendimento' no wizard. Provisionamento/histórico DESCEM (aba Mais), como pedido. Feito
+junto com o calendário (D-170/D-172).
