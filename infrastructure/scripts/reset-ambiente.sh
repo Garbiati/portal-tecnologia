@@ -68,10 +68,11 @@ CUR="$("${PSQL[@]}" -c 'SELECT current_database();')"
 if [ "$CUR" != "$DB" ]; then echo "⛔ conectado a '$CUR', não '$DB' — abortando." >&2; exit 4; fi
 
 echo "── limpando TRANSACIONAL (preserva doutores + catálogo + branding) ──"
-# ⚠️ NÃO adicionar `cliente_branding` a este TRUNCATE (D-163): os LOGOS (e tema) por cliente que o
-# admin sobe TÊM QUE SOBREVIVER ao reset. A tabela é chaveada por SIGLA → após o re-seed dos 14 HCs
-# (siglas estáveis) o logo se re-associa sozinho. Também NÃO se toca em: doctors, tipos_servico,
-# tenants, features, tenant_features, cliente_branding.
+# ⚠️ NÃO adicionar ao TRUNCATE as tabelas de CONFIG POR CLIENTE (chaveadas por SIGLA, sobrevivem ao
+# re-seed dos 14 HCs): `cliente_branding` (logos/tema — D-163) e `cliente_atividade`/`cliente_especialidade`
+# (o CONTRATO: telemedicina on/off + especialidades habilitadas por cliente — D-164). Se truncar, o
+# admin perde o logo E o contrato de cada cliente no reset. Também NÃO se toca em: doctors, tipos_servico,
+# tenants, features, tenant_features.
 "${PSQL[@]}" -c "
 TRUNCATE TABLE escalas, solicitacoes, agendamentos, indisponibilidades,
                auditorias, laudos, sync_states, clientes
