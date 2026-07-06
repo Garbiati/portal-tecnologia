@@ -406,3 +406,12 @@ frames de demo fixture-hardcoded (sobrepor-*, disponibilizacao-reservado, monito
 Admin edita/Demandas vê; reconciliar tipo×natureza = REGRA, perguntar ao Ale) → 3º scaffold CRUD
 (useEntityCrud + EntityDetailModal + ConfirmModal) → 4º scaffold de home → 5º useToggleOtimista/SwitchRow →
 6º PageHeader + primitivos de layout (Stack/Grid, matar 465 inline) → 7º higienizar frames de demo.
+
+### D-178 — Unificar Clientes: UMA tela (Admin edita / Demandas vê); natureza privado/público (2026-07-06)
+Executa o alvo nº1 da auditoria (D-177). Confirmado pelo Alessandro: (1) classificação = **natureza
+Privado/Público** (aposenta o eixo legado 'estado/autarquia' do clientes-hcs); (2) **Demandas = SÓ
+VISUALIZA** (lista + detalhes read-only; sem criar/editar/logo/atividades/excluir — isso é do Admin).
+UMA tela compartilhada (o CRUD do `admin-clientes`), renderizada pelas duas rotas (Admin `admin-clientes`
+e Demandas `clientes-hcs`), com as AÇÕES gated pela persona atual (Admin=tudo · Demandas=read-only), como
+o PerfilEscalas (D-132). Aposenta a lista antiga de `clientes-hcs` + o botão 'Novo cliente' morto + o eixo
+estado/autarquia. Ambas as personas continuam com o item no menu (D-106).
