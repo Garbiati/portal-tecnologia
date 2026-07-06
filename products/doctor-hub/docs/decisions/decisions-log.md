@@ -379,3 +379,14 @@ Alessandro: o cadastro deve refletir o modelo real — **dados comuns** a todos 
 - **Operador de Agendamento:** **Unidade OBRIGATÓRIA**.
 - **Admin / Demandas:** sem campos próprios — a aba deles só descreve o acesso (tenant, veem tudo).
 - Super Admin: sem UI (D-158). Substitui o form plano atual (Cliente/Unidade condicionais → abas por papel).
+
+### D-176 — Sobreposição de ATENDE: `datasIncluidas` (o inverso do datasExcluidas) (2026-07-06)
+Alessandro: clicar num dia de FOLGA deve oferecer **'atender só neste dia'** — uma sobreposição. Ex.: a 2ª
+semana é folga (semanasExcluidas), mas num dia específico ele PODE atender. Novo campo **`datasIncluidas`**
+(datas ISO que ATENDEM, sobrepondo a folga recorrente / fora-do-padrão). E pode ser recorrente (as opções
+'atender toda Nª semana' / 'atender todo dia-da-semana' cobrem o recorrente).
+**Precedência do dia:** datasIncluidas (atende) > datasExcluidas (folga) > fora-do-padrão (folga) >
+semana-excluida (folga) > padrão. **VagaGerador GERA vagas** nesses dias (adiciona, não só pula), usando
+os horários da escala. **Popover do calendário:** dia ATENDE → opções de folga (atual); dia FOLGA → opções
+de ATENDER ('atender só neste dia'=datasIncluidas · 'atender toda Nª semana'=remove de semanasExcluidas ·
+'atender todo [dia]'=add ao padrão); dia com override (data-incluida) → 'voltar a folga'.
