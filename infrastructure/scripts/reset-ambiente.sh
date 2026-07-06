@@ -67,12 +67,16 @@ PSQL=(psql -h localhost -p "$PORT" -U "$DB_USER" -d "$DB" -v ON_ERROR_STOP=1 -qt
 CUR="$("${PSQL[@]}" -c 'SELECT current_database();')"
 if [ "$CUR" != "$DB" ]; then echo "⛔ conectado a '$CUR', não '$DB' — abortando." >&2; exit 4; fi
 
-echo "── limpando TRANSACIONAL (preserva doutores + catálogo) ──"
+echo "── limpando TRANSACIONAL (preserva doutores + catálogo + branding) ──"
+# ⚠️ NÃO adicionar `cliente_branding` a este TRUNCATE (D-163): os LOGOS (e tema) por cliente que o
+# admin sobe TÊM QUE SOBREVIVER ao reset. A tabela é chaveada por SIGLA → após o re-seed dos 14 HCs
+# (siglas estáveis) o logo se re-associa sozinho. Também NÃO se toca em: doctors, tipos_servico,
+# tenants, features, tenant_features, cliente_branding.
 "${PSQL[@]}" -c "
 TRUNCATE TABLE escalas, solicitacoes, agendamentos, indisponibilidades,
                auditorias, laudos, sync_states, clientes
 RESTART IDENTITY CASCADE;"
-echo "  ✓ transacional + clientes zerados (doutores/tipos_servico intactos)"
+echo "  ✓ transacional + clientes zerados (doutores/tipos/tenant/branding/logos intactos)"
 
 echo "── reafirmando os 14 HCs (baseline de clientes da Portal) ──"
 python3 - "$HC_JSON" > /tmp/reset-hcs.sql <<'PY'
