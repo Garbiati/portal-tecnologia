@@ -329,3 +329,11 @@ teleconsulta/especialidade). Decisões confirmadas:
 - **Visual:** painel de faturamento com cores/ícones/destaque (estava difícil de ler).
 **Migração:** copiar o faturamento atual (DoctorEspecialidade.Modo/Valor/TempoMin, teleconsulta) → 
 DoctorFaturamento com tipo='teleatendimento', preservando; campos antigos ficam dormentes (dropar depois).
+
+### D-170 — Visão de CALENDÁRIO da escala do médico (feature reutilizável, P-015) (2026-07-06)
+Alessandro: clicar na escala abre um **calendário/agenda** (dias × horas) com os SLOTS que a escala gera
+(VagaGerador): **livre / agendado / passado**. No slot agendado, uma **lupa** mostra **quem está agendado**
+— ⚠️ LGPD (D-069): paciente só por **INICIAIS**. Feature **invocável** da tela de Escala e reutilizável na
+Assunção/Agendamento (P-015). **Não duplica backend:** consome as vagas (VagaGerador) e os agendamentos que
+já existem. Componente `EscalaCalendario` (+ `AgendamentoLupa`). Escopo/prioridade: após o pacote de
+faturamento (D-169) fechar. Detalhes finos (mês vs semana, fuso, passado) a confirmar ao construir.

@@ -27,3 +27,15 @@
 2. Adicione uma linha **P-xxx** acima, com `✅ Confirmado por <humano> em <data>` e o impacto.
 3. Se a decisão muda a estrutura, atualize também `CLAUDE.md` (raiz) e
    [`../architecture/platform-architecture.md`](../architecture/platform-architecture.md).
+
+## P-015 — Arquitetura de COMPOSIÇÃO: funcionalidades reutilizáveis, não telas isoladas (2026-07-06)
+Diretriz do Alessandro: 'o sistema não pode ser só telas, mas funcionalidades que consigo invocar de uma
+tela ou de outra… sem duplicar chamadas no backend, regras e funcionalidades'. Vira regra dura de como
+construímos (todos os repos):
+1. **Backend:** uma CAPACIDADE = um endpoint, REUSADO. Ex.: faturamento serve ficha+escala (D-169);
+   vagas/agendamentos servem calendário+painel+assunção. Nada de query/regra duplicada por tela.
+2. **Frontend:** FEATURE-COMPONENTS invocáveis de qualquer lugar (modal/drawer/inline) — ex.:
+   `FaturamentoEditor`, `EscalaCalendario`, `AgendamentoLupa`. A tela COMPÕE features; não reimplementa.
+3. **Regras/invariantes:** vivem num lugar só (domínio) e são consumidas por todas as telas.
+**Objetivo:** construir E continuar mudando rápido, sem quebrar nem duplicar. Toda feature nova pergunta:
+'isto é um componente/endpoint reutilizável?' antes de virar código de tela.
