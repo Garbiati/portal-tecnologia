@@ -261,3 +261,15 @@ ele (o que está no contrato); (3) escopo desta entrega = **só Telemedicina** (
 \+ a tela ganha **edição** do cliente e **logo** (D-163) num painel só. Persistência reset-safe (por sigla,
 como cliente_branding). Gate na tela = D-114/D-159 (o cliente só pede o que tem em contrato).
 
+### D-165 — Escala é SEMPRE pool; alocação a cliente é no AGENDAMENTO (retorno), não na escala (REVISA D-150) (2026-07-05)
+Alessandro (homologação): "montamos sempre a escala para o pool. Se vai pro cliente A ou B é temporário —
+na verdade disponibilizamos a QUANTIDADE de consultas. Se o doutor vai pro cliente A ou B tem muito mais a
+ver com o RETORNO do que com a primeira consulta: 1ª consulta não importa qual doutor; no RETORNO o operador
+tem que agendar para AQUELE doutor (continuidade do paciente) → aí sim o paciente/slot fica alocado àquele
+cliente. Mas é pelo AGENDAMENTO, não pela escala."
+**Correção da D-150:** o campo **"Projeto (opcional)" / `escala.clienteId` (oferta dedicada) sai** — a escala
+não é dedicada a cliente. Capacidade = pool. A ligação escala↔cliente é EMERGENTE no agendamento (retorno).
+**Ações:** remover o campo da tela de criar escala + a dimensão "projeto" do painel (tudo é pool agora).
+`escala.clienteId` fica DORMANTE no backend (sempre null) — dropar em migração futura. O painel mostra
+capacidade por especialidade × tipo de serviço (sem projeto).
+
