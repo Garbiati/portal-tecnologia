@@ -474,3 +474,11 @@ paciente-iniciais/médico/horário — LGPD: só iniciais). Vaga livre → açã
 NÃO entram agora** — o desfecho da consulta vem da **integração com a Teleconsulta** (inexistente hoje;
 `EnviadoTc` é stub). Quando a TC integrar, adiciona-se o status real. **Não inventar status sem fonte.**
 Dado real (D-180): vagas via `GET /vagas` (derivadas das escalas reais), agendamentos via `GET/POST /agendamentos`.
+
+### D-182 — Calendário de cobertura mobile-first "M6-A": barra de vagas + verde futuro/passado (2026-07-08)
+Escolha do Alessandro após 3 rodadas de exploração de design (agents; base P9 → mescla V6+V2 → variação "A"). Redesenha o `EscalaCalendario`.
+**Visual (M6-A):** grade compacta mobile-first (alvos ≥40px); número centrado; **barra fina (3px) full-width na base = preview de disponibilidade de vagas do dia**; **fio ouro** sob os dias que atendem (assinatura, D-074); **hoje = joia de ouro** (losango no topo). Tokens do DS (navy+ouro), light+dark.
+**Estados NA VISÃO (simplificados):** fora-vigência (esmaecido) · **atende** (verde) · **folga** (apagadinho) · hoje. **Verde VIVO = futuro (agendável); verde APAGADO = passado.** O "atende (exceção)" (datasIncluidas, D-176) **sai da leitura visual** — renderiza como "atende"; o dado e a precedência no DOMÍNIO continuam (coberturaDoDia mapeia 'atende-incluida' → visual atende). Alessandro: "não preciso de atende parcial".
+**Barra = disponibilidade de vagas** (Alessandro): 🟢 100% abertas · 🟡 ≥50% · 🟠 <50% · 🔴 0%. **Por ora renderiza tudo verde**; a cor é uma **prop pronta** pra vir do backend (deriva de `GET /vagas` por dia — liga junto do modal do dia, D-181). Não inventar a cor sem fonte.
+**Passado não agendável (explícito):** a proibição de AGENDAR no passado é enforced no fluxo de agendar (modal do dia / D-181, ainda não construído); no calendário o passado fica **visualmente intocável** (verde apagado, sem barra ativa).
+**Mantém:** vigência é outermost (não atende/gera vaga antes do início; navegação bloqueada antes do mês de início — bug fix 2026-07); **modo editar** (popover D-176 de marcar folga/atender) preservado; testes verdes; `check:ui`.
