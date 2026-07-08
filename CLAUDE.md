@@ -95,8 +95,11 @@ Se um agente perceber que está prestes a "achar" algo sobre o negócio: **pare 
 
 ## 🤖 Governança de IA (como agentes operam nesta empresa)
 
-- **`.claude/rules/`** = regras aplicadas pela máquina (security, SDD). **`.claude/agents/`** e
-  **`.claude/skills/`** (quando criados) = agents/skills compartilhados entre repos.
+- **`.claude/rules/`** = regras aplicadas pela máquina (security, SDD, **delegação de modelos**).
+  **`.claude/agents/`** = subagents com modelo pinado (`explorador`·haiku, `implementador`·sonnet,
+  `revisor-adversarial`/`revisor-seguranca`·sonnet). **`.claude/skills/`** = `/decisao`, `/coerencia`, `/entrega`.
+- **Economia de modelos (P-016):** o orquestrador (Opus/sessão principal) faz só decisão, arquitetura,
+  regra de negócio e revisão final; **delega o resto** aos agents baratos — `.claude/rules/delegacao-modelos.md`.
 - **Hierarquia de contexto**: o `CLAUDE.md` de um repo herda esta constituição. Não duplicar regra —
   apontar para cá.
 - **Padrão de modelo/MCP**: ver `docs/method/`. Zero segredo em `.mcp.json`.

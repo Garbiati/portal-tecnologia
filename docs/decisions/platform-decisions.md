@@ -39,3 +39,20 @@ construímos (todos os repos):
 3. **Regras/invariantes:** vivem num lugar só (domínio) e são consumidas por todas as telas.
 **Objetivo:** construir E continuar mudando rápido, sem quebrar nem duplicar. Toda feature nova pergunta:
 'isto é um componente/endpoint reutilizável?' antes de virar código de tela.
+
+## P-016 — Economia de modelos: orquestrador caro (Opus) + executores baratos (sonnet/haiku) (2026-07-07)
+Diretriz do Alessandro: 'não quero torrar tokens usando modelo caro em coisa simples, mas também não
+quero ter limite pra usar o máximo que o Claude oferece'. Vira o modelo operacional de IA de TODOS os
+repos. **Regra:** o modelo top (Opus-class, ex.: fable 5) fica só na **orquestração** — entender o
+pedido, decidir abordagem, desenhar spec, **regra de negócio/invariante médica-financeira**, revisão
+final antes de 'pronto', e a conversa com o humano. Todo o resto delega a subagent com modelo pinado
+no frontmatter (`.claude/agents/`): **haiku** para recon/leitura (`explorador`), **sonnet** para
+implementação de lote bem especificado (`implementador`) e revisões (`revisor-adversarial`,
+`revisor-seguranca`); routines cloud em `claude-sonnet-5`. **Nunca** delegar a modelo barato: regra de
+negócio, invariante crítica, arquitetura, revisão final (casa com security.md §4 — núcleo crítico à
+mão). **Benefício duplo:** custo (modelo caro só onde paga) + **contexto** (o orquestrador não faz
+trabalho de formiga → menos compactação → sessão principal mais afiada por mais tempo). Delegação
+sempre com **prompt auto-contido** (o subagent nasce sem contexto: paths+linhas+critério de aceite) e
+**verificação do diff** depois (confiar ≠ não conferir). Materializado: `.claude/rules/delegacao-modelos.md`
+(regra da máquina) + 4 agents. Aplica a P-014 (gate de segurança) e P-015 (composição): as revisões
+delegadas checam coerência e segurança sem gastar Opus.

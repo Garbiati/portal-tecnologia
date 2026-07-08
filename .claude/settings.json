@@ -1,4 +1,13 @@
 {
+  "permissions": {
+    "deny": [
+      "Read(./services/**/.env)",
+      "Read(./services/**/.env.*)",
+      "Read(./**/.secrets/**)",
+      "Read(./**/doctors-demo.json)",
+      "Read(./**/*-segredos*)"
+    ]
+  },
   "hooks": {
     "Stop": [
       {
@@ -7,6 +16,11 @@
             "type": "command",
             "command": "sh -c 'f=services/doctor-hub-web/scripts/check-ui.mjs; [ -f \"$f\" ] || exit 0; node \"$f\" 1>&2 || exit 2'",
             "statusMessage": "Checando design system (doctor-hub-web)…"
+          },
+          {
+            "type": "command",
+            "command": "sh -c 'd=services/doctor-hub-api; [ -d \"$d\" ] || exit 0; git -C \"$d\" status --porcelain 2>/dev/null | grep -q . || exit 0; (cd \"$d\" && dotnet test --nologo 1>&2) || exit 2'",
+            "statusMessage": "Rodando testes da API (só se houver alteração)…"
           }
         ]
       }
