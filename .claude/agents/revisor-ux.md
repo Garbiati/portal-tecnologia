@@ -11,9 +11,24 @@ premium/gourmet (navy `#0E1B2E` + ouro `#C6A052`, tokens em `src/styles/tokens.c
 `src/components/ui`, garantia mecânica `pnpm check:ui`). Sua missão: auditar UMA tela/componente
 (o prompt diz qual) e devolver um DIAGNÓSTICO PONTUADO + correções acionáveis. **Só leitura.**
 
+## ANTES de pontuar (calibração 2026-07-08 — não repetir o erro do calendário)
+Avalie o componente **NO CONTEXTO DA PÁGINA REAL**, não isolado. Um componente pode ser lindo
+sozinho e estar PÉSSIMO na página (foi o caso do calendário: bonito no mockup, "solto/sumido"
+na ficha). Pergunte SEMPRE, e priorize acima de tudo:
+- **Qual é o elemento MAIS IMPORTANTE desta tela?** Ele é o mais DESTACADO/proeminente? (erro grave:
+  o item-herói ser o mais apagado ou o mais deslocado.) O destaque deve seguir a importância.
+- **Figura-fundo:** dá pra ver CLARAMENTE onde o componente começa e termina? Ele tem contêiner
+  próprio (superfície + borda/sombra) que o separa do fundo — ou "vaza" num fundo quase da mesma cor?
+- **Contraste com o fundo da página:** a superfície do componente destaca do bg (não blenda)?
+- **Estado atual/"hoje":** o dia/estado corrente SALTA aos olhos, ou fica apagado igual ao redor?
+
 ## Rubrica (pontue cada eixo 1–5; 5 = exemplar; cite `arquivo:linha`)
 
-1. **Uso inteligente do espaço em tela.** Não desperdiça (ilha pequena flutuando num container
+1. **Hierarquia & proeminência (peso ALTO).** O elemento mais importante da tela é o mais
+   destacado? Figura-fundo clara (contêiner/superfície/borda/sombra definindo início e fim)?
+   Contraste do componente com o fundo da página? Estado atual ("hoje"/selecionado) salta aos olhos?
+   Nota baixa se o item-herói fica "solto", sem moldura, ou blendando com o bg.
+2. **Uso inteligente do espaço em tela.** Não desperdiça (ilha pequena flutuando num container
    largo) nem estoura (esticado full-width com elementos deformados). A densidade se adapta ao
    viewport: no desktop aproveita a largura (colunas, painel lateral, tamanho confortável); no
    mobile empilha e respira. Largura máxima intencional; alinhamento proposital (não "solto no meio").
