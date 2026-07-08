@@ -450,3 +450,11 @@ algum surgir, **iniciais** (security.md §2). `doctors-demo.json` segue gitignor
 aposentar:** seeds de `medicos/clientes/solicitacoes/escalas-store`, leituras diretas de fixture em
 `de-acordo/disponibilizacao/painel`, e o mecanismo `fixture-mode`. `persona.tsx` (seletor de persona para
 homologar) **não** é dado de negócio — fica até o login real por papel amadurecer.
+**Estado (2026-07-08 · ENTREGUE):** `<AsyncSection>` (keystone) + 4 domínios convertidos real-puro —
+médicos, clientes, solicitações, escalas — cada um: store nasce vazio → hidrata do backend → API fora =
+erro/retry (sem fixture). Painel: clientes/solicitações ligados aos stores reais. `fixture-mode`/
+`FixtureBanner`/wrappers de fallback **removidos** (código morto). Suíte 534 verde, check:ui/build limpos.
+**2 PENDÊNCIAS (bloqueadas em backend — marcadas `// PROVISÓRIO`, não inferir):** (1) **relatório de
+contratação** no painel — sem endpoint; (2) tela **`disponibilizacao`** (disponibilizar/reservar/emitir) —
+fluxo 100% demo, ligar ao backend (`listarVagasApi`/`listarAgendamentosApi`) é **feature nova**, precisa de
+decisão de produto. `data/fixtures.ts` preservado só para esses 2 + o seletor de persona.
