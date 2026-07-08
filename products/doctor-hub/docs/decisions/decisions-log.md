@@ -458,3 +458,19 @@ erro/retry (sem fixture). Painel: clientes/solicitações ligados aos stores rea
 contratação** no painel — sem endpoint; (2) tela **`disponibilizacao`** (disponibilizar/reservar/emitir) —
 fluxo 100% demo, ligar ao backend (`listarVagasApi`/`listarAgendamentosApi`) é **feature nova**, precisa de
 decisão de produto. `data/fixtures.ts` preservado só para esses 2 + o seletor de persona.
+
+### D-181 — Assunção de vaga componentizada (Gestor + Demandas); modal de dia = livre/agendada (2026-07-08)
+Confirmado pelo Alessandro durante homologação. **Componentização (P-015):** "assumir vaga → criar
+agendamento" — hoje código LOCAL da tela de assunção (`AssumirVagaSheet`/`BuscaDoutor`) — vira um
+**feature-component reusável** (`AssumirVaga`), invocado de dois lugares: a **tela de assunção** e um
+novo **modal de detalhes do dia** (clicar num dia do calendário do médico → lista as vagas daquele dia).
+**Persona (estende D-106):** o dono canônico do fluxo é o **operador de agendamento (Gestor)**, MAS
+**Demandas Médicas também pode** assumir vaga e criar agendamento (pelo modal do dia). A capacidade passa
+a ser **compartilhada por Gestor + Demandas** (como o CRUD de clientes gated por persona, D-178); a troca
+de persona segue só pelo seletor (nenhum link cruzado). Registrar no contrato de navegação (`23-navegacao-contrato.md`).
+**Modal de detalhes do dia:** lista as vagas do dia como **LIVRE vs AGENDADA** (agendada mostra
+paciente-iniciais/médico/horário — LGPD: só iniciais). Vaga livre → ação **Assumir** (abre o feature-component).
+**Status de agendamento (decisão):** por ora **só presença** (livre/agendada); **realizado/cancelado/falta
+NÃO entram agora** — o desfecho da consulta vem da **integração com a Teleconsulta** (inexistente hoje;
+`EnviadoTc` é stub). Quando a TC integrar, adiciona-se o status real. **Não inventar status sem fonte.**
+Dado real (D-180): vagas via `GET /vagas` (derivadas das escalas reais), agendamentos via `GET/POST /agendamentos`.
