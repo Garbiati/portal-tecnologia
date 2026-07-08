@@ -54,9 +54,15 @@ PULL é **read-only**; **PUSH só via credencial dedicada + allowlist tabela:col
 `--apply` + log**, nunca DELETE/DROP/TRUNCATE, UPDATE sempre com WHERE por `external_id`,
 **mapeamento confirmado pelo humano**.
 
-## 🧩 COERÊNCIA DO PROTÓTIPO (regra dura, 2026-06-20)
+## 🧩 COERÊNCIA DO PROTÓTIPO (regra dura, 2026-06-20 · **fonte revista em D-180**)
 
-Todo dado de demo vem da **fixture canônica** ([`docs/product/22-demo-fixtures.md`](docs/product/22-demo-fixtures.md))
+> **D-180 (modo produtivo):** a **fonte de dados** das telas passou a ser o **backend real** (dev/homolog
+> contra prod fora de uso — P-010); o dado mock/fixture e a degradação suave estão sendo **aposentados por
+> tela** (API fora → erro/vazio explícito, não dado fake). A regra "fonte = fixture canônica" abaixo vale só
+> para telas ainda **não migradas**; os pilares de **navegação** (D-106) e **ciclo de vida de tela** (D-108)
+> seguem 100% válidos.
+
+Enquanto uma tela não migrou, seu dado de demo vem da **fixture canônica** ([`docs/product/22-demo-fixtures.md`](docs/product/22-demo-fixtures.md))
 — **nunca digitar dados à mão por tela**. Variantes/filtros são **subconjuntos derivados** (ex.: Com
 escala + Sem escala = Todos, por construção). **Antes de entregar QUALQUER conjunto de telas, rodar a
 REVISÃO DE COERÊNCIA:**

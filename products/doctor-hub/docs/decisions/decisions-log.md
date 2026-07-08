@@ -428,3 +428,25 @@ querer'. Padrão de mercado (Google Docs/Notion), confirmado:
 - **Rodapé = só DECISÕES** (Salvar/Excluir/Editar/Cancelar); o 'Fechar' solto redundante SAI dos modais de
   detalhe (o X dispensa). Implementação: Modal ganha `dirty` + guard interno + footer render-prop (recebe o
   fechar guardado p/ o Cancelar rotear pelo guard); forms computam o dirty.
+
+### D-180 — Modo produtivo: telas contra o backend REAL, aposentar dado mock/fixture (2026-07-07)
+Virada de estratégia do Alessandro: 'a partir de agora desenvolver para ser produtivo — construir as telas
+contra **produção enquanto o sistema está fora de uso** (só homologando), sem promoção de ambiente; **após a
+entrega, criar homolog dedicado antes de subir**'. Materializa o alvo do **P-010** (dev/homolog contra prod
+fora de uso) no front. **Decisões confirmadas (2 perguntas):**
+1. **Fonte = só backend real (real puro).** Aposenta o dado fake das telas E o fallback de **degradação suave**
+   (fixture-mode/FixtureBanner/`marcarModoFixture`): API fora → **estado de erro/vazio explícito** ('não foi
+   possível carregar' + Tentar de novo), nunca dado fake mascarado. Supera a regra 'todo dado de demo vem da
+   fixture canônica' (D-030/`22-demo-fixtures.md`): a **fonte** passa a ser o backend; os pilares de coerência
+   de **navegação** (D-106) e **ciclo de vida de tela** (D-108) seguem valendo.
+2. **Varredura incremental por tela (lotes pequenos).** TODAS as telas ganham já o padrão de estados async
+   (loading/skeleton + erro + vazio) — via o primitivo reusável **`<AsyncSection>`** (o alvo nº1 do roadmap da
+   auditoria D-177, P-015 composição). O **seed fixture** de cada store/tela SAI quando ela está **verificada
+   contra o backend** (evita tela em branco onde o endpoint ainda não popula em prod). Médicos é o pattern-setter
+   (já ligado à API — D-180a). Ao zerar o último consumidor, retira-se `fixture-mode`/`FixtureBanner` e os seeds.
+**LGPD (guard-rail):** dev contra prod mostra médicos REAIS (profissionais — ok em tela; **CPF nunca em log**);
+**nenhum dado de paciente** entra nas telas do Doctor-Hub (capacity planning, a montante da Teleconsulta); se
+algum surgir, **iniciais** (security.md §2). `doctors-demo.json` segue gitignored/local. **Escopo do mock a
+aposentar:** seeds de `medicos/clientes/solicitacoes/escalas-store`, leituras diretas de fixture em
+`de-acordo/disponibilizacao/painel`, e o mecanismo `fixture-mode`. `persona.tsx` (seletor de persona para
+homologar) **não** é dado de negócio — fica até o login real por papel amadurecer.
