@@ -49,3 +49,25 @@ Endpoints de apoio: lookup de paciente por CPF/CNS; checar existência por `exte
 - 🟡 Mapeamento de especialidades (texto/`internal_specialization_id`) entre os dois sistemas.
 - 🟡 Como resolvemos `patient_id` da TC (lookup por CPF/CNS; e se o paciente não existe lá? criamos?).
 - 🟡 Precisamos de um novo `PartnerType` + `X-API-KEY` emitida pela equipe da TC (tarefa para a equipe TC).
+  - ✅ **Decisão (2026-07-09):** reusar a key de **SOSPortal de produção** (não emitir nova); secret na GCP (Secret Manager), sem colar valor em lugar nenhum. A allowlist do `idbycpf` p/ `PartnerType.SOSPortal` ainda precisa ser confirmada pela equipe TC.
+
+## 🧬 REGRA DA REALIDADE — como os pacientes existem no tenant da Portal (TC) (2026-07-09, ditada pelo Alessandro)
+
+> Isto NÃO é regra do Doctor-Hub — é a **realidade factual** do estado atual dos pacientes na
+> Teleconsulta (tenant Portal Telemedicina). O nosso desenho de integração tem que se adaptar a ela.
+
+1. **Paciente pertence sempre a ≥1 CLIENTE** (HC). Pode pertencer a **2 ou mais** clientes ao mesmo
+   tempo — ex.: um paciente do **Amazonas** e de **Povos da Floresta** (clientes públicos), que também
+   podem ter um cliente **privado**. Ou seja, cardinalidade **paciente N:N cliente**.
+2. **`PTM-Client-Domain` MUDA conforme o cliente.** Não é um domain fixo do sistema — é **por cliente**.
+   Logo, resolver um paciente na TC é sempre **por (CPF, cliente/domain)**, nunca "o paciente global".
+3. **Chave de identificação = CPF.** É o que amarra as contas de um mesmo humano entre clientes/domains.
+4. **DÉBITO TÉCNICO conhecido da TC:** hoje um mesmo paciente pode ter **DUAS (ou mais) contas com
+   e-mails diferentes** (duplicação de cadastro). Portanto, o mesmo CPF pode resolver para
+   `patient_id` **diferentes** dependendo do cliente/domain (e até dentro do mesmo). **Futuro
+   (planejado, sem data):** refatoração → **cadastro único** por paciente, com **vínculos** a clientes
+   diferentes. Até lá, tratamos "CPF → possivelmente vários patient_id por domain" como o normal.
+5. **Implicação pro Doctor-Hub:** o `TeleconsultaCore.ClientDomain` **NÃO pode ser config fixo** (como
+   está hoje no lookup dormente D-185) — o domain tem que vir **do cliente do agendamento/vaga** em cada
+   chamada. E a resolução de identidade precisa de uma camada de **normalização** que absorva essa
+   duplicação e o N:N (ver o design de "integração de tenants legados" em andamento).
