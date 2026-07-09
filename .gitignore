@@ -11,6 +11,9 @@
 .secrets/
 infrastructure/envs/*.env
 
+# Backups do banco (pg_dump do reset-ambiente.sh — contêm dados, nunca commitar)
+infrastructure/backups/
+
 # Handoff descartável entre sessões (autoexclui — nunca commitar)
 _SESSION-START.md
 
