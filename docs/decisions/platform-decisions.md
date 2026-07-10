@@ -56,3 +56,26 @@ sempre com **prompt auto-contido** (o subagent nasce sem contexto: paths+linhas+
 **verificação do diff** depois (confiar ≠ não conferir). Materializado: `.claude/rules/delegacao-modelos.md`
 (regra da máquina) + 4 agents. Aplica a P-014 (gate de segurança) e P-015 (composição): as revisões
 delegadas checam coerência e segurança sem gastar Opus.
+
+## P-017 — DDD2: Desenvolvimento Orientado a Documentação (Documentation Driven Design) (2026-07-09)
+Ideia do Alessandro. Fecha o ciclo do SDD (que já diz *"a spec é o sistema; o código é derivado"*): a
+documentação deixa de ser só **fundamento** de desenvolvimento e vira **artefato executável e vivo** —
+fonte ÚNICA de (a) documentação humana, (b) contexto para agents, (c) os testes, e (d) uma **auditoria
+temporal de conformidade**. Nome **DDD2** só para não colidir com Domain-Driven-Design.
+**Núcleo — o mapa de CAPABILITIES:** um registro legível por humano E máquina (`products/<p>/docs/capabilities.yml`),
+**append-only** e **bitemporal** — cada grant (persona→ação, com escopo) tem `vigenteDesde` (e `vigenteAte`
+quando superado). **Regra dura:** nunca editar/remover um grant vigente; para MUDAR uma permissão, faz-se
+**APPEND** de uma nova versão (novo `vigenteDesde`) e marca-se a antiga com `vigenteAte`. A permissão
+"em T" = o grant vigente em T. Assim os **logs antigos continuam corretos** (um Demandas que cadastrou
+faturamento em jun/2026 estava certo) e é possível **provar** que, depois que a regra mudou (ex.: 05/07),
+**nenhum** log de ação existe por persona não-autorizada naquela data.
+**Deriva do mesmo registro (futuro, faseado):** os **testes de RBAC** leem o mapa; um **validador de
+auditoria temporal** cruza cada log (persona+ação+timestamp) com o grant vigente naquela data; e a **área
+de tutorial in-app** (mapa de funcionalidades didático) é gerada do mesmo registro.
+**Não inventamos do zero** — a síntese é nossa, os tijolos existem: README-Driven Development (Preston-Werner),
+**Specification by Example / Living Documentation** (Gojko Adzic) + BDD, **Docs-as-Code**, **Policy-as-Code**
+(OPA/Rego, AWS Cedar, oso), e **bitemporal/append-only** (SQL:2011 temporal, Datomic/XTDB, Event Sourcing).
+**Escopo — onde brilha:** regras DECLARATIVAS (permissões/RBAC, comportamento de tela, invariantes). É uma
+**CAMADA sobre SDD+TDD**, não substituto (cálculo/algoritmo continua spec→teste do TDD).
+**Fase atual (decisão do Alessandro):** registrar o método + criar o mapa (`capabilities.yml`); **ligar
+testes/auditoria/tutorial vem depois**. Materializado: este ADR + `products/doctor-hub/docs/capabilities.yml`.

@@ -1,0 +1,85 @@
+# =============================================================================
+# capabilities.yml — MAPA DE CAPABILITIES do Doctor-Hub  (DDD2 · P-017)
+#
+# Este arquivo é a FONTE DA VERDADE de "quem pode o quê" no sistema. Ele é, ao mesmo tempo:
+#   • documentação humana (o mapa de funcionalidades / permissões),
+#   • contexto para agents de IA,
+#   • (futuro) a fonte dos testes de RBAC,
+#   • (futuro) a base do validador de AUDITORIA TEMPORAL de conformidade.
+#
+# ─── REGRA DURA: APPEND-ONLY + BITEMPORAL ────────────────────────────────────
+# NUNCA edite ou remova um `grant` que está vigente. Para MUDAR uma permissão:
+#   1) marque o grant antigo com `vigenteAte: <data>`;
+#   2) ADICIONE um novo grant com `vigenteDesde: <data>`.
+# A permissão "em uma data T" = o grant cujo intervalo [vigenteDesde, vigenteAte) contém T.
+# Assim, logs antigos continuam CORRETOS (quem agiu quando tinha permissão estava certo),
+# e conseguimos PROVAR que, após a mudança, nenhuma ação ocorreu por persona não-autorizada.
+# Datas em ISO (YYYY-MM-DD). `vigenteAte: null` (ou ausente) = vigente hoje.
+# =============================================================================
+
+versao: 1
+atualizadoEm: 2026-07-09
+
+# --- Personas (papéis que logam) — ver products/doctor-hub/docs/discovery/02-roles.md -------
+personas:
+  Admin:     "Administrador da plataforma (Portal Telemedicina)."
+  Demandas:  "Demandas Médicas — triagem/alocação; atua sobre TODOS os clientes."
+  Operador:  "Operador Agendador — agenda dentro do escopo do seu cliente/complexo."
+  Gestor:    "Gestor do cliente/unidade (visão do próprio HC)."
+
+# --- Escopos reutilizáveis (ABAC) — restrições de alcance por atributo -----------------------
+escopos:
+  proprio-complexo: >
+    Somente agendas DISPONIBILIZADAS da sua unidade OU do seu complexo público/privado
+    (estadual, municipal, federal, programa de governo, SUS, ONG, FINEP).
+  todos-os-clientes: "Sem restrição de cliente (visão global)."
+
+# --- CAPABILITIES ---------------------------------------------------------------------------
+capabilities:
+
+  faturamento:
+    descricao: "Ver e cadastrar o faturamento (serviços/valores/laudos) do médico."
+    acoes: [ver, criar, editar]
+    grants:
+      - personas: [Admin, Demandas]
+        vigenteDesde: 2026-07-09
+        vigenteAte: null
+    # EXEMPLO de evolução futura (NÃO editar o de cima — apenas ilustra a regra append-only):
+    #   se um dia nascer a persona "Financeiro" e o faturamento migrar pra ela:
+    #     - marcar o grant acima com  vigenteAte: 2026-XX-XX
+    #     - e ADICIONAR:  - personas: [Financeiro]  vigenteDesde: 2026-XX-XX
+    #   os logs de Demandas antes da data continuam válidos; depois dela, só Financeiro pode.
+
+  escala:
+    descricao: "Criar, editar, arquivar e (quando sem agendamento) excluir escala do médico."
+    acoes: [ver, criar, editar, arquivar, excluir]
+    grants:
+      - personas: [Demandas]
+        vigenteDesde: 2026-07-09
+        vigenteAte: null
+
+  gestao-doutor:
+    descricao: "Cadastrar e editar os dados/perfil do médico (gestão de doutor)."
+    acoes: [ver, criar, editar]
+    grants:
+      - personas: [Demandas]
+        vigenteDesde: 2026-07-09
+        vigenteAte: null
+
+  agendamento:
+    descricao: "Assumir vaga disponibilizada e criar agendamento para um paciente."
+    acoes: [ver, assumir, criar]
+    grants:
+      - personas: [Operador]
+        escopo: proprio-complexo
+        vigenteDesde: 2026-07-09
+        vigenteAte: null
+      - personas: [Demandas]
+        escopo: todos-os-clientes
+        vigenteDesde: 2026-07-09
+        vigenteAte: null
+
+# --- PENDENTE (a preencher conforme confirmarmos as regras) ---------------------------------
+# - Gestor: quais capabilities de LEITURA tem hoje (dashboards/relatórios do próprio HC)?
+# - "disponibilização" (Demandas aloca capacidade): capability própria?
+# - refinar os valores do escopo `proprio-complexo` (natureza jurídica × cliente).
