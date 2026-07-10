@@ -9,6 +9,15 @@
 > **comum** vive aqui; o que é **específico** vive em cada repo. A linkagem oficial entre o guarda-chuva
 > e os repos é o **manifest** ([`repos.yml`](repos.yml)) + o **catálogo** — **não** submodules.
 
+## ⭐ Estrela-guia (Missão · Visão · Objetivo · Premissas)
+
+Antes da Diretriz Suprema, há o **PORQUÊ**: [`docs/missao-visao.md`](docs/missao-visao.md) é o farol —
+**toda decisão e entrega valida contra ele** (é white-label? a doc veio primeiro? toca produção/custo/
+dado/segredo → perguntei ao humano? reduz custo/atrai cliente/melhora ROI?). **Premissa nº 5 (autonomia
+gradual):** a confiança na IA começa baixa e cresce conforme o humano ensina — cada "pode/não pode" vira
+**guardrail documentado**; operações perigosas (prod direto, deletar dado, custo real, segredo/LGPD) =
+humano decide; **sandbox = clone de produção → sem burocracia**.
+
 ## 🏗️ Estrutura
 
 ```
