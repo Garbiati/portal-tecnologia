@@ -1,33 +1,40 @@
 # =============================================================================
 # capabilities.yml — MAPA DE CAPABILITIES do Doctor-Hub  (DDD2 · P-017)
 #
-# Este arquivo é a FONTE DA VERDADE de "quem pode o quê" no sistema. Ele é, ao mesmo tempo:
-#   • documentação humana (o mapa de funcionalidades / permissões),
-#   • contexto para agents de IA,
-#   • (futuro) a fonte dos testes de RBAC,
-#   • (futuro) a base do validador de AUDITORIA TEMPORAL de conformidade.
+# Fonte da verdade de "quem pode o quê". É, ao mesmo tempo: documentação humana,
+# contexto p/ agents, (futuro) fonte dos testes de RBAC e do validador de AUDITORIA TEMPORAL.
 #
-# ─── REGRA DURA: APPEND-ONLY + BITEMPORAL ────────────────────────────────────
-# NUNCA edite ou remova um `grant` que está vigente. Para MUDAR uma permissão:
-#   1) marque o grant antigo com `vigenteAte: <data>`;
-#   2) ADICIONE um novo grant com `vigenteDesde: <data>`.
-# A permissão "em uma data T" = o grant cujo intervalo [vigenteDesde, vigenteAte) contém T.
-# Assim, logs antigos continuam CORRETOS (quem agiu quando tinha permissão estava certo),
-# e conseguimos PROVAR que, após a mudança, nenhuma ação ocorreu por persona não-autorizada.
-# Datas em ISO (YYYY-MM-DD). `vigenteAte: null` (ou ausente) = vigente hoje.
+# ─── MODELO DE ATUAÇÃO: UNIÃO DE PAPÉIS, POR FUNCIONALIDADE ───────────────────
+# O usuário NÃO troca de persona. Logado, ele carrega TODOS os seus papéis; em cada tela,
+# tem acesso a TODA feature que QUALQUER um dos seus papéis permita. Permissão efetiva =
+# UNIÃO dos grants de todos os papéis do usuário, avaliada por AÇÃO/funcionalidade.
+#   • Financeiro puro: vê o cadastro do médico (não edita) e vê+edita o faturamento.
+#   • Demandas puro: edita o cadastro do médico; do faturamento vê só o MODELO (não o valor), não edita.
+#   • Financeiro + Demandas: edita cadastro (via Demandas) E faturamento (via Financeiro).
+# ⚠️ A relação com D-106 (isolamento de persona / seletor no avatar) precisa ser reconciliada —
+#    ver PERGUNTA ABERTA no fim. Este modelo (união por feature) pode SUPERAR o switch de persona.
+#
+# ─── REGRA: APPEND-ONLY BITEMPORAL + CICLO DE VIDA (homolog × produção) ───────
+# `status: em-homologacao` → a doc ainda está sendo MODELADA junto com o cliente; pode ser
+#    ajustada livremente (ainda não foi a produção, não há log real a preservar).
+# `status: produtivo` (a partir de `produtivoDesde`) → APPEND-ONLY: nunca edite/remova um grant;
+#    para mudar, feche o antigo com `vigenteAte` e ADICIONE um novo `vigenteDesde`. A permissão
+#    "em T" = grant vigente em T. Assim logs antigos seguem corretos e provamos que, após a mudança,
+#    nenhuma ação ocorreu por persona não-autorizada naquela data.
+# Datas ISO (YYYY-MM-DD). `vigenteAte: null`/ausente = vigente.
 # =============================================================================
 
-versao: 1
+versao: 2
 atualizadoEm: 2026-07-09
 
-# --- Personas (papéis que logam) — ver products/doctor-hub/docs/discovery/02-roles.md -------
+# --- Personas (papéis que logam) — discovery/02-roles.md -------------------------------------
 personas:
-  Admin:     "Administrador da plataforma (Portal Telemedicina)."
-  Demandas:  "Demandas Médicas — triagem/alocação; atua sobre TODOS os clientes."
-  Operador:  "Operador Agendador — agenda dentro do escopo do seu cliente/complexo."
-  Gestor:    "Gestor do cliente/unidade (visão do próprio HC)."
+  Admin:      "Administrador da plataforma (Portal Telemedicina) — vê e faz tudo."
+  Demandas:   "Demandas Médicas — triagem/alocação; gere o CADASTRO do médico; TODOS os clientes."
+  Financeiro: "Financeiro — gere o FATURAMENTO/contrato do médico; NÃO altera o cadastro."   # NOVO
+  Operador:   "Operador Agendador — agenda dentro do escopo do seu cliente/complexo."
+  Gestor:     "Gestor do cliente/unidade (visão do próprio HC)."
 
-# --- Escopos reutilizáveis (ABAC) — restrições de alcance por atributo -----------------------
 escopos:
   proprio-complexo: >
     Somente agendas DISPONIBILIZADAS da sua unidade OU do seu complexo público/privado
@@ -35,51 +42,52 @@ escopos:
   todos-os-clientes: "Sem restrição de cliente (visão global)."
 
 # --- CAPABILITIES ---------------------------------------------------------------------------
+# Schema: capability → `acoes` (granular por ação, com grants bitemporais) OU `grants` (simples,
+# vale p/ a capability toda). Cada grant: { personas, [escopo], vigenteDesde, [vigenteAte] }.
 capabilities:
 
-  faturamento:
-    descricao: "Ver e cadastrar o faturamento (serviços/valores/laudos) do médico."
-    acoes: [ver, criar, editar]
-    grants:
-      - personas: [Admin, Demandas]
-        vigenteDesde: 2026-07-09
-        vigenteAte: null
-    # EXEMPLO de evolução futura (NÃO editar o de cima — apenas ilustra a regra append-only):
-    #   se um dia nascer a persona "Financeiro" e o faturamento migrar pra ela:
-    #     - marcar o grant acima com  vigenteAte: 2026-XX-XX
-    #     - e ADICIONAR:  - personas: [Financeiro]  vigenteDesde: 2026-XX-XX
-    #   os logs de Demandas antes da data continuam válidos; depois dela, só Financeiro pode.
+  # ── Tela "Gestão de médicos" = duas áreas de feature: CADASTRO e FATURAMENTO ──────────────
+  medico-cadastro:
+    descricao: "Dados do médico (nome, CRM, CPF, contato, especialidades, status). Parte 'cadastro' da gestão de médicos."
+    status: em-homologacao
+    acoes:
+      ver:
+        grants:
+          - { personas: [Admin, Demandas, Financeiro], vigenteDesde: 2026-07-09 }
+      editar:
+        grants:
+          - { personas: [Admin, Demandas], vigenteDesde: 2026-07-09 }   # Financeiro NÃO edita cadastro
+
+  medico-faturamento:
+    descricao: "Faturamento do médico: MODELO de contrato (por hora × por consulta) + VALOR (quanto). Parte 'faturamento' da gestão de médicos."
+    status: em-homologacao
+    acoes:
+      ver-modelo:                                    # o MODELO (por hora/consulta), SEM o valor
+        grants:
+          - { personas: [Admin, Demandas, Financeiro], vigenteDesde: 2026-07-09 }
+      ver-valor:                                     # o VALOR (quanto) — Demandas NÃO vê
+        grants:
+          - { personas: [Admin, Financeiro], vigenteDesde: 2026-07-09 }
+      editar:                                        # modelo + valor — só Financeiro/Admin
+        grants:
+          - { personas: [Admin, Financeiro], vigenteDesde: 2026-07-09 }
+    # SUPERA a capability `faturamento` (Admin+Demandas) registrada em v1 hoje — era grossa demais.
+    # Como nunca foi a produção (em-homologacao), refinamos direto em vez de vigenteAte+append.
 
   escala:
-    descricao: "Criar, editar, arquivar e (quando sem agendamento) excluir escala do médico."
-    acoes: [ver, criar, editar, arquivar, excluir]
+    descricao: "Criar, editar, arquivar e (sem agendamento) excluir escala do médico."
+    status: em-homologacao
     grants:
-      - personas: [Demandas]
-        vigenteDesde: 2026-07-09
-        vigenteAte: null
-
-  gestao-doutor:
-    descricao: "Cadastrar e editar os dados/perfil do médico (gestão de doutor)."
-    acoes: [ver, criar, editar]
-    grants:
-      - personas: [Demandas]
-        vigenteDesde: 2026-07-09
-        vigenteAte: null
+      - { personas: [Demandas], vigenteDesde: 2026-07-09 }
 
   agendamento:
     descricao: "Assumir vaga disponibilizada e criar agendamento para um paciente."
-    acoes: [ver, assumir, criar]
+    status: em-homologacao
     grants:
-      - personas: [Operador]
-        escopo: proprio-complexo
-        vigenteDesde: 2026-07-09
-        vigenteAte: null
-      - personas: [Demandas]
-        escopo: todos-os-clientes
-        vigenteDesde: 2026-07-09
-        vigenteAte: null
+      - { personas: [Operador], escopo: proprio-complexo, vigenteDesde: 2026-07-09 }
+      - { personas: [Demandas], escopo: todos-os-clientes, vigenteDesde: 2026-07-09 }
 
-# --- PENDENTE (a preencher conforme confirmarmos as regras) ---------------------------------
-# - Gestor: quais capabilities de LEITURA tem hoje (dashboards/relatórios do próprio HC)?
+# --- PENDENTE (a confirmar) -----------------------------------------------------------------
+# - Reconciliar o modelo "união de papéis por feature" com D-106 (seletor de persona) — substitui?
+# - Gestor: quais capabilities de LEITURA (dashboards/relatórios do próprio HC)?
 # - "disponibilização" (Demandas aloca capacidade): capability própria?
-# - refinar os valores do escopo `proprio-complexo` (natureza jurídica × cliente).
