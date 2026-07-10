@@ -72,7 +72,12 @@ capabilities:
         grants:
           - { personas: [Admin, Financeiro], apresentacao: pleno,     vigenteDesde: 2026-07-09 }
           - { personas: [Demandas],          apresentacao: mascarado, vigenteDesde: 2026-07-09 }
-      editar:                                        # modelo + valor — só Financeiro/Admin
+      editar-modelo:                                 # modo (hora/consulta) + MINUTAGEM (duração) — Demandas TAMBÉM
+        # É o que a ESCALA precisa pra gerar vagas (a minutagem define a duração da consulta).
+        # Por isso Demandas edita: a escala nasce SEM valor; o Financeiro insere o valor depois.
+        grants:
+          - { personas: [Admin, Demandas, Financeiro], vigenteDesde: 2026-07-09 }
+      editar-valor:                                  # o VALOR (R$) — só Financeiro/Admin (entra depois)
         grants:
           - { personas: [Admin, Financeiro], vigenteDesde: 2026-07-09 }
     # SUPERA a capability `faturamento` (Admin+Demandas) registrada em v1 hoje — era grossa demais.

@@ -517,4 +517,13 @@ Dois bugs de cálculo de capacidade reportados por stakeholder que homologou (do
 - **Matriz (aprovada):** cadastro do médico → ver: Admin/Demandas/Financeiro, editar: Admin/Demandas (Financeiro NÃO). Faturamento → ver-modelo (hora×consulta + minutos): Admin/Demandas/Financeiro; **ver-valor**: Admin/Financeiro **pleno**, Demandas **mascarado** (borrado); editar (modelo+valor): Admin/Financeiro.
 - **Ciclo de vida (P-017):** em homologação a doc é editável; ao ir a produção vira append-only/bitemporal. Estas capabilities estão `em-homologacao`.
 - Testes derivam do mapa; validador de auditoria temporal e tutorial in-app = fases seguintes do DDD2.
-- **Wizard de escala × faturamento pendente (confirmado Alessandro):** o wizard NÃO deixa quem não pode editar faturamento (ex.: Demandas) configurá-lo na hora — se o médico não tem faturamento pra aquela (especialidade×tipo), mostra **"faturamento pendente — peça ao Financeiro"** e bloqueia até existir. **Financeiro configura o faturamento ANTES** da escala (mantém a regra pura: só Financeiro/Admin editam faturamento).
+- **Wizard de escala × faturamento pendente (confirmado Alessandro):** o wizard NÃO deixa quem não pode editar faturamento (ex.: Demandas) configurá-lo na hora — se o médico não tem faturamento pra aquela (especialidade×tipo), mostra **"faturamento pendente — peça ao Financeiro"** e bloqueia até existir. **Financeiro configura o faturamento ANTES** da escala (mantém a regra pura: só Financeiro/Admin editam faturamento). **⚠️ SUPERADO por D-188.**
+
+### D-188 — Faturamento em 2 partes: modelo/minutagem (Demandas) × valor (Financeiro); escala nasce sem valor (2026-07-09)
+Refina o D-187 (homologação, doc editável). **Objetivo:** desbloquear a jornada ponta-a-ponta do **Demandas** (meta: sistema criando escala→agendamento até segunda). A regra do wizard "bloqueia Demandas" (D-187) foi **revista**.
+**Split do `medico-faturamento` (era um `editar` só):**
+- `editar-modelo` (modo hora/consulta + **minutagem/duração**): **Admin, Demandas, Financeiro**. É o que a ESCALA precisa (a minutagem define a duração da consulta → gera as vagas). Demandas cria escala com isso.
+- `editar-valor` (o **R$**): **Admin, Financeiro** só. Entra DEPOIS (o Financeiro insere).
+- `ver-valor`: inalterado (Admin/Financeiro pleno, Demandas mascarado).
+**Escala nasce SEM valor:** o wizard deixa Demandas setar modelo+minutagem; o **valor é opcional** e fica pendente até o Financeiro inserir na ficha. (Substitui o "bloqueia até existir" do D-187.)
+Código: back e front trocam `Pode(...,'editar')` por `'editar-modelo'`/`'editar-valor'` conforme o campo; o endpoint aceita modelo/minutagem de Demandas mas só aplica o valor se o usuário tem `editar-valor`. Regenerar o codegen.
