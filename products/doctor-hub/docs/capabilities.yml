@@ -65,9 +65,13 @@ capabilities:
       ver-modelo:                                    # o MODELO (por hora/consulta), SEM o valor
         grants:
           - { personas: [Admin, Demandas, Financeiro], vigenteDesde: 2026-07-09 }
-      ver-valor:                                     # o VALOR (quanto) — Demandas NÃO vê
+      ver-valor:                                     # o VALOR (R$/quanto)
+        # FIELD-LEVEL SECURITY + MASKING — 3 apresentações do campo por persona:
+        #   pleno     = vê o valor · mascarado = borrado (indica que EXISTE valor, mas não pode ver)
+        #   oculto    = campo nem aparece.  (Demandas vê o MODELO/minutos, mas o valor fica MASCARADO.)
         grants:
-          - { personas: [Admin, Financeiro], vigenteDesde: 2026-07-09 }
+          - { personas: [Admin, Financeiro], apresentacao: pleno,     vigenteDesde: 2026-07-09 }
+          - { personas: [Demandas],          apresentacao: mascarado, vigenteDesde: 2026-07-09 }
       editar:                                        # modelo + valor — só Financeiro/Admin
         grants:
           - { personas: [Admin, Financeiro], vigenteDesde: 2026-07-09 }
