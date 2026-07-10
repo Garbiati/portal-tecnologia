@@ -13,9 +13,12 @@ last_update: 2026-07-10
 
 # Agendamento resiliente — solicitação local + confirmação assíncrona
 
-> **Base:** D-192 (regra fundadora) · conecta DEP-TC-1 (integração real que estava pendente),
-> D-069 (sync ao cliente nunca destrutivo) e D-191/EMPI (o `PacienteId` resolvido entra no pacote).
-> **Rascunho — NÃO implementar.** Enquanto houver 🔴 na seção 8, a spec não vira `specified`.
+> **Base:** D-192 (regra fundadora) + **D-193** (Fase 1 = só a nossa parte; saída ao cliente atrás de
+> porta abstrata, adiada) + **D-194** (Central de Mensagens = canal do REJEITADO). Conecta DEP-TC-1
+> (integração real que estava pendente), D-069 (sync ao cliente nunca destrutivo) e D-191/EMPI.
+> **Fase 1 DESBLOQUEADA (D-193):** o único 🔴 que travava (contrato do cliente) foi adiado por decisão;
+> outbox + state machine são nossos e testáveis sem cliente real. A **Fase 2** (adapter de PUSH real +
+> pacote premium) e a **Central de Mensagens** (D-194) são trilhas próprias — seguem com 🔴 abaixo.
 
 ## 1. Problema / Dor  _(Definition of Success)_
 
@@ -59,6 +62,12 @@ Em conflito, quem "perde" é o DoctorHub. Nunca sobrepomos/forçamos no cliente.
   cliente; chave = id da solicitação). — _Confirmado por Alessandro em 2026-07-10 (D-192, "sync … idempotente")_
 - ✅ **O PUSH ao cliente segue o baseline D-069** (credencial dedicada, nunca DELETE/DROP/TRUNCATE,
   `UPDATE` só com `WHERE` por `external_id`). — _Confirmado (herdado de D-069)_
+- ✅ **Quem pode agendar = AMBOS (Gestor e Operador).** — _Confirmado por Alessandro em 2026-07-10 (D-193)_
+- ✅ **A saída ao cliente fica atrás de uma porta abstrata** (`IAgendamentoSyncPort`); o contrato/
+  transporte real é **adiado** e será **genérico** (webhook/mensageria/qualquer), oferecido como
+  **pacote premium**. A Fase 1 não integra com cliente real (entregador stub). — _Confirmado por Alessandro em 2026-07-10 (D-193)_
+- ✅ **O REJEITADO é comunicado ao usuário pela Central de Mensagens** (inbox in-app + e-mail), não por
+  erro síncrono na modal (a rejeição pode chegar depois). — _Confirmado por Alessandro em 2026-07-10 (D-194)_
 
 ## 4. Critérios de aceite  _(a fonte do teste — Gherkin/BDD)_
 
@@ -138,14 +147,14 @@ Cenário: atomicidade (outbox) — agendamento e evento de sync vivem/morrem jun
 
 ## 8. Perguntas abertas  _(NÃO INFERIR — perguntar)_
 
-- 🔴 **Contrato do PUSH ao cliente:** qual é a API/interface de "criar agendamento" no sistema do
-  cliente (na TC, é o `ptm-core-api`?), como ela sinaliza **conflito** vs **indisponível**, e qual a
-  **credencial** (D-069)? Sem isso, o entregador não tem alvo.
-- 🔴 **UX do REJEITADO:** o que o operador vê e faz quando uma solicitação volta rejeitada? Reabre o
-  modal na mesma vaga? É empurrado para outra vaga? Notificação assíncrona (a solicitação pode ser
-  rejeitada minutos depois, com o operador já em outra tela)?
-- 🔴 **Quem pode agendar** (herdado D-011): Gestor, Operador, ou ambos? (o mapa D-187 hoje dá a
-  Gestor/Demandas; o Operador ainda não existe no Keycloak).
+- ✅ **RESOLVIDO (D-193) — Quem pode agendar:** ambos (Gestor e Operador).
+- 🟢 **ADIADO por decisão (D-193) — Contrato do PUSH ao cliente** (Fase 2 / pacote premium): qual a
+  API/interface de "criar agendamento" no sistema do cliente, como sinaliza **conflito** vs
+  **indisponível**, e qual a **credencial** (D-069). Não bloqueia a Fase 1 (entregador stub atrás da
+  porta abstrata).
+- 🟡 **Trilha própria (D-194) — Central de Mensagens:** direção confirmada (inbox in-app + e-mail);
+  detalhes abertos (quais eventos, entrega, lido/não-lido, destinatário por papel, retenção, tempo
+  real vs. polling). A Fase 1 do agendamento só precisa **definir o estado REJEITADO**, não a UI.
 - 🟡 **Reconciliação com o SALDO (D-190):** a solicitação decrementa saldo na criação (otimista) ou só
   na confirmação? E se rejeitar depois de ter decrementado?
 - 🟡 **Concorrência local:** duas solicitações locais para o mesmo `vagaId` — deixamos as duas irem ao
