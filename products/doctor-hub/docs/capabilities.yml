@@ -95,6 +95,7 @@ capabilities:
     grants:
       - { personas: [Operador], escopo: proprio-complexo, vigenteDesde: 2026-07-09 }
       - { personas: [Demandas], escopo: todos-os-clientes, vigenteDesde: 2026-07-09 }
+      - { personas: [Gestor],   escopo: proprio-complexo, vigenteDesde: 2026-07-10 }   # D-189: Gestor agenda na PRÓPRIA unidade (até o Operador existir no Keycloak)
 
 # --- PENDENTE (a confirmar) -----------------------------------------------------------------
 # - Reconciliar o modelo "união de papéis por feature" com D-106 (seletor de persona) — substitui?
