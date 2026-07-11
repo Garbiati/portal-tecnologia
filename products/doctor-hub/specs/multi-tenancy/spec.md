@@ -61,6 +61,11 @@ last_update: 2026-07-11
   × **visibilidade de dado** ("pode ver o registro Y"). — _D-201_
 - ✅ **Discriminador de tenant explícito por linha** (ex.: `Agendamento.ClienteId`), carimbado na
   criação — não derivado por join na hora da query. — _D-197_
+- ✅ **Vaga só é agendável a um cliente se o doutor estiver VINCULADO àquele cliente** (gate de
+  elegibilidade, ANTES do saldo). Um agendamento é sempre de um cliente, para um paciente daquele
+  cliente, com um doutor vinculado — consistência tri-vínculo. — _D-202_
+- ✅ **Dois gates de capacidade distintos:** VÍNCULO (elegibilidade, D-202) × SALDO (`min(pool,teto)`,
+  D-190). Vínculo primeiro; saldo é fase própria posterior. — _D-202_
 
 ## 4. Critérios de aceite  _(os GUARDRAILS DE REGRESSÃO — viram teste antes do código)_
 
@@ -85,6 +90,22 @@ Cenário: paciente de uma unidade cai com médico de outra vinculada
   Dado um paciente com solicitação na unidade "U1"
   E um médico disponível vinculado a "U1" e "U2"
   Então o médico pode assumir o atendimento desse paciente
+
+Cenário: vaga só aparece para o cliente se o doutor está vinculado (D-202)
+  Dado o Doutor A e o Doutor B, ambos cardiologistas
+  E o cliente "Piauí" com apenas o Doutor A vinculado
+  E o Doutor B com vagas disponíveis
+  E o "Piauí" com saldo positivo de cardiologia
+  Quando o "Piauí" busca vagas de cardiologia para agendar
+  Então vê as vagas do Doutor A
+  E NÃO vê as vagas do Doutor B (não vinculado) — nem com saldo positivo
+  Quando o Doutor B é vinculado ao "Piauí"
+  Então as vagas do Doutor B passam a aparecer para o "Piauí"
+
+Cenário: vínculo é gate ANTES do saldo
+  Dado um doutor NÃO vinculado ao cliente
+  Então nenhuma vaga dele é agendável para o cliente
+  Independentemente de o cliente ter saldo de capacidade
 
 Cenário: grant explícito abre visibilidade cruzada (assimétrico)
   Dado um médico do PRIVADO com grant para ver o SUS de um paciente (complemento de diagnóstico)
