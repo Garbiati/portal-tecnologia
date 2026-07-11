@@ -80,6 +80,14 @@ Em conflito, quem "perde" é o DoctorHub. Nunca sobrepomos/forçamos no cliente.
   — _Confirmado por Alessandro em 2026-07-10 (D-195)_
 - ✅ **O "pacote premium" é serviço OPCIONAL** (a Portal adapta o sistema do cliente), **não** a fase nem
   pré-requisito. — _Confirmado por Alessandro em 2026-07-10 (D-195, corrige D-193)_
+- ✅ **Auth do cliente = Keycloak client credentials (default) + API key dedicada (hash) como fallback.**
+  Service account por cliente, `clienteId` no claim; M2M. — _Confirmado por Alessandro em 2026-07-11 (D-196)_
+- ✅ **Escopo (invariante):** o cliente só vê as solicitações do próprio `clienteId`, fail-closed. — _Confirmado por Alessandro em 2026-07-11 (D-196)_
+- ✅ **Ack = uma fase:** o pull marca `Enviando` (lease/visibility); o confirm resolve `sucesso`→Confirmado
+  | `conflito`→Rejeitado; lease expirado → volta a `Pendente`; confirm idempotente por id. — _Confirmado por Alessandro em 2026-07-11 (D-196)_
+- ✅ **LGPD/payload:** identifica o paciente pelo `external_id` (do próprio cliente, via EMPI/D-191) + ids
+  de correlação + dados do slot. Sem CPF/nome. — _Confirmado por Alessandro em 2026-07-11 (D-196)_
+- ✅ **Idempotência do pull = lease/visibility** (item buscado fica escondido até confirmar/expirar). — _Confirmado por Alessandro em 2026-07-11 (D-196)_
 - ✅ **O REJEITADO é comunicado ao usuário pela Central de Mensagens** (inbox in-app + e-mail), não por
   erro síncrono na modal (a rejeição pode chegar depois). — _Confirmado por Alessandro em 2026-07-10 (D-194)_
 
@@ -126,6 +134,59 @@ Cenário: atomicidade (outbox) — agendamento e evento de sync vivem/morrem jun
   E se a transação falha, nem o agendamento nem o evento existem
 ```
 
+### 4b. Endpoints pull+ack (Fase 2 — D-196)
+
+```gherkin
+Cenário: cliente busca só as próprias solicitações pendentes (escopo)
+  Dado um cliente autenticado como clienteId "C1"
+  E solicitações pendentes de "C1" e de "C2"
+  Quando o cliente faz GET das solicitações pendentes
+  Então recebe apenas as de "C1"
+  E nunca uma solicitação de "C2"
+
+Cenário: sem clienteId na credencial → fail-closed
+  Dado um chamador autenticado sem clienteId
+  Quando faz GET das solicitações pendentes
+  Então a resposta é vazia (ou 403) — nunca vaza dado de nenhum cliente
+
+Cenário: o pull marca Enviando e esconde o item (lease/visibility)
+  Dada uma solicitação PENDENTE de "C1"
+  Quando "C1" busca as pendentes
+  Então a solicitação volta com status ENVIANDO e um lease
+  E um segundo pull imediato de "C1" NÃO retorna a mesma solicitação
+
+Cenário: lease expira → a solicitação volta a ser buscável
+  Dada uma solicitação ENVIANDO cujo lease já expirou
+  Quando "C1" busca as pendentes
+  Então a solicitação é retornada de novo (voltou a PENDENTE)
+
+Cenário: confirm sucesso → CONFIRMADO (uma fase)
+  Dada uma solicitação que "C1" buscou
+  Quando "C1" confirma com resultado "sucesso" (+ external_id do agendamento no sistema dele)
+  Então a solicitação passa a CONFIRMADO
+
+Cenário: confirm conflito → REJEITADO (cliente é a fonte da verdade)
+  Dada uma solicitação que "C1" buscou
+  Quando "C1" confirma com resultado "conflito"
+  Então a solicitação passa a REJEITADO
+  E o DoctorHub não tenta sobrescrever nada no cliente
+
+Cenário: confirm é idempotente
+  Dada uma solicitação já CONFIRMADA
+  Quando "C1" confirma a mesma de novo
+  Então a resposta é sucesso (no-op) e o estado não muda
+
+Cenário: confirm de solicitação de outro cliente é negado
+  Dado "C2" tentando confirmar uma solicitação de "C1"
+  Quando faz o POST de confirmação
+  Então recebe 404/403 e o estado da solicitação de "C1" não muda
+
+Cenário: LGPD — o payload do pull não vaza CPF nem nome
+  Quando "C1" busca as pendentes
+  Então cada item traz external_id (do próprio C1) + ids de correlação + dados do slot
+  E NÃO contém CPF nem nome completo do paciente
+```
+
 ## 5. Definition of Done
 
 - [ ] Todos os cenários (não-bloqueados) da seção 4 passam como teste automatizado (xUnit)
@@ -165,13 +226,15 @@ Cenário: atomicidade (outbox) — agendamento e evento de sync vivem/morrem jun
 - ✅ **RESOLVIDO (D-195) — Direção da integração:** default é **pull+ack** (o cliente busca e confirma,
   assíncrono); nós expomos o contrato. Isso **dissolve** o antigo 🔴 "contrato do PUSH ao cliente" — não
   precisamos da API do cliente. O push (`IAgendamentoSyncPort`) fica como transporte alternativo.
-- 🔴 **Fase 2 (endpoints pull+ack) — SEGURANÇA, superfície externa autenticada expondo agendamento.**
-  Decidir com humano ANTES de construir: (1) **auth do cliente** — credencial/API key dedicada por
-  cliente, isolamento por tenant (nunca um cliente vê o do outro); (2) **escopo** do que ele busca (só
-  as solicitações do próprio cliente); (3) **semântica do ack** — uma confirmação "peguei+deu certo" ou
-  duas fases ("peguei" → depois "processei: ok|conflito"); (4) **LGPD** — o que pode ser exposto ao
-  cliente (iniciais? ids? external_id?); (5) **idempotência do pull** (buscar o mesmo lote 2x sem
-  duplicar/pular).
+- ✅ **RESOLVIDO (D-196) — Segurança dos endpoints pull+ack:** auth (Keycloak client-credentials +
+  API-key fallback), escopo (só o próprio `clienteId`, fail-closed), ack de uma fase (pull=Enviando+lease;
+  confirm=sucesso|conflito), LGPD (identifica pelo `external_id` do cliente; sem CPF/nome), idempotência
+  (lease/visibility). Ver D-196.
+- 🟡 **Implementação (pré-requisito técnico, não é regra de negócio):** carimbar o `clienteId` no evento
+  do outbox no POST /agendamentos (hoje o Agendamento não carrega clienteId explícito — deriva de
+  unidade/solicitação). Resolver a origem do clienteId é pré-requisito do filtro por tenant do pull.
+- 🟢 **Provisionamento:** criar o service account/API key de um cliente real é onboarding (humano); o
+  worker/feature de integração fica off por padrão até lá.
 - 🟡 **Trilha própria (D-194) — Central de Mensagens:** direção confirmada (inbox in-app + e-mail);
   detalhes abertos (quais eventos, entrega, lido/não-lido, destinatário por papel, retenção, tempo
   real vs. polling). A Fase 1 do agendamento só precisa **definir o estado REJEITADO**, não a UI.
