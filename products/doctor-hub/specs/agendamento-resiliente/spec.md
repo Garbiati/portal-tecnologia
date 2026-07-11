@@ -71,9 +71,15 @@ Em conflito, quem "perde" é o DoctorHub. Nunca sobrepomos/forçamos no cliente.
 - ✅ **O PUSH ao cliente segue o baseline D-069** (credencial dedicada, nunca DELETE/DROP/TRUNCATE,
   `UPDATE` só com `WHERE` por `external_id`). — _Confirmado (herdado de D-069)_
 - ✅ **Quem pode agendar = AMBOS (Gestor e Operador).** — _Confirmado por Alessandro em 2026-07-10 (D-193)_
-- ✅ **A saída ao cliente fica atrás de uma porta abstrata** (`IAgendamentoSyncPort`); o contrato/
-  transporte real é **adiado** e será **genérico** (webhook/mensageria/qualquer), oferecido como
-  **pacote premium**. A Fase 1 não integra com cliente real (entregador stub). — _Confirmado por Alessandro em 2026-07-10 (D-193)_
+- ✅ **A saída ao cliente fica atrás de uma porta abstrata** (`IAgendamentoSyncPort`). A Fase 1 não
+  integra com cliente real (entregador stub). — _Confirmado por Alessandro em 2026-07-10 (D-193)_
+- ✅ **O modelo default de integração é PULL+ACK, não push:** o CLIENTE **vem buscar** as solicitações
+  pendentes (pull) e/ou é **notificado por webhook** para buscar; ele **pega e confirma que pegou e deu
+  certo** (ack), **assíncrono**. **Nós expomos o contrato** que o cliente consome — não precisamos
+  conhecer a API dele. A confirmação do cliente dirige o estado (Pendente→Confirmado; conflito→Rejeitado).
+  — _Confirmado por Alessandro em 2026-07-10 (D-195)_
+- ✅ **O "pacote premium" é serviço OPCIONAL** (a Portal adapta o sistema do cliente), **não** a fase nem
+  pré-requisito. — _Confirmado por Alessandro em 2026-07-10 (D-195, corrige D-193)_
 - ✅ **O REJEITADO é comunicado ao usuário pela Central de Mensagens** (inbox in-app + e-mail), não por
   erro síncrono na modal (a rejeição pode chegar depois). — _Confirmado por Alessandro em 2026-07-10 (D-194)_
 
@@ -156,10 +162,16 @@ Cenário: atomicidade (outbox) — agendamento e evento de sync vivem/morrem jun
 ## 8. Perguntas abertas  _(NÃO INFERIR — perguntar)_
 
 - ✅ **RESOLVIDO (D-193) — Quem pode agendar:** ambos (Gestor e Operador).
-- 🟢 **ADIADO por decisão (D-193) — Contrato do PUSH ao cliente** (Fase 2 / pacote premium): qual a
-  API/interface de "criar agendamento" no sistema do cliente, como sinaliza **conflito** vs
-  **indisponível**, e qual a **credencial** (D-069). Não bloqueia a Fase 1 (entregador stub atrás da
-  porta abstrata).
+- ✅ **RESOLVIDO (D-195) — Direção da integração:** default é **pull+ack** (o cliente busca e confirma,
+  assíncrono); nós expomos o contrato. Isso **dissolve** o antigo 🔴 "contrato do PUSH ao cliente" — não
+  precisamos da API do cliente. O push (`IAgendamentoSyncPort`) fica como transporte alternativo.
+- 🔴 **Fase 2 (endpoints pull+ack) — SEGURANÇA, superfície externa autenticada expondo agendamento.**
+  Decidir com humano ANTES de construir: (1) **auth do cliente** — credencial/API key dedicada por
+  cliente, isolamento por tenant (nunca um cliente vê o do outro); (2) **escopo** do que ele busca (só
+  as solicitações do próprio cliente); (3) **semântica do ack** — uma confirmação "peguei+deu certo" ou
+  duas fases ("peguei" → depois "processei: ok|conflito"); (4) **LGPD** — o que pode ser exposto ao
+  cliente (iniciais? ids? external_id?); (5) **idempotência do pull** (buscar o mesmo lote 2x sem
+  duplicar/pular).
 - 🟡 **Trilha própria (D-194) — Central de Mensagens:** direção confirmada (inbox in-app + e-mail);
   detalhes abertos (quais eventos, entrega, lido/não-lido, destinatário por papel, retenção, tempo
   real vs. polling). A Fase 1 do agendamento só precisa **definir o estado REJEITADO**, não a UI.
