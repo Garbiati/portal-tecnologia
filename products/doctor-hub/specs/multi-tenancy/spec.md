@@ -155,8 +155,12 @@ Cenário: todo acesso cruzado é auditável
   paciente/tipo-de-dado)?
 - 🔴 **Consentimento/LGPD do paciente compartilhado** entre tenants — base legal por vínculo; o que o
   paciente autoriza a cruzar.
-- 🟡 **Cascata de vínculo:** vínculo em nível alto cobre os de baixo automaticamente (recomendado, com
-  estreitamento opcional) ou exige linha explícita por nível? (D-199)
+- ✅ **RESOLVIDO (D-203) — Cascata de vínculo:** sim, cascata com estreitamento opcional (vínculo no
+  Cliente cobre suas Unidades; pode restringir a específicas).
+- ✅ **RESOLVIDO (D-203) — Pool × dedicada:** pool (sem `ClienteId`) = disponível aos clientes vinculados
+  do doutor; dedicada (com `ClienteId`) = reservada àquele cliente.
+- ✅ **RESOLVIDO (D-203) — Migração:** recomeçar do seed (recadastrar unidades como entidades); revisitar
+  com mapear+backfill se um dia houver dado real.
 - 🟡 **Quem concede/revoga grant** e como se audita; expiração do grant.
 - 🟡 **Login do papel Doutor** (hoje não loga) — como entra no contexto e enxerga a fila unificada.
 - 🟢 **Migração do legado:** `Agendamento.Unidade` (string) → `UnidadeId`; agendamentos existentes.
