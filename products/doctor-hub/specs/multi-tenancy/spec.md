@@ -150,11 +150,13 @@ Cenário: todo acesso cruzado é auditável
 
 ## 8. Perguntas abertas  _(NÃO INFERIR — perguntar; discovery da fase)_
 
-- 🔴 **Nível do vínculo × política:** o grant/visibilidade é por **papel** do médico, por **relação de
-  cuidado com o paciente** (break-glass/care-relationship), ou ambos? Granularidade (tenant/cliente/
-  paciente/tipo-de-dado)?
-- 🔴 **Consentimento/LGPD do paciente compartilhado** entre tenants — base legal por vínculo; o que o
-  paciente autoriza a cruzar.
+- ✅ **RESOLVIDO (D-204) — Modelo do grant:** HÍBRIDO — política de elegibilidade (quem pode pedir) +
+  acesso por relação de cuidado (break-glass, só para paciente atendido, por propósito) + auditoria.
+- 🔴 **Base legal LGPD (precisa de compliance/DPO — NÃO fechar em chat):** provável **tutela da saúde**
+  (Art. 11) + auditoria; compartilhamento além do cuidado direto exigiria consentimento. Validar com
+  jurídico ANTES de produção.
+- 🟡 **Granularidade da política** (tenant/cliente/paciente/tipo-de-dado); quem concede/revoga
+  elegibilidade + expiração. _(design — dá pra fechar sem jurídico)_
 - ✅ **RESOLVIDO (D-203) — Cascata de vínculo:** sim, cascata com estreitamento opcional (vínculo no
   Cliente cobre suas Unidades; pode restringir a específicas).
 - ✅ **RESOLVIDO (D-203) — Pool × dedicada:** pool (sem `ClienteId`) = disponível aos clientes vinculados
