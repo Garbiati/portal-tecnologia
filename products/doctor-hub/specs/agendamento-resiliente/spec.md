@@ -230,9 +230,11 @@ Cenário: LGPD — o payload do pull não vaza CPF nem nome
   API-key fallback), escopo (só o próprio `clienteId`, fail-closed), ack de uma fase (pull=Enviando+lease;
   confirm=sucesso|conflito), LGPD (identifica pelo `external_id` do cliente; sem CPF/nome), idempotência
   (lease/visibility). Ver D-196.
-- 🟡 **Implementação (pré-requisito técnico, não é regra de negócio):** carimbar o `clienteId` no evento
-  do outbox no POST /agendamentos (hoje o Agendamento não carrega clienteId explícito — deriva de
-  unidade/solicitação). Resolver a origem do clienteId é pré-requisito do filtro por tenant do pull.
+- 🔗 **DEPENDÊNCIA (D-197) — fundação de multi-tenancy:** o pull escopado por cliente depende de
+  `Unidade` virar entidade + `Agendamento` ganhar `ClienteId` (carimbado na criação, derivado da unidade
+  que assumiu) + isolamento na camada baixa. **É uma fase própria, DEPOIS da demo de segunda**, junto com
+  o saldo (D-190). Enquanto ela não acontece, os endpoints pull+ack ficam **bloqueados por dependência**
+  (não por falta de decisão — o contrato já está fechado em D-196).
 - 🟢 **Provisionamento:** criar o service account/API key de um cliente real é onboarding (humano); o
   worker/feature de integração fica off por padrão até lá.
 - 🟡 **Trilha própria (D-194) — Central de Mensagens:** direção confirmada (inbox in-app + e-mail);
