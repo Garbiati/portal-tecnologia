@@ -152,9 +152,12 @@ Cenário: todo acesso cruzado é auditável
 
 - ✅ **RESOLVIDO (D-204) — Modelo do grant:** HÍBRIDO — política de elegibilidade (quem pode pedir) +
   acesso por relação de cuidado (break-glass, só para paciente atendido, por propósito) + auditoria.
-- 🔴 **Base legal LGPD (precisa de compliance/DPO — NÃO fechar em chat):** provável **tutela da saúde**
-  (Art. 11) + auditoria; compartilhamento além do cuidado direto exigiria consentimento. Validar com
-  jurídico ANTES de produção.
+- ✅ **RESOLVIDO no DESIGN (D-205) — Base legal LGPD:** projetar para suportar as DUAS bases (sempre
+  cuidado+propósito+auditoria; registrar consentimento quando aplicável; política configurável decide o
+  que é obrigatório). Modelo permite acordo/consentimento por par de tenants e/ou por paciente
+  (controladores distintos SUS × privado).
+- 🔴 **PENDENTE do DPO/jurídico (processo, não bloqueia o design):** validar a base legal final,
+  necessidade de acordo entre controladores e de RIPD — ANTES de produção.
 - 🟡 **Granularidade da política** (tenant/cliente/paciente/tipo-de-dado); quem concede/revoga
   elegibilidade + expiração. _(design — dá pra fechar sem jurídico)_
 - ✅ **RESOLVIDO (D-203) — Cascata de vínculo:** sim, cascata com estreitamento opcional (vínculo no
