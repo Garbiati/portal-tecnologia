@@ -19,6 +19,14 @@ last_update: 2026-07-10
 > **Fase 1 DESBLOQUEADA (D-193):** o único 🔴 que travava (contrato do cliente) foi adiado por decisão;
 > outbox + state machine são nossos e testáveis sem cliente real. A **Fase 2** (adapter de PUSH real +
 > pacote premium) e a **Central de Mensagens** (D-194) são trilhas próprias — seguem com 🔴 abaixo.
+>
+> **✅ Fase 1 CONSTRUÍDA (2026-07-10, doctor-hub-api @ commit a9c150b):** `StatusSolicitacao` +
+> `AgendamentoOutbox` (gravado na mesma transação do POST) + `IAgendamentoSyncPort`/`StubAgendamentoSyncPort`
+> + `EntregaAgendamentoRunner` + `EntregaAgendamentoBackgroundService` (**desligado por padrão** —
+> `AgendamentoSync:Enabled=false`). 6 testes verdes (outbox atômico + as 4 transições + backoff +
+> idempotência); revisor de segurança/LGPD aprovado. Migration `AddStatusAgendamentoEOutbox` com backfill
+> de legado → `Confirmado`. **Comportamento em prod hoje:** todo agendamento novo nasce `Pendente` e
+> **permanece Pendente** (não há destino real até a Fase 2 ligar o adapter + `Enabled=true`).
 
 ## 1. Problema / Dor  _(Definition of Success)_
 
