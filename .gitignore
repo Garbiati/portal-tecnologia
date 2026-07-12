@@ -32,3 +32,6 @@ output/
 
 # python cache dos scripts de homologação
 infrastructure/scripts/__pycache__/
+
+# permissões locais/pessoais do Claude Code (nunca compartilhar — pode referenciar infra/segredos)
+.claude/settings.local.json
