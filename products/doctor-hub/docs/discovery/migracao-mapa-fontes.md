@@ -19,10 +19,16 @@ Tem **2 bancos**: **AUTH** (Identity/Keycloak) e **CORE** (negócio).
 
 **Write-back (pull+ack, D-196):** a TC tem `ExternalAppointment` — endpoint que **RECEBE** agendamentos de parceiros (POST). É o alvo natural pra devolver os agendamentos confirmados à TC. (A TC não gera escala/agendamento pra fora; ela recebe.)
 
-## Fonte 2 — Empresa TERCEIRA de agendamento (externa, via API) — **FALTA**
-- **O HISTÓRICO de escalas e agendamentos dos doutores** vive aqui. **Não há schema/código nos repos locais** — confirmado.
+## Fonte 2 — **SOS Gestor** (empresa terceira incumbente, via API) — **FALTA a doc da API** (D-209)
+- **O HISTÓRICO de escalas e agendamentos dos doutores** vive no **SOS Gestor** (não no Absens — correção D-209). Deram **acesso via API**. **Não há schema/código nos repos locais.**
 - Precisa da doc da API deles: endpoints (escala, agendamento, deltas), campos (como chamam id de médico/paciente/agendamento/status/vaga/unidade), auth, paginação/rate-limit, e o **contrato** (contratado × real).
-- **Esta é a fonte crítica da migração de continuidade** — é o que o fornecedor pode cortar.
+- **Fonte crítica da migração de continuidade** — é o fornecedor que pode cortar o acesso.
+
+## Fonte 4 — **SISReg III** (regulador do SUS-AM, governo) — via `regula-hub`/`regula-sisreg`
+- A **DEMANDA** (agendamentos que **já vêm agendados** do governo). Cliente-âncora: **Saúde AM Digital**.
+- Ingerida pelos sistemas internos **`ptm-regula-sisreg`** (raspagem CSV + ficha, pool de credenciais, reCAPTCHA) → **`ptm-regula-hub`** (orquestrador .NET que converte pro formato Saúde AM e faz push). PRD-002 "Substituição do Absens".
+- **Absens** = raspador antigo do SISReg (quebrou no reCAPTCHA) — substituído pelos regula-*.
+- Esses sistemas **fazem bypass do SOS Gestor** (que não conseguiu adequar pra integrar com SISReg/Absens).
 
 ## Fonte 3 — Doctor-Hub (destino)
 - `escalas`, `agendamentos`, `agendamento_outbox`, `pacientes_canonicos`/`pacientes_tenant_refs` (EMPI), `doctors`, `clientes`, `unidades`, `especialidades`, `doctor_vinculos`. Já modelado (fundação na branch).
