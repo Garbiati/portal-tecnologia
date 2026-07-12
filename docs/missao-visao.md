@@ -36,7 +36,8 @@ e não reflete a realidade.
 1. **White-label** (multi-tenant) — toda tela/feature nasce assim.
 2. **AI-first + DDD2** — a doc é o sistema; o código é derivado; agents/especialistas fazem o técnico
    (segurança, arquitetura, algoritmos, performance, LGPD…), refinados por humanos.
-3. **Homolog = produção** enquanto fora de uso (mesmo usuário) — até existir o sandbox dedicado.
+3. **Homolog = produção** enquanto fora de uso (mesmo usuário) — até existir o sandbox dedicado. Este
+   ambiente (infra de produção, uso de homologação) chamamos de **"homod"** (homologação em produção).
 4. **Segurança/LGPD · resiliente · escalável · barato** — não relaxar. **Infra proporcional ao uso**
    (100 usuários hoje ≠ infra pra 100 mil), mas **arquitetura que escala sem reescrever do zero**. E:
    **o código é COLATERAL** — descartável, gerado da doc; válido se atende de forma eficiente e lucrativa.
