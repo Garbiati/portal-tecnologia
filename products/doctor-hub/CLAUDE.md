@@ -11,8 +11,13 @@
 ## 🎯 O que é o Doctor-Hub
 
 Sistema de **planejamento de capacidade médica** (oferta × demanda) para health centers (HCs) de
-governos. Fica **a montante** do produto de Teleconsulta existente (`/home/alessandro/ptm/teleconsulta`)
-e **alimenta** a Teleconsulta com agendamentos prontos — **não a substitui**.
+governos. **HOJE (horizonte AGORA):** fica **a montante** da Teleconsulta existente
+(`/home/alessandro/ptm/teleconsulta`) e a **alimenta** com agendamentos prontos.
+**VISÃO (horizonte FUTURO, D-209):** o doctor-hub é a **plataforma que vai, aos poucos, REESCREVER TODA a
+Teleconsulta** (AI-first / DDD2) — "doctor-hub" é **nome ALPHA**, pode mudar; o objetivo é constante. Ou
+seja, começa alimentando e evolui pra substituir progressivamente. _(Isto revisa o antigo "não a
+substitui" — que valia só pro horizonte AGORA; ver farol `../../docs/missao-visao.md` e a classificação
+por horizonte.)_
 
 Pipeline: **Oferta (escala dos médicos) → Demanda (solicitação dos governos) →
 Alocação (disponibilização: simular/reservar/emitir) → Remanejamento → Agendamento → Teleconsulta.**
