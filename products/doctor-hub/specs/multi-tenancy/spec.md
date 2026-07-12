@@ -169,3 +169,18 @@ Cenário: todo acesso cruzado é auditável
 - 🟡 **Quem concede/revoga grant** e como se audita; expiração do grant.
 - 🟡 **Login do papel Doutor** (hoje não loga) — como entra no contexto e enxerga a fila unificada.
 - 🟢 **Migração do legado:** `Agendamento.Unidade` (string) → `UnidadeId`; agendamentos existentes.
+
+### 8b. Decisões de ROLLOUT (achados dos revisores no Lote 4 — decidir ANTES do merge à prod, pós-demo)
+- 🔴 **Consistência claim `unidade` ↔ Unidade cadastrada:** a claim `unidade` do Gestor no Keycloak é
+  texto livre; com o fail-closed do Lote 4, uma unidade não cadastrada trava o Gestor (403 ao criar,
+  lista vazia ao ler). No seed está resolvido (as 10 unidades dos 5 clientes existem). **Para prod real:**
+  ou (a) as unidades reais são todas cadastradas e as claims batem os `Codigo`, ou (b) o cadastro de
+  usuário valida a claim contra a tabela `Unidade`. Decisão do Alessandro.
+- 🔴 **Backfill dos agendamentos legado (`ClienteId` null):** a coluna `ClienteId` nasceu no Lote 2 sem
+  backfill — agendamentos criados antes (ou por vê-tudo sem unidade/solicitação) ficam `ClienteId` null
+  e **somem para papéis escopados** quando o filtro sobe (só vê-tudo os vê). Antes do merge à prod:
+  **backfill** (derivar de Unidade/Solicitação) OU aceitar o reset (coerente com "recomeçar do seed",
+  D-203, se o dado é de demo). Decisão do Alessandro.
+- 🟡 **Regulação no GET /agendamentos** (pré-existente, não é regressão do Lote 4): o GET filtra só pela
+  claim `unidade`; Regulação (escopada por `clienteId`, sem `unidade`) nunca vê agendamento por ali.
+  Confirmar se Regulação deve enxergar agendamentos e por qual eixo.
