@@ -19,6 +19,34 @@ controle do Excel** (`agenda-operacional-*.xlsx`, D-019) e **alimenta a Telecons
 com agendamentos prontos, integrando como **parceiro externo** via `POST /integration/appointment`
 + header `X-API-KEY` (D-002, contrato em `04-integration-teleconsulta.md`). Não substitui a TC.
 
+## 0.1 Visão executiva (para C-level) — derivada do C4
+
+> **Porta de entrada simples.** O C4 abaixo é lindo, mas denso para quem não é técnico. Esta é a
+> **mesma história em linguagem de negócio** — derivada do C4 L1 (mesmos atores e fluxo de valor,
+> sem os detalhes). Um C-level olha e entende **como funciona**, sem entrar em "como é feito".
+> **Convenção (D-223):** todo C4 novo ganha uma dessas ao lado.
+
+```mermaid
+flowchart LR
+    Sec["🏛️ Secretaria de Saúde<br/>diz o que precisa<br/>(ex.: 1000 cardio no mês)"]
+    Med["🩺 Médicos<br/>disponibilidade e escala"]
+    Plat["⭐ Nossa Plataforma<br/>casa a necessidade com os médicos<br/>e monta a agenda pronta"]
+    TC["💻 Teleconsulta<br/>a consulta acontece"]
+    Pac["👥 Paciente<br/>é atendido"]
+
+    Sec -->|o que precisa| Plat
+    Med -->|quem pode atender| Plat
+    Plat -->|agenda pronta| TC
+    TC --> Pac
+
+    classDef nosso fill:#0B1F3A,stroke:#C9A227,stroke-width:2px,color:#fff
+    class Plat nosso
+```
+
+**Como ler:** a **Secretaria** diz o que precisa; os **médicos** entram com sua disponibilidade; a
+**nossa plataforma** casa as duas pontas e entrega a **agenda pronta**; a consulta acontece na
+**Teleconsulta** e o **paciente é atendido**. (O quadro azul-e-ouro é o que este projeto faz.)
+
 ## 1. C4 Nível 1 — Contexto do Sistema
 
 ```mermaid
