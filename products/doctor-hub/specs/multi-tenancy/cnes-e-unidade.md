@@ -34,6 +34,12 @@ Campos (da base oficial): `codigo_cnes` (PK, 7 díg), `razao_social`, `nome_fant
 ## 4. Vínculo Unidade↔Cliente — EXPLÍCITO e **N:N** (D-216d + D-218)
 A Unidade nasce da base pública; **quem é de qual cliente é curado** (admin/cliente seleciona), espelhando o `DoctorVinculo` (D-197). Nem todo CNES do estado é do cliente. **✅ N:N confirmado (D-218):** a Unidade é **compartilhada** — entidade **`UnidadeClienteVinculo`** (membership, à la `DoctorVinculo`/`PacienteTenantRef`), **não** `ClienteId` FK direto na Unidade. O `ClienteId` do agendamento segue **derivado** (via unidade + vínculo do operador); isolamento (D-206) inalterado.
 
+## 4b. `Grupo` + gestão de unidades/grupos pelo cliente (D-219)
+Espelha a hierarquia real da TC (`docs/discovery/08-healthcenter-unidades.md`): **`HealthCenter(cliente) › Grupo(opcional) › Unidade`**.
+- **`Grupo`** (= `profile_tag_groups`): `Id`, `Nome`, `ClienteId`, `Ativo`. Agrupa unidades **dentro de um cliente**; **opcional** (unidade pode não ter grupo). A `Unidade` ganha `GrupoId?` (nullable).
+- **CRUD nos dois níveis** (grupo E unidade): **listar · criar · editar · inativar** (soft, padrão D-143) **· excluir (hard) SÓ se nada vinculado** — unidade sem agendamento/vínculo; grupo sem unidade. **Invariante a cercar de teste:** excluir com vínculo → **bloqueado (fail-closed)**. Todo write-path chama `Unidade.ProblemaInvariante()` (resolve o TODO da fatia 1).
+- **Papel — 🟡 PROVISÓRIO (D-219):** a gestão fica atrelada ao papel **`Demandas`** (plataforma, vê-tudo) por ora. Papel dedicado **"Gestor de Contrato"** (escopo = 1 cliente) é **direção futura**, não formaliza RBAC agora.
+
 ## 5. Impacto no agendamento (D-217)
 - **Todo atendimento é EM uma Unidade** — o `Agendamento` passa a **referenciar a Unidade** (hoje `Unidade` é string solta → vira FK/relacionamento). "Todo paciente é atendido numa unidade."
 - O `PreferencialAtendimento` da Unidade **pré-seleciona a modalidade** (presencial/remoto) ao criar o agendamento — **default overridável** caso a caso ⇒ `Agendamento` ganha `Modalidade`.
@@ -48,8 +54,11 @@ Hoje o Operador é escopado a **1** unidade (claim `unidade` no token). Novo mod
 ## 5c. Estrutura da Unidade p/ capacidade/horário (D-217 — só estrutura agora)
 A Unidade (física ou virtual) **é quem tem capacidade de atendimento + horário de funcionamento**. Agora só deixar a **estrutura** (campos/relacionamento) pronta — a lógica de capacidade/horário por unidade refina depois.
 
-## 6. Revê o D-212
-A linha "**unidades ← `profile_tags` da TC**" do D-212 **sai** — unidade agora nasce do CNES público. O pull da TC (D-212) fica só com **doutor · paciente · cliente(HC)**.
+## 6. Fonte do CNES × carga inicial (D-215 + D-219 — revisto)
+- **Fonte de verdade do CNES = base PÚBLICA** (DATASUS ou API oficial — **qual, decide na fatia 3**). Mantém o estabelecimento atualizado (job mensal). "Não podemos depender da Teleconsulta pra sempre."
+- **`profile_tags` da TC = CARGA INICIAL (uma vez), NÃO fonte contínua** (D-219 **revisa o "sai" anterior**): faz o *bootstrap* de **quais** unidades já existem, de **qual cliente** (`health_center_id`), em **qual grupo** (`group_id`) e o **tipo** (`profile_tag_type`). Só pra "basear na realidade e começar as entregas"; depois o cliente cria as próprias.
+- **Mapa `profile_tag_type` → (`TipoUnidade`, `NaturezaUnidade`)** (D-216): enum TC = 0 Undefined·1 Health·2 School·3 Prison·4 Admin·5 Municipality·6 Private. Sugestão (a confirmar): 1→Saúde+Público · 6→Saúde+Privado · 2→Escola · 3→Prisional · 4/5→Outros. **Não infere sem confirmar.**
+- Pull contínuo da TC (D-212) segue com **doutor · paciente · cliente(HC)** (unidade **não** é fonte contínua).
 
 ## 7. Perguntas ainda abertas (não bloqueiam começar)
 - **Quais `tipo_estab` do CNES contam como "atendimento"** (viram candidato a Unidade SAUDE)? Lista a confirmar (UBS/centro de saúde, hospital, policlínica, pronto-atendimento, consultório; excluir farmácia/laboratório/vigilância). — D-215 Q(a).
@@ -58,14 +67,14 @@ A linha "**unidades ← `profile_tags` da TC**" do D-212 **sai** — unidade ago
 
 ## 8. Fatias de construção (numa BRANCH; merge/deploy após validar)
 Ordem por dependência + risco. Cada fatia: código + testes + gate, revisada antes da próxima.
-1. **Modelo da `Unidade`** — enums `TipoUnidade`/`NaturezaUnidade`/`Modalidade` + campos (Tipo/Natureza/PreferencialAtendimento/Virtual/CodigoCnes) + migration. Invariantes I–III.
-2. **Domínio `Cnes`** (isolado) — entidade + migration + repo read-mostly.
-3. **Ingestor CNES** — fonte pública (API DEMAS ou download DATASUS), filtro UF∈{PI,AM,AL} + tipos de atendimento, idempotente, job mensal. Só-leitura. Testado com fonte fake.
-4. **Vínculo Unidade↔Cliente** explícito (curado) + **Operador↔Unidade N:N** (conjunto + "ver todas") — o modelo de membership (D-217). Ajusta o escopo do `POST /agendamentos` (valida contra o conjunto de unidades do operador, não 1 claim).
-5. **`Agendamento` → `Unidade`** (referência) + **`Modalidade`** (default = preferencial da unidade, overridável no assumir vaga). RNDS: exigir CNES da unidade de saúde (push depois).
+1. ✅ **Modelo da `Unidade`** (feita, commit `33249ce`) — enums + campos + invariante I.
+2. ✅ **Domínio `Cnes`** isolado (feita, commit `0d4aac8`) — entidade + migration + seed demo. Read-mostly via `DbSet` (sem repo — não é padrão da casa).
+3. **Ingestor CNES + carga inicial** — (a) **fonte pública** (DATASUS **ou** API DEMAS — a decidir), filtro UF∈{PI,AM,AL} + tipos de atendimento, idempotente, job mensal, só-leitura, fonte fake nos testes; (b) **carga inicial** que lê `profile_tags`+`profile_tag_groups` da TC (pull RO existente, D-069/D-212) e semeia Unidades+Grupos+vínculo cliente (D-219), mapeando `profile_tag_type`→(Tipo,Natureza).
+4. **`Grupo` + vínculos + N:N** — entidade `Grupo` (D-219) + `Unidade.GrupoId?`; **`UnidadeClienteVinculo` N:N** (D-218) + **índice único parcial** `UNIQUE(CodigoCnes) WHERE Ativo` (reset/reconcilia o seed do modelo 1:N antigo); **Operador↔Unidade N:N** (conjunto + "ver todas") ajustando o escopo do `POST /agendamentos`.
+5. **`Agendamento` → `Unidade`** (referência) + **`Modalidade`** (default = preferencial, overridável). RNDS: exigir CNES da unidade de saúde (push depois).
 6. **Estrutura de capacidade/horário na Unidade** (só campos/relacionamento; lógica depois).
-7. **Telas** — admin cria Unidade a partir de um CNES + vincula ao cliente; seletor de "unidade atual" do operador.
+7. **Gestão de unidades/grupos (telas + endpoints)** — CRUD grupo+unidade pelo cliente (D-219): listar/criar/editar/inativar/excluir-se-sem-vínculo; write-path chama `ProblemaInvariante()`. Admin cria Unidade a partir de um CNES; seletor de "unidade atual" do operador.
 
-**Assuntos EM ABERTO (refinar depois — não bloqueiam a estrutura):** lista de `tipo_estab` do CNES que viram Unidade; capacidade/horário por unidade; push real pro RNDS; params exatos da API DEMAS vs download. _(1:N vs N:N no Unidade↔Cliente: RESOLVIDO — N:N, D-218.)_
+**Assuntos EM ABERTO (refinar depois — não bloqueiam a estrutura):** DATASUS vs API DEMAS (fatia 3); mapa `profile_tag_type`→(Tipo,Natureza); lista de `tipo_estab` do CNES que viram Unidade; capacidade/horário por unidade; push real pro RNDS; formalização do papel "Gestor de Contrato" client-scoped. _(1:N vs N:N: RESOLVIDO — N:N, D-218.)_
 
-_Registrado 2026-07-13. Modelo confirmado pelo Alessandro (D-215/D-216/D-217). Meta: estrutura sólida do conceito de Unidade; refinar os abertos depois "e deixar perfeito"._
+_Registrado 2026-07-13. Modelo confirmado pelo Alessandro (D-215/D-216/D-217/**D-218**/**D-219**). Fatias 1-2 feitas na branch `feat/cnes-unidade`. Meta: estrutura sólida do conceito de Unidade; refinar os abertos depois "e deixar perfeito"._
