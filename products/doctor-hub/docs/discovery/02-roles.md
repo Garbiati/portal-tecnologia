@@ -69,3 +69,26 @@ Secretário (Solicitante) abre solicitação  →  Admin/Demandas simula/reserva
 - **Gate de aprovação do HC** antes de liberar slots aos supervisores (relaciona com o "de acordo" D-116).
 - **Naming:** o papel atual **`gestor`** (política `assume-vaga`, faz agendamento) = **`supervisor`** deste modelo? (confirmar rename).
 
+---
+
+# 🔷 REFINO do modelo (Alessandro, 2026-07-13) — D-220 (refina D-159)
+
+> Deltas confirmados no bate-papo do build CNES/Unidade. Complementa o D-159 acima (não substitui).
+
+## Nível TENANT
+| Papel | Escopo | Visão / responsabilidade |
+|---|---|---|
+| **super-admin** | global | cria tenants + features (D-159) |
+| **admin** | um **tenant** | **VISÃO COMPLETA** do tenant: **faturamento** + médico + **tudo que está habilitado** pro tenant (as features do white-label). Cria usuários e clientes/HCs. |
+| **demandas médicas** (`demandas`) | um **tenant** | **PERFIL NOVO** — parecido com o **Admin da TC**, mas **visão RESTRITA à parte MÉDICA** (escalas, médicos, alocação/demanda). **NÃO** vê faturamento. Principal usuário operacional. |
+
+## Nível CLIENTE (HC) — D-219
+| Papel | Escopo | Visão / responsabilidade |
+|---|---|---|
+| **Gestor de Contrato** (= **HCAdmin** da TC) | **1 cliente (HC)** | **visão COMPLETA da hierarquia do seu cliente** (todos os grupos+unidades); **gere a estrutura** — CRUD grupo/unidade (listar/criar/editar/inativar/excluir-se-sem-vínculo). |
+| **Operador de Agendamento** (≈ **supervisor** do D-159) | **grupos vinculados ao seu perfil** (perfil → 1 cliente) | **agenda** nas unidades dos seus grupos; a unidade **herda** o acesso do grupo. |
+| **regulação** | um **HC** | solicita consultas por especialidade (D-159). |
+
+**Isolamento (reforça D-206):** operador **e** gestor de contrato **NUNCA veem outro cliente sem permissão EXPLÍCITA** (default-deny/fail-closed; grant cruzado = modelo futuro D-201/D-204/D-205).
+
+**🟡 Abertos:** **faturamento** é área NOVA (não há módulo — só escopo/visão por ora); casar os rótulos "Gestor de Contrato"/"Operador de Agendamento" com as chaves de código (`gestor`/`solicitante`) e o rename `gestor`→`supervisor` do D-159; permissão fina por papel.
