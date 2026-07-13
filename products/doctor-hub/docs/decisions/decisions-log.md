@@ -716,3 +716,11 @@ Direção do Alessandro (refinando D-215). **"A base do CNES é uma coisa; o ví
 (c) ✅ **"Virtual" = ATRIBUTO, não tipo** — flag `virtual`/`semEndereço` numa unidade de saúde (dispensa CNES/endereço, atendimento no app), não um 6º tipo.
 (d) ✅ **Unidade↔Cliente = vínculo EXPLÍCITO/curado** — a unidade nasce da base pública; quem é de qual cliente é definido pelo admin/cliente (espelha o vínculo de doutor, D-197).
 Relaciona: D-215 (base CNES), D-207 (Unidade/CNES), D-197. Spec: `specs/multi-tenancy/cnes-e-unidade.md`.
+
+### D-217 — Todo atendimento é EM uma Unidade · CNES p/ RNDS · Unidade tem capacidade/horário · Operador × Unidade N:N (2026-07-13)
+Realidades confirmadas pelo Alessandro no planejamento (adiou a apresentação 1 dia pra fazer certo — "o conceito de Unidade é importante"). Deixar a ESTRUTURA pronta agora; os assuntos em aberto refinam depois.
+1. **Todo atendimento/agendamento acontece EM uma Unidade.** O `Agendamento` passa a referenciar a **Unidade** (hoje `Unidade` é string solta — vira FK/relacionamento; "todo paciente é atendido numa unidade"). Refinar depois.
+2. **CNES é pré-requisito REGULATÓRIO (RNDS).** O doctor-hub sobe pro **RNDS** (Rede Nacional de Dados em Saúde) **em qual unidade o paciente foi atendido**, pra manter a base do **SUS** atualizada — e o RNDS **exige o CNES** da unidade. ⇒ reforça D-215/D-216: unidade de saúde física **precisa** de CNES (não é opcional pra fins de RNDS). É um "porquê" forte do domínio CNES.
+3. **A Unidade (física OU virtual — a virtual "mora" no app) é quem tem CAPACIDADE de atendimento + HORÁRIO de funcionamento.** Só deixar a **estrutura** (campos/relacionamento) pronta; capacidade/horário refinam depois.
+4. **Operador de Agendamento × Unidade = N:N (muda o modelo atual).** Hoje o Operador é escopado a **1** unidade (claim `unidade` no token). Novo: um operador pode **trocar de unidade**, ter **mais de uma**, ou **ver TODAS**. Prepara o vínculo **Operador↔Unidade** (conjunto de unidades + flag "todas") + um seletor de "unidade atual" no fluxo. Espelha o vínculo N:N do doutor (D-197) e mantém o isolamento (D-206): o operador só vê/agenda nas SUAS unidades (ou todas, se marcado).
+Relaciona: D-215, D-216, D-197 (membership N:N), D-206 (fail-closed/escopo), D-207.
