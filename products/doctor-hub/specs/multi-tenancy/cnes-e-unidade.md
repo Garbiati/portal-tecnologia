@@ -26,7 +26,10 @@ Campos (da base oficial): `codigo_cnes` (PK, 7 díg), `razao_social`, `nome_fant
 | `Endereco` | derivado/manual | vem do `Cnes` (saúde física) ou manual; **irrelevante** se `Virtual` |
 | `Ativo` | bool | soft-disable |
 
-**Invariantes:** (i) `CodigoCnes` só quando `Tipo=SAUDE && !Virtual`; (ii) `Virtual ⇒ endereço irrelevante` (e normalmente `PreferencialAtendimento=REMOTO`); (iii) um `CodigoCnes` pode ter no máx. 1 Unidade ativa (evita duplicar o estabelecimento).
+**Invariantes:**
+- **(I) ✅ implementada (fatia 1):** `CodigoCnes` só quando `Tipo=SAUDE && !Virtual` — `Unidade.ProblemaInvariante()`, método puro cercado de teste. ⚠️ **TODO (fatia 3/7):** chamar `ProblemaInvariante()` em TODO write-path que cria/edita Unidade (ingestor + tela admin) — hoje unidade só nasce do seed, então a invariante ainda não é aplicada em runtime.
+- **(II) ⏭️ diferida (fatia 5/6):** `Virtual ⇒ endereço irrelevante` — só faz sentido quando existir o campo `Endereco`.
+- **(III) 🔴 PERGUNTA ABERTA — NÃO inferir (revisor-engenharia pegou conflito com D-207):** um `CodigoCnes` pode repetir entre Unidades? **D-207 já decidiu que "CNES NÃO é único por-linha" (o mesmo CNES sob clientes distintos, IDs distintos)** — a identidade por-linha é `Codigo`. Então a ideia de "1 Unidade ativa por CNES" **contradiz D-207 e fica em aberto**: unicidade do CNES é por-linha (não — D-207 atual), por-cliente, ou global entre unidades ativas? Decide o índice do banco e o dedup. **Confirmar com o humano antes da fatia 2/4.**
 
 ## 4. Vínculo Unidade↔Cliente — EXPLÍCITO (D-216d)
 A Unidade nasce da base pública; **quem é de qual cliente é curado** (admin/cliente seleciona), espelhando o `DoctorVinculo` (D-197). Nem todo CNES do estado é do cliente. (Reusar/estender o padrão de membership; entidade `UnidadeClienteVinculo` OU o `Cliente` na própria Unidade se for 1:N — a confirmar 1:N vs N:N.)
