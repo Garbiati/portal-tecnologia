@@ -11,7 +11,7 @@
 | **Orquestração** — entender o pedido, decidir abordagem, desenhar spec, revisar resultado, falar com o humano | **Opus (sessão principal)** | a sessão principal, sempre |
 | **Exploração/recon** — achar arquivos, mapear código, responder "onde está X?" | **haiku** | agent `explorador` (ou `Explore` com `model: haiku`) |
 | **Implementação de lote bem especificado** — spec pronta, arquivos e mudanças apontados | **sonnet** | agent `implementador` |
-| **Revisões** — adversarial de coerência, segurança/LGPD do diff | **sonnet** | agents `revisor-adversarial` / `revisor-seguranca` |
+| **Revisões** — coerência, segurança/LGPD, UX e **engenharia/arquitetura** do diff | **sonnet** | agents `revisor-adversarial` · `revisor-seguranca` · `revisor-ux` · **`revisor-engenharia`** |
 | **Routines cloud** (smoke, tarefas agendadas) | **sonnet** | `claude-sonnet-5` no job_config |
 
 ## Regras duras
@@ -28,3 +28,8 @@
 4. **Paralelize subagents independentes** (uma mensagem, várias chamadas de Agent).
 5. Na dúvida entre sonnet e haiku: haiku para ler/procurar/resumir; sonnet quando precisa
    escrever código ou julgar algo com nuance.
+6. **Toda vez que criar/alterar código, rode o `revisor-engenharia`** (boas práticas + arquitetura
+   de C# e TS/Node) antes do commit — junto dos revisores de segurança/coerência/UX quando couber.
+   O NORTE é o **equilíbrio**: barra over-engineering E code smell/arquitetura frágil; a melhor
+   solução é a **mais simples que ainda é robusta** (pedido do Alessandro, 2026-07-13). O
+   orquestrador decide o que fazer com os achados (nem tudo vira mudança — julga custo × ganho).
