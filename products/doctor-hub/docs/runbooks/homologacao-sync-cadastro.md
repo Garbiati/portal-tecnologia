@@ -22,6 +22,17 @@ Antes de qualquer cenário, confirmar que está tudo no ar e configurado:
 2. `GET {BaseUrl}/sync/health-centers` com `X-API-KEY: <chave DoctorHub>` → **200** + JSON de health centers.
 3. No Hub, abrir a tela **admin (persona Admin) → "Sync · Teleconsulta"** (`admin-sync`): o card **Relay** deve estar **Ligado** (âmbar = desligado, revisar a env).
 
+**Probe de prontidão de Unidade/Grupo (sem segredo):** os cenários 6–7 dependem da TC publicada
+conter os feeds novos (PRs #2067/#2071, mergeados na `dev` em 2026-07-22). Antes de tentá-los:
+
+```bash
+curl -s -o /dev/null -w '%{http_code}\n' {BaseUrl}/sync/units    # 401 = no ar · 404 = master ainda sem a promoção
+curl -s -o /dev/null -w '%{http_code}\n' {BaseUrl}/sync/groups
+```
+
+Enquanto der **404**, a `master` da TC ainda não recebeu a promoção `dev → staging → master` —
+rode só os cenários 1–5 (Cliente) e volte aqui depois do release da TC.
+
 > A tela `admin-sync` é o **painel da homologação** — deixe-a aberta num monitor com o **auto-refresh ligado**;
 > ela mostra o outbox (Pendente/Entregue/Conflito), tentativas, último erro e o watermark do pull.
 
@@ -89,6 +100,39 @@ Conflito exige atenção humana.
 
 ---
 
+## Cenário 6 — Unidade/Grupo criados ou renomeados na TC aparecem no Hub (TC→Hub, pull · D-239)
+
+> Pré-requisito: probe de prontidão (§0) devolvendo **401** em `/sync/units` e `/sync/groups`.
+
+1. Na **TC**, crie ou renomeie uma **Unidade** (`profile_tag`) num health center que exista como
+   Cliente no Hub — pelo caminho normal da TC. Idem para um **Grupo**, se quiser cobrir os dois feeds.
+2. No Hub, aguarde o ciclo do pull (ou dispare a carga pelo caminho admin) e abra a tela de
+   **Unidades**: a Unidade nova/renomeada aparece **no Cliente certo** (o item do feed carrega
+   `health_center_id`; o casamento por Cliente/vínculo é o do D-218).
+3. Conferir que o Grupo (se criado) aparece na gestão de Grupos da tela de Unidades.
+
+**✅ Passou se:** a mudança da TC apareceu no Hub, no Cliente certo, sem digitação manual no Hub.
+
+---
+
+## Cenário 7 — Deletar Unidade na TC propaga o tombstone (D-240)
+
+> Este cenário só existe porque `ProfileTag`/`ProfileTagGroup` viraram **soft-delete** na TC
+> (D-240): o `DELETE /profiles/tags/{id}` agora marca `deleted_at` em vez de apagar a linha, e o
+> feed emite o item com `deleted=true`. Antes disso, o delete era invisível pro sync (Unidade
+> fantasma eterna no Hub).
+
+1. Na **TC**, delete uma Unidade **de teste** (criada no cenário 6 — não use Unidade real em uso).
+2. No Hub, após o ciclo do pull, a Unidade **some** da tela de Unidades (ou aparece como
+   removida, conforme a tela trate tombstone).
+3. **Recriação:** crie na TC uma Unidade nova com o **mesmo nome** (e/ou mesmo CNES) no mesmo HC —
+   deve ser aceita (índices únicos são parciais, `WHERE deleted_at IS NULL`) e refletir no Hub
+   como Unidade nova.
+
+**✅ Passou se:** a deleção atravessou (sem fantasma) **e** a recriação com o mesmo nome/CNES funciona.
+
+---
+
 ## Rollback / kill switch
 
 - **Parar o push imediatamente:** `ClienteSyncOutbox__Enabled=false` (o outbox continua acumulando, sem enviar).
@@ -105,6 +149,7 @@ Conflito exige atenção humana.
   é o próximo passo (D-233), ainda não ligada.
 
 ## Referências
-- Decisões: D-230…D-237 em `../decisions/decisions-log.md`.
-- Endpoints core: `GET/PUT/POST /sync/health-centers` (ptm-core-api, `SyncController`).
+- Decisões: D-230…D-240 em `../decisions/decisions-log.md` (cenários 6–7: D-239 e D-240).
+- Endpoints core: `GET/PUT/POST /sync/health-centers` + `GET /sync/units` + `GET /sync/groups`
+  (ptm-core-api, `SyncController`; units/groups mergeados na `dev` em 2026-07-22 — PRs #2067/#2071).
 - Hub: `/api/clientes` (CRUD que origina), `/api/admin/sync/status` (o painel), tela `admin-sync`.
