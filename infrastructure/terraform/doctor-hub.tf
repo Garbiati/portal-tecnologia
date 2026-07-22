@@ -48,8 +48,8 @@ resource "google_secret_manager_secret" "doctorhub_db" {
   }
 }
 resource "google_secret_manager_secret_version" "doctorhub_db" {
-  count       = var.deploy_doctor_hub ? 1 : 0
-  secret      = google_secret_manager_secret.doctorhub_db[0].id
+  count  = var.deploy_doctor_hub ? 1 : 0
+  secret = google_secret_manager_secret.doctorhub_db[0].id
   # Maximum Pool Size limita o pool Npgsql por instância (default seria 100) — evita exaustão do
   # Cloud SQL compartilhado (f1-micro, ~25-50 conexões). Aplicar em JANELA SEGURA (novo secret version
   # + restart da API lê o `latest`). Tuning fino do pool vs. tier do banco = item de escala (🟡, P-010).
@@ -227,7 +227,9 @@ resource "google_cloud_run_v2_service" "api" {
         value = "true"
       }
       # Sync com a Teleconsulta (PRD-026/D-230): chave de parceiro + kill switches (runbook §0).
-      # BaseUrl vem do appsettings.json (não é segredo). Desligar = flipar os Enabled p/ "false" + apply.
+      # BaseUrl vem do appsettings.json (não é segredo). Flags nascem em "false" (canal armado,
+      # desligado) até o devops da TC configurar a MESMA chave lá (PARTNERAPIKEY__DOCTORHUB) —
+      # ligar antes faria pull/outbox falhar contra a TC. Ligar = "true" + terraform apply.
       env {
         name = "TeleconsultaSync__ApiKey"
         value_source {
@@ -239,11 +241,11 @@ resource "google_cloud_run_v2_service" "api" {
       }
       env {
         name  = "Sync__Teleconsulta__Enabled"
-        value = "true"
+        value = "false"
       }
       env {
         name  = "ClienteSyncOutbox__Enabled"
-        value = "true"
+        value = "false"
       }
 
       startup_probe {
