@@ -83,6 +83,27 @@ resource "google_secret_manager_secret_iam_member" "dh_admin_client_secret" {
   member    = "serviceAccount:${google_service_account.doctor_hub[0].email}"
 }
 
+# Chave de parceiro DoctorHub⇄Teleconsulta (sync de cadastro — D-230/D-241, runbook de homologação §0).
+# O VALOR nunca vive no Terraform/state: o secret nasce sem versão e a versão é adicionada à mão a
+# partir de .secrets/partner-key-doctorhub.env (gitignored). Ordem de aplicação:
+#   1. terraform apply -target=google_secret_manager_secret.teleconsulta_sync_key
+#   2. grep '^PARTNER_KEY_DOCTORHUB=' ../../.secrets/partner-key-doctorhub.env | cut -d= -f2 | tr -d '\n' \
+#        | gcloud secrets versions add doctor-hub-teleconsulta-sync-key --data-file=-
+#   3. terraform apply   # (o Cloud Run referencia "latest"; sem a versão, a revisão não sobe)
+resource "google_secret_manager_secret" "teleconsulta_sync_key" {
+  count     = var.deploy_doctor_hub ? 1 : 0
+  secret_id = "doctor-hub-teleconsulta-sync-key"
+  replication {
+    auto {}
+  }
+}
+resource "google_secret_manager_secret_iam_member" "dh_teleconsulta_sync_key" {
+  count     = var.deploy_doctor_hub ? 1 : 0
+  secret_id = google_secret_manager_secret.teleconsulta_sync_key[0].id
+  role      = "roles/secretmanager.secretAccessor"
+  member    = "serviceAccount:${google_service_account.doctor_hub[0].email}"
+}
+
 # ---------------------------------------------------------------------------
 # Cloud Run — API .NET (+ sidecar Cloud SQL Auth Proxy)
 # ---------------------------------------------------------------------------
@@ -203,6 +224,25 @@ resource "google_cloud_run_v2_service" "api" {
       # Carga inicial dos doutores demo (D-133) enquanto a sync da Teleconsulta não entra.
       env {
         name  = "Seed__Doctors"
+        value = "true"
+      }
+      # Sync com a Teleconsulta (PRD-026/D-230): chave de parceiro + kill switches (runbook §0).
+      # BaseUrl vem do appsettings.json (não é segredo). Desligar = flipar os Enabled p/ "false" + apply.
+      env {
+        name = "TeleconsultaSync__ApiKey"
+        value_source {
+          secret_key_ref {
+            secret  = google_secret_manager_secret.teleconsulta_sync_key[0].secret_id
+            version = "latest"
+          }
+        }
+      }
+      env {
+        name  = "Sync__Teleconsulta__Enabled"
+        value = "true"
+      }
+      env {
+        name  = "ClienteSyncOutbox__Enabled"
         value = "true"
       }
 
