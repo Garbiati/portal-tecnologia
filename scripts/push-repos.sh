@@ -20,8 +20,18 @@ REPOS=(
   "identity:services/portal-identity"
 )
 
+# --sem-gate: pula o hook de pre-push (gate de review P-019). SÓ com autorização explícita do
+# Alessandro, e depois de os achados terem sido julgados um a um — o gate já pegou bug real.
+SEM_GATE=0
+args=()
+for a in "$@"; do
+  if [ "$a" = "--sem-gate" ]; then SEM_GATE=1; else args+=("$a"); fi
+done
+set -- ${args[@]+"${args[@]}"}
+
 alvos=("$@")
 falhou=0
+[ $SEM_GATE -eq 1 ] && echo "⚠ --sem-gate: hook de review PULADO (autorizado pelo Alessandro)."
 
 for entrada in "${REPOS[@]}"; do
   apelido="${entrada%%:*}"
@@ -52,7 +62,9 @@ for entrada in "${REPOS[@]}"; do
   fi
 
   printf '→ %-9s — enviando %s commit(s) de %s…\n' "$apelido" "$pendentes" "$branch"
-  if git -C "$dir" push origin "$branch"; then
+  verify=()
+  [ $SEM_GATE -eq 1 ] && verify=(--no-verify)
+  if git -C "$dir" push ${verify[@]+"${verify[@]}"} origin "$branch"; then
     printf '✓ %-9s — %s commit(s) no origin/%s\n' "$apelido" "$pendentes" "$branch"
   else
     printf '✗ %-9s — FALHOU o push de %s\n' "$apelido" "$branch"

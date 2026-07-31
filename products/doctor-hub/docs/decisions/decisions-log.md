@@ -964,3 +964,23 @@ para o cutover**, embora não para a homologação (que roda no ambiente atual, 
 §1) — vira dado real, fechando a pergunta aberta.
 **Ordem:** homologar Escala Fixa no ambiente atual → construir cadastro de médico → cutover para a base
 limpa (que já nasce com o cadastro disponível).
+
+### D-251 — Push da entrega feito com o gate P-019 pulado (autorizado), com os achados residuais registrados (2026-07-31)
+Depois de **4 rodadas** de correção, o gate de pre-push seguia bloqueando API e web — e a cada rodada
+apontava achados DIFERENTES sobre o mesmo código. Causa estrutural: o hook revisa `origin..HEAD` inteiro
+a cada tentativa; como o push nunca completava, o intervalo só crescia e ele re-julgava do zero o que já
+havia aprovado. **As rodadas valeram muito**: pegaram um CRITICAL real (o relatório viria VAZIO em
+produção — D-247), o `sem-tag` gravável como tag, o teto de 500 usuários que atribuía escalas ao grupo
+errado, o período invertido virando "erro de conexão" e a trava quebrada do DELETE de usuário.
+Na última rodada, **dois diagnósticos independentes** concluíram "nada real": os 4 majors restantes são
+MINOR pela própria rubrica da casa (perf não-crítica em rota admin; amplitude de `catch` num seeder
+desligado em toda a infra).
+**Alessandro autorizou o push deliberado** em 2026-07-31. Executado via `scripts/push-repos.sh
+--sem-gate` — opção explícita e auditável no script, não contorno por fora. Suítes verdes no momento do
+push: API 593, web 707 + build.
+**Follow-ups herdados (não bloqueiam):** (1) relatório/export sem paginação, materializam tudo em
+memória; (2) `SalvarIdempotenteAsync` captura `DbUpdateException` larga — deveria filtrar SQLSTATE 23505
+e relançar o resto; (3) `Doctor.CriadoPor` sem escritor até o D-250.
+**Correção recomendada no próprio gate (fora desta entrega):** revisar só o delta desde a última
+tentativa (guardar o último SHA revisado) em vez de `origin..HEAD`, ou mover o gate para o CI no pull
+request — assim o veredito fica registrado e trava o merge, não o trabalho local.
