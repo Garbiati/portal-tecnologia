@@ -923,3 +923,18 @@ planilha — a planilha mostra o **nome** resolvido.
 (convenção legada) — duas convenções vivas no repo; unificar é follow-up. Consequência já corrigida: a
 trava do DELETE de usuário (exclusão física, D-148) comparava nome × CPF e **nunca disparava** — dava
 para apagar usuário com histórico; agora conta pelos dois e falha para o lado seguro.
+
+### D-248 — A base de homologação PERDE os dados de demonstração no primeiro deploy (aceito) (2026-07-31)
+Esclarece o D-245/D-246 após achado do gate P-019. A migration `RemoveSeedDemo` roda via `MigrateAsync`
+no boot **em todo ambiente**, inclusive na base atual que virou homologação: apaga as 6 solicitações
+`UC-*`, os vínculos unidade↔cliente de C1..C5, os grupos de demo, as 10 unidades e os 10 CNES fictícios,
+e os clientes C3/C4/C5 (C1/C2 sobrevivem por estarem referenciados). O caminho de restauração
+(`DemoScenarioSeeder`) só roda com `Seed:DemoScenario=true`, que **não está setado em lugar nenhum** da
+infra — ou seja, na prática o dado de demo some e não volta. `Down()` é no-op de propósito.
+**Decisão: aceito, sem mitigação.** Bate com o que o Alessandro determinou no D-246 §2 ("tudo o que temos
+no sistema hoje não tem validade… se for preciso eu deleto na mão"). A homologação da Escala Fixa não
+depende desses registros: precisa de médico (vem do snapshot da Portal) + faturamento + a escala.
+**Consequência conhecida:** papéis escopados por unidade/cliente (Gestor de C3/C4/C5) ficam fail-closed
+em homologação — irrelevante na entrega parcial, cujo menu só expõe Início/Médicos (Demandas) e
+Início/Usuários/Clientes/Relatórios (Admin). Se um dia precisarmos do cenário de demo de volta, o
+caminho é ligar `Seed__DemoScenario=true` no serviço de homologação (o seeder já restaura linha a linha).
