@@ -938,3 +938,29 @@ depende desses registros: precisa de médico (vem do snapshot da Portal) + fatur
 em homologação — irrelevante na entrega parcial, cujo menu só expõe Início/Médicos (Demandas) e
 Início/Usuários/Clientes/Relatórios (Admin). Se um dia precisarmos do cenário de demo de volta, o
 caminho é ligar `Seed__DemoScenario=true` no serviço de homologação (o seeder já restaura linha a linha).
+
+### D-249 — Relatório de origem e export são SÓ do Admin (estreita o D-243) (2026-07-31)
+O D-243 registrou o export "p/ Admin+Demandas" quando ele era um botão solto na tela de Médicos. Com o
+D-246 §3 ("o export é cópia do que se vê na tela"), o botão passou a viver DENTRO do relatório de origem
+— e aí a permissão do export vira a permissão de ver a comparação entre grupos. Alessandro decidiu:
+**só Admin**. Motivo: a ACIGES tem papel `demandas` (a tag não muda permissão, D-242), então dar o
+relatório a "demandas" mostraria a uma empresa terceira os números de todos os grupos, inclusive os da
+Portal. Implementação: as 3 rotas (`/relatorios/origem-filtros`, `/origem`, `/escalas.xlsx`) exigem
+`papel:admin`; a tela `admin-relatorios` continua na persona Admin; não há rota-espelho para Demandas.
+**Consequência:** Demandas (Portal e ACIGES) cria escalas normalmente, mas não exporta nem vê o
+relatório — quem precisa do arquivo pede ao Admin. Reabrir só por decisão nova.
+
+### D-250 — Produção nasce 100% VAZIA, sem nem o catálogo de médicos → cadastro de médico no hub vira pré-requisito do cutover (2026-07-31)
+Alessandro, respondendo à pergunta aberta do D-246 §2: produção **não** herda o snapshot de médicos da
+Portal (`Seed__Doctors` vai a `false` no serviço de produção). Nasce só com o que é **estrutura**:
+especialidades/CBO, catálogo de tipos de serviço, tenant e catálogo de features. Zero médico, zero
+cliente, zero unidade, zero escala, zero usuário além dos que ele criar.
+**Consequência dura:** hoje médico só entra no hub pelo snapshot ou pelo sync (desligado) — e a escala
+nasce DENTRO da ficha do médico. Logo, **sem cadastro de médico no Doctor-Hub não há como criar escala
+em produção**. Isso torna a fatia "cadastro de médico no hub" (`POST /api/doctors` + tela) **bloqueante
+para o cutover**, embora não para a homologação (que roda no ambiente atual, que tem médicos).
+**Ganho colateral:** com médico nascendo aqui, `Doctor.CriadoPor` passa a ser carimbado e o
+"médicos cadastrados pelo grupo X" do relatório — hoje derivado das escalas (PROVISÓRIO do D-244/D-246
+§1) — vira dado real, fechando a pergunta aberta.
+**Ordem:** homologar Escala Fixa no ambiente atual → construir cadastro de médico → cutover para a base
+limpa (que já nasce com o cadastro disponível).
