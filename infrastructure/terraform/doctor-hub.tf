@@ -19,10 +19,33 @@ resource "google_artifact_registry_repository" "doctor_hub" {
 }
 
 # --- Banco dedicado na instância existente ---
+# `doctorhub` = base ORIGINAL (dado dos ensaios). D-245: vira HOMOLOGAÇÃO — preservada, NÃO apagar
+# (não mexer no name deste recurso: mudar o name = destroy+create = perda do dado). Um serviço de
+# homolog apontando aqui é fase 2.
 resource "google_sql_database" "doctorhub" {
   count    = var.deploy_doctor_hub ? 1 : 0
   name     = "doctorhub"
   instance = google_sql_database_instance.kc.name
+}
+
+# `doctorhub_prod` = base LIMPA de PRODUÇÃO (D-245). Nasce vazia; as migrations criam o schema no
+# boot (sem seed de demo — este saiu do HasData, D-243). Mesmo usuário/instância da `doctorhub`:
+# o user `doctorhub` (membro de cloudsqlsuperuser) opera nela igual à original (mesmo caminho de
+# criação via Admin API → sem grant extra).
+resource "google_sql_database" "doctorhub_prod" {
+  count    = var.deploy_doctor_hub ? 1 : 0
+  name     = "doctorhub_prod"
+  instance = google_sql_database_instance.kc.name
+}
+
+# Qual database a API de PRODUÇÃO usa. Default = "doctorhub" (base atual) — assim commitar/aplicar
+# este arquivo NÃO vira a chave sozinho: só cria o database vazio `doctorhub_prod`. A VIRADA (D-245)
+# é DELIBERADA: `terraform apply -var doctor_hub_db_name=doctorhub_prod` (novo secret version) +
+# restart da API (lê `latest`) → migrations criam o schema no banco vazio. Rollback = voltar a
+# "doctorhub" + apply + restart.
+variable "doctor_hub_db_name" {
+  type    = string
+  default = "doctorhub"
 }
 
 resource "random_password" "doctorhub_db" {
@@ -53,7 +76,7 @@ resource "google_secret_manager_secret_version" "doctorhub_db" {
   # Maximum Pool Size limita o pool Npgsql por instância (default seria 100) — evita exaustão do
   # Cloud SQL compartilhado (f1-micro, ~25-50 conexões). Aplicar em JANELA SEGURA (novo secret version
   # + restart da API lê o `latest`). Tuning fino do pool vs. tier do banco = item de escala (🟡, P-010).
-  secret_data = "Host=localhost;Port=5432;Database=doctorhub;Username=doctorhub;Password=${random_password.doctorhub_db[0].result};SSL Mode=Disable;Maximum Pool Size=15;Timeout=15"
+  secret_data = "Host=localhost;Port=5432;Database=${var.doctor_hub_db_name};Username=doctorhub;Password=${random_password.doctorhub_db[0].result};SSL Mode=Disable;Maximum Pool Size=15;Timeout=15"
 }
 
 # --- Service Account de runtime (API precisa de Cloud SQL + secrets) ---
