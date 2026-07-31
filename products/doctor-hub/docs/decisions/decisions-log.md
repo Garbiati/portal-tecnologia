@@ -904,3 +904,22 @@ Refinamentos do Alessandro depois de ver o construído:
 3. **Export fica por ÚLTIMO** — a homologação da escala pode revelar detalhes que mudam o que exportar.
    Requisito reafirmado da visão de escalas: **tem de dar para ver TUDO sem filtrar** usuário/grupo (com
    total) — o filtro por origem é opcional, não obrigatório.
+
+### D-247 — "Quem criou" é gravado como ID OPACO do Keycloak (claim `sub`), nunca nome nem CPF (2026-07-31)
+**Decisão técnica do orquestrador sob o D-244 — não é regra de negócio nova; ratificar com o Alessandro.**
+O gate de pre-push (P-019) pegou um CRITICAL: `Escala.CriadoPor` gravava `Identity.Name` (nome de
+exibição, pois `NameClaimType` não é configurado) enquanto o relatório cruzava pelo `Username` do
+diretório — que neste sistema **é o CPF** (`KeycloakUserDirectory`: `username = novo.Cpf`). Junção nunca
+casava: em produção o relatório de origem viria **vazio e sem grupo** — exatamente a funcionalidade
+pedida. Os testes não pegaram porque o fake usava a mesma string para nome e username.
+Corolário: "corrigir" gravando `preferred_username` colocaria **CPF** na coluna de auditoria, na query
+string dos filtros (logs de proxy/Cloud Run, histórico do browser) e na planilha exportada — trocar um
+bug por exposição de dado pessoal.
+**Regra:** a coluna guarda o **`sub`** (id opaco do usuário no Keycloak); nome e grupo são **resolvidos
+no relatório** via diretório (coerente com o D-244: o registro guarda o usuário, a tag é resolvida na
+hora do filtro). Ganho extra: renomear alguém não quebra o histórico. Sem PII em coluna, em URL ou em
+planilha — a planilha mostra o **nome** resolvido.
+**Dívida registrada:** `Solicitacao`/`Agendamento`/`Indisponibilidade` ainda gravam nome de exibição
+(convenção legada) — duas convenções vivas no repo; unificar é follow-up. Consequência já corrigida: a
+trava do DELETE de usuário (exclusão física, D-148) comparava nome × CPF e **nunca disparava** — dava
+para apagar usuário com histórico; agora conta pelos dois e falha para o lado seguro.
