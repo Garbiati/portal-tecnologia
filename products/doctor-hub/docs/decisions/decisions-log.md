@@ -858,3 +858,31 @@ Alessandro apaga à mão); **(5)** carga inicial DO ZERO (sem importar o Excel l
 seguem vindo do snapshot da Portal (`Seed__Doctors=true` mantido); **(7)** gate de faturamento D-169
 inalterado (papel manda, grupo não interfere). Login real Keycloak já existente passa a ser o acesso
 único (contas individuais com senha, convite por e-mail).
+
+### D-244 — A tag NUNCA é gravada no registro: log é do USUÁRIO, tag resolve no relatório (2026-07-31)
+Correção do D-242 pelo Alessandro: **"os logs nunca ficam atrelados ao grupo/tag, sempre ao usuário —
+o usuário é que pode pertencer à tag, para facilitar a geração de reports"**. A primeira implementação
+gravava `CriadoPorGrupo` na escala (snapshot da tag no momento da criação) — ERRADO: cria verdade
+paralela e congela a tag (se o usuário muda de grupo, o histórico mente). Modelo correto: a entidade
+guarda **só `CriadoPor` (usuário)**; a tag vive **só no usuário** (atributo Keycloak `grupo`, I-012) e
+é resolvida **na hora do filtro**: tag → conjunto de usernames → filtra registros por `CriadoPor`.
+Consequências: (a) coluna `criado_por_grupo` some de `escalas`/`doctors`; (b) trocar a tag de um
+usuário re-agrupa o histórico dele automaticamente (é o comportamento desejado — a tag serve para
+AGRUPAR usuários no filtro, não para carimbar fatos); (c) usuário sem tag é normal (aparece em "sem
+grupo" / no total). Perguntas que o relatório precisa responder: quantos cadastros/escalas os usuários
+da tag X fizeram no período · o mesmo por usuário individual · o TOTAL · e exportar exatamente esse
+recorte. **Médicos por usuário fica pronto mas vazio** até existir cadastro/sync de médico no hub
+(hoje médico vem da Portal/TC) — a coluna `Doctor.CriadoPor` já existe para quando nascer.
+
+### D-245 — Ambiente de hoje vira HOMOLOGAÇÃO; produção nasce com base NOVA e limpa (2026-07-31)
+Alessandro: **"tudo o que temos no sistema hoje não tem validade… seria até melhor jogar o ambiente
+atual para homologação e criar uma base nova para produção, limpa"**. Decisão: (1) a base atual do
+Doctor-Hub (com demo C1–C5, UC-*, unidades/CNES fake e o que foi digitado nos ensaios) é declarada
+**dado de homologação** — preservada, não migrada; (2) **produção estreia num banco novo e vazio**, que
+nasce só com o que é catálogo/referência legítimo (especialidades, tipos de serviço, tenant, features)
+e o snapshot de médicos da Portal; (3) por isso o seed de demo sai do schema (HasData → seeder de
+runtime guardado, D-243) — banco novo NÃO pode nascer com dado fictício; (4) cadastro inicial é do
+zero, feito pelo time. **Ordem prática:** trocar o banco do serviço de produção para o novo (a
+migration cria o schema no boot) e deixar o banco antigo intacto; **subir um serviço de homologação
+apontando para o banco antigo é fase 2** (depois da primeira entrega) — a prioridade da semana é
+produção funcionando.
