@@ -88,3 +88,44 @@ Pedido do Alessandro (2026-07-16): padronizar PRs com boas práticas e **um code
 
 ## P-020 — Princípio: arquitetura PERMITE, regra de negócio RESTRINGE (relacionamento por tabela, hierarquia, visibilidade como camada) (2026-07-19)
 Diretriz de arquitetura do Alessandro (2026-07-19), reafirmando algo que ele já havia dito: **"as coisas dentro do sistema deveriam ser sempre permitidas; o fato de não acontecerem é uma CONFIGURAÇÃO/regra de negócio, não uma limitação da arquitetura."** Enunciado: **(1) Relacionamento por TABELA DE RELACIONAMENTO, não FK embutida.** Uma entidade não carrega o id do "dono"/pai (ex.: Unidade NÃO carrega `ClienteId` nem `GroupId` — o vínculo vive numa tabela à parte; foi exatamente o que o D-218 fez, e está CERTO). Assim, **transferir/compartilhar/re-parentear** vira operação de **regra de negócio** (mudar o vínculo), NÃO refatoração de tabela. **(2) Visibilidade/permissionamento é CAMADA DE REGRA**, aplicada com rigor (ex.: "um Cliente vê só as suas unidades"), mas **não amarrada no schema** — o schema permite, a regra restringe. **(3) Hierarquia**: entidades aninháveis — Unidade dentro de Grupo, **Grupo dentro de Grupo** — sistema modular onde entidades respeitam níveis de hierarquia, permissão e visibilidade. **(4) Constraints que são "limitação de arquitetura" devem virar regra de negócio por contexto.** Caso concreto que originou o princípio: `profile_tags.cnes_code` na TC é **UNIQUE GLOBAL** — impede o mesmo CNES em Clientes/HCs diferentes, o que é uma limitação, não uma regra. O CORRETO: o **mesmo CNES pode existir em Clientes diferentes** (o estabelecimento físico é compartilhado; a Unidade é por-Cliente), e a unicidade é **por contexto**: dentro de um Cliente/HC, CNES é 1:1 (não duas Unidades no mesmo CNES, nem uma Unidade em dois CNES). Logo a constraint vira **UNIQUE `(health_center_id, cnes_code)`** (na TC) e o análogo por-Cliente no Hub. **Consequência prática:** (a) relaxar `cnes_code` unique-global → per-HC na CoreAPI da TC (migration; relaxar constraint nunca viola dado existente) e o análogo no Hub; (b) grupos aninháveis (capacidade nova); (c) o **write two-way de Unidade/Grupo (Fatia B, D-239) fica LIMPO** (1:1 por Cliente) — o nó era o global-unique, não o modelo. Vale como **norte de modelagem de TODAS as entidades** daqui pra frente. Relaciona: D-218, D-239, D-233, [[inferir-homolog-saas]], [[modelo-tenancy-plataforma]].
+
+## P-021 — Três ambientes (dev · homologação · produção) com isolamento de projeto, promoção de artefato e URL padrão de mercado (2026-07-31)
+Pedido do Alessandro: **"vamos fazer o padrão de mercado"**. Vale para **todos os repos da plataforma**,
+não só o Doctor-Hub. Hoje existe **um ambiente só** (projeto `portal-tecnologia-500920`, três serviços
+no Cloud Run, um banco, um realm) — e ele acabou de ser re-rotulado como homologação (D-245/D-246)
+mantendo as URLs que parecem produção, o que é ambíguo e precisa ser desfeito.
+
+**1. Isolamento por PROJETO GCP, não por serviço.** O projeto é a fronteira real (IAM, cota, billing,
+raio de explosão): uma credencial de não-produção não enxerga produção. **Recorte adotado (meio-termo
+consciente p/ time de 1 dev):** *dois* projetos — **produção isolada** e um **não-produção** hospedando
+dev e homologação lado a lado (realms e bancos separados dentro dele). O padrão pleno (3 projetos) fica
+como evolução se o time crescer.
+
+**2. Constrói uma vez, PROMOVE o mesmo artefato.** Imagem marcada pelo SHA do commit sobe em dev → hml
+→ prod sem rebuild. Entre ambientes muda só configuração e segredo, nunca o binário — senão hml não é
+clone, é primo parecido.
+
+**3. Trunk-based com promoção aprovada.** Branch principal + PRs curtos; merge → deploy automático em
+dev; promoção p/ hml e prod é passo explícito com **aprovação obrigatória** (GitHub Environments com
+revisor) — aprovável pelo celular, que é como o Alessandro trabalha.
+
+**4. Segredo e identidade não cruzam a fronteira.** Cofre e realm por ambiente; senha de homologação
+não abre produção. **Não-produção NUNCA recebe PII real**: refresh de prod→hml passa por anonimização
+(LGPD — saúde). Reafirma o alerta do runbook.
+
+**5. Não-produção protegida e identificável:** `noindex`, barreira de acesso (senha simples ou IP) e
+marca visual "HOMOLOGAÇÃO" na tela, para ninguém confundir ambiente.
+
+**URLs (produção sem prefixo):** app `dev.doctorhub.app.br` · `hml.doctorhub.app.br` ·
+**`doctorhub.app.br`**; api `api-dev` · `api-hml` · **`api.portaltecnologia.app.br`**; login `id-dev` ·
+`id-hml` · **`id.portaltecnologia.app.br`**. O ambiente atual **desce para `hml.`** e as URLs limpas
+ficam reservadas p/ a produção nova.
+
+**Ordem acordada (protege o prazo da semana):** (1) homologar a Escala Fixa no ambiente atual, nas URLs
+atuais; (2) em paralelo, construir o cadastro de médico (D-250, bloqueio do cutover) e preparar o
+Terraform da separação SEM aplicar; (3) depois de aprovada, criar produção do jeito certo (projeto
+próprio, URL limpa, banco vazio, realm próprio) e rebaixar o atual para `hml.`. Produção nasce **uma vez
+só e correta** — é o momento mais barato, ninguém tem link salvo ainda.
+**Débito conhecido a resolver junto:** o state do Terraform é **local** (perda = perda do controle da
+infra) → mover p/ bucket GCS com prefixo por ambiente; e há **uma conta de deploy só** → uma por
+ambiente, sem permissão de produção nas de dev/hml.
