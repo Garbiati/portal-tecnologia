@@ -886,3 +886,21 @@ zero, feito pelo time. **Ordem prática:** trocar o banco do serviço de produç
 migration cria o schema no boot) e deixar o banco antigo intacto; **subir um serviço de homologação
 apontando para o banco antigo é fase 2** (depois da primeira entrega) — a prioridade da semana é
 produção funcionando.
+
+### D-246 — Refino da 1ª entrega: filtro pelo criador da ESCALA basta; prod nasce 100% vazio; export por último (2026-07-31)
+Refinamentos do Alessandro depois de ver o construído:
+1. **Médico fora do escopo da v1 (aceita a ressalva):** como a escala É criada no Doctor-Hub, filtrar
+   **quem criou a escala** já responde os relatórios da semana. Cadastro/sync de médico no hub continua
+   fora — "médicos cadastrados por X" volta quando o médico nascer aqui (D-244).
+2. **Produção começa TOTALMENTE VAZIA** e se povoa aos poucos: "cada registro será homologado, cada
+   criação/alteração de escala é produtivo — **não podemos testar nada em produção**". Consequência de
+   sequência (ajusta o D-245): a **homologação da Escala Fixa acontece no ambiente ATUAL** (que passa a
+   ser homologação, com todo o dado sujo dos ensaios); só **depois de aprovada** é que a base limpa de
+   produção é criada e começa a receber cadastro real. Ou seja, o cutover de banco é o ÚLTIMO passo, não
+   o primeiro. **Pergunta aberta:** "vazio" inclui o snapshot de médicos da Portal (`Seed__Doctors`)? Sem
+   nenhum médico não há como criar escala (a escala nasce dentro da ficha do médico) — a travar antes do
+   cutover; catálogos de sistema (especialidades/CBO, tipos de serviço, tenant, features) são estrutura,
+   não dado, e permanecem.
+3. **Export fica por ÚLTIMO** — a homologação da escala pode revelar detalhes que mudam o que exportar.
+   Requisito reafirmado da visão de escalas: **tem de dar para ver TUDO sem filtrar** usuário/grupo (com
+   total) — o filtro por origem é opcional, não obrigatório.
