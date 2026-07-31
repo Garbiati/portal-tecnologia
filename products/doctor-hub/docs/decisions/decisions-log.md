@@ -831,3 +831,30 @@ Decidido pelo Alessandro durante a revisão dos PRs #2067/#2071 da CoreAPI. **Co
 
 ### D-241 — Chave de parceiro DoctorHub é UMA só, compartilhada core+auth (2026-07-22)
 Ao preparar o pacote de chaves pro devops (homologação do sync, runbook §0), a proposta inicial era chave separada por serviço (rotação independente). O Alessandro decidiu: **mesma chave** `PARTNERAPIKEY__DOCTORHUB` na `ptm-core-api` e no `ptm-auth-server` — "hoje já é assim" (padrão atual de parceiros da TC, ex.: SOSPortal). No Hub, o mesmo valor em `TeleconsultaSync__ApiKey`. A entrada do auth fica **dormente** até existir a fatia de sync de doutor/paciente (D-232/D-234 — o auth hoje nem tem `DoctorHub` no `PartnerType`). Chave gerada em `.secrets/partner-key-doctorhub.env` (gitignored), entregue ao devops por canal seguro. Trade-off aceito: rotacionar = trocar nos 3 lugares de uma vez. Relaciona: D-230, D-234, [[prd-026-sync-cadastro]].
+
+### D-242 — Grupo de usuário = TAG (atribuição de origem Portal vs terceiros), sem mudar RBAC (2026-07-31)
+Pedido do Alessandro (entrada em produção da Escala Fixa): a ACIGES (empresa externa) também cadastra
+médicos/escalas e é preciso relatar "o que o grupo X criou" — e também por usuário ("médicos que o
+Alessandro criou"). Decisão textual: **"usuário é um usuário, e tem seus papéis… o grupo é um tipo de
+tag no usuário, não devemos mudar nenhum comportamento, só adicionar um tipo de tag ao usuário para
+identificar terceiros dentro de um tenant"**. Implementação: atributo Keycloak `grupo` (tag LIVRE,
+normalizada lowercase; sem catálogo/entidade) + claim `grupo` no token (I-012 do portal-identity);
+colunas `CriadoPor`/`CriadoPorGrupo` em `Escala` e `Doctor`, carimbadas SERVER-SIDE do token na
+criação (nunca aceitas do body). Papéis/permissões: intocados — grupo é só filtro de relatório e,
+futuramente, auditoria. **PROVISÓRIO:** "médicos trazidos pelo grupo" hoje é DERIVADO das escalas que
+o grupo criou (médico não nasce no hub — segue vindo da Portal/TC até o create/sync existir); a coluna
+no `Doctor` fica pronta pra quando nascer.
+
+### D-243 — Produção PARCIAL do Doctor-Hub: só Escala Fixa + export; resto oculto; mock limpo (2026-07-31)
+O time opera escalas fixas em Excel e precisa entrar no sistema ESTA SEMANA. Alessandro decidiu:
+**(1)** entra em produção só criação de **Escala FIXA** + **export Excel** (.xlsx simples, colunas
+padrão, ClosedXML; botão p/ Admin+Demandas) + relatório por grupo/usuário (Admin); **(2)** telas
+incompletas ficam **ocultas do menu** (`navLabel` removido em routes.ts — rota viva por URL com
+auth/RBAC, limitação aceita): demandas mantém Início+Médicos; admin mantém Início+Usuários+Clientes+
+Relatórios (novo); **(3)** FLEX invisível (`escalaFlex` default false); **(4)** dados demo LIMPOS do
+banco de prod — HasData de C1–C5/UC-*/unidades/CNES demo realocado pro DemoScenarioSeeder (runtime,
+guardado) + migration `RemoveSeedDemo` com guarda de FK (preserva o que estiver referenciado; resto o
+Alessandro apaga à mão); **(5)** carga inicial DO ZERO (sem importar o Excel legado); **(6)** médicos
+seguem vindo do snapshot da Portal (`Seed__Doctors=true` mantido); **(7)** gate de faturamento D-169
+inalterado (papel manda, grupo não interfere). Login real Keycloak já existente passa a ser o acesso
+único (contas individuais com senha, convite por e-mail).
