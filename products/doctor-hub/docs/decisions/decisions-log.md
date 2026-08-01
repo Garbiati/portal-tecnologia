@@ -1002,3 +1002,17 @@ não disse nada sobre unicidade de CRM; o D-071 só diz que CRM/RQE não têm m�
 **Por que os dois níveis:** o pre-check dá a mensagem boa (409 explicando) no caso normal; o índice é o
 árbitro contra a corrida (duplo clique dispara dois POSTs que atravessam o pre-check juntos) e sua
 violação é traduzida para o MESMO 409 — sem ele, a corrida criaria médico duplicado silenciosamente.
+
+### D-253 — Início/Pendências também sai do menu; Demandas cai direto em Médicos (adendo ao D-243) (2026-08-01)
+Achado do Alessandro **homologando**: logou como Demandas e a primeira tela foi "Início · Pendências" —
+KPIs de solicitações e dois atalhos para `solicitacoes-inbox` e `disponibilizacao`, ou seja, o fluxo
+incompleto que o próprio D-243 mandou esconder. Tiramos as telas do menu e não seguimos os LINKS:
+clique morto, contra o D-106 ("0 cliques mortos, 0 órfãs").
+**Correção:** a rota `home` perde o `navLabel` (sai do menu, segue viva por URL como as demais) e
+`HOME_BY_PAPEL.Demandas` passa de `home` para **`medicos-escala`** — na entrega parcial essa persona faz
+uma coisa só (cadastrar médico + criar escala fixa), então cai onde trabalha. A tela `home` **não** foi
+apagada nem reescrita: volta quando o fluxo de solicitações amadurecer.
+**Isto atualiza o D-243 §2**, que dizia "demandas mantém Início+Médicos" — agora o menu de Demandas tem
+**só Médicos**. Varredura de navegação feita nas telas que ficam visíveis (Demandas + Admin + neutras):
+nenhum outro link de tela visível para tela oculta; os que restam estão dentro de telas já ocultas.
+**Pergunta aberta (UX, do Alessandro):** com um item só, o rótulo continua "Médicos" ou vira "Início"?
