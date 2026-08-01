@@ -984,3 +984,21 @@ e relançar o resto; (3) `Doctor.CriadoPor` sem escritor até o D-250.
 **Correção recomendada no próprio gate (fora desta entrega):** revisar só o delta desde a última
 tentativa (guardar o último SHA revisado) em vez de `origin..HEAD`, ou mover o gate para o CI no pull
 request — assim o veredito fica registrado e trava o merge, não o trabalho local.
+
+### D-252 — CRM é único entre os cadastros NATIVOS do hub; médico já vindo da TC bloqueia o cadastro (2026-07-31)
+**Registro de regra que o código já aplica e que não estava escrita** (achado do gate P-019 — rubrica §3:
+regra sem decisão registrada). Ratificar com o Alessandro. O D-250 autorizou o cadastro de médico, mas
+não disse nada sobre unicidade de CRM; o D-071 só diz que CRM/RQE não têm máscara rígida.
+**Regra em vigor (assimétrica de propósito):**
+(a) **Comparação:** CRM normalizado por trim + minúsculas (sem formato canônico nem UF — o D-071 impede
+    inventar máscara).
+(b) **Pre-check no endpoint é CROSS-ORIGEM:** cadastrar um CRM que já existe em QUALQUER médico — inclusive
+    um sincronizado da Teleconsulta — devolve 409. É **dedup desejado**: o médico já está na base, não deve
+    ganhar uma segunda ficha. Se o Alessandro discordar, vira mudança de código (restringir o pre-check a
+    `Origem == DoctorHub`).
+(c) **O índice único do banco cobre SÓ `origem='DoctorHub'`** (`ix_doctors_crm_lower_doctorhub` sobre
+    `lower(crm)`). Deliberado: as linhas que vêm do sync podem ter CRM repetido entre si, e um índice
+    global transformaria o sync em item-veneno (D-234 manda não tocar nesse caminho).
+**Por que os dois níveis:** o pre-check dá a mensagem boa (409 explicando) no caso normal; o índice é o
+árbitro contra a corrida (duplo clique dispara dois POSTs que atravessam o pre-check juntos) e sua
+violação é traduzida para o MESMO 409 — sem ele, a corrida criaria médico duplicado silenciosamente.
