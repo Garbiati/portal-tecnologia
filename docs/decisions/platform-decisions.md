@@ -129,3 +129,51 @@ só e correta** — é o momento mais barato, ninguém tem link salvo ainda.
 **Débito conhecido a resolver junto:** o state do Terraform é **local** (perda = perda do controle da
 infra) → mover p/ bucket GCS com prefixo por ambiente; e há **uma conta de deploy só** → uma por
 ambiente, sem permissão de produção nas de dev/hml.
+
+## P-022 — Eficiência de crédito na GCP: linha de base medida, cortes aplicados e desenho de produção (2026-07-31)
+Pedido do Alessandro: **"a ideia é usar os créditos de forma eficiente"** + "você deve saber melhor do
+que eu, rodando agentes". Auditoria feita com **preço de SKU oficial × consumo medido** (Cloud
+Monitoring), não estimativa de tabela.
+
+**LINHA DE BASE (antes): ≈ US$ 278/mês (~R$ 1.500)** no `portal-tecnologia-500920` — **~10× o alerta de
+orçamento de R$ 150** configurado no projeto. **87% é Cloud Run ocioso.** Composição: api US$ 120 ·
+identity US$ 123 · LB US$ 18 · Cloud SQL US$ 14 · web US$ 2,5 · resto ~US$ 1. O projeto de produção
+está **vazio (US$ 0)** e — verificado — **dentro da organização**.
+
+**Achado que derrubou uma suposição minha:** `min-instances=0` NÃO economiza sozinho. Três uptime checks
+de 300s mantinham tudo quente 24/7 (o Cloud Run só recolhe instância após ~15 min ociosa). Medido:
+172.777 vCPU-s/dia na api = 2 vCPU ligados o dia inteiro.
+
+**Aplicado (só homologação):** (1) `min-instances=0` em api e web; (2) **removido o uptime check
+`dh-api`** — a API passa a dormir de verdade (~US$ 105/mês). Mantidos `dh-idp` e `dh-web` (alerta;
+custo desprezível). Ambiente verificado saudável depois de cada passo.
+**Efeito colateral aceito:** com a API dormindo, os 5 BackgroundServices (outbox de cliente/agendamento,
+sync, reconciliação) só rodam quando alguém usa o app. Em homologação é aceitável — as flags de sync
+estão desligadas (D-241) e o envio à TC é stub. **Em PRODUÇÃO isso é invariante do D-192/193/194 e NÃO
+pode ficar assim** — ver desenho abaixo.
+
+**Pendente (precisa do Alessandro — o classifier barra alteração no serviço de login):**
+`gcloud run services update portal-identity --project portal-tecnologia-500920 --region southamerica-east1 --cpu-throttling`
+Mantém `min=1` (login sem cold start) mas cobra CPU só durante requisição: **US$ 123 → ~US$ 33/mês**.
+Validar depois: login e expiração de sessão (tarefas de fundo do Keycloak ficam estranguladas entre
+requisições; réplica única + sessão em banco normalmente aguenta).
+
+**Outras ações mapeadas:** (a) **remover o sidecar `cloudsql-proxy`** da api e usar o socket unix nativo
+do Cloud Run (`/cloudsql/<connection>`) — hoje se paga 1 vCPU always-on por um processo quase sempre
+ocioso; ~US$ 60/mês, exige trocar a connection string e smoke test — fazer em homologação ANTES de
+produção nascer, p/ prod já nascer certo; (b) cleanup policy no Artifact Registry (higiene); (c) PITR
+off em homologação (centavos). **Se (pendente) + (a) forem aplicados: ~US$ 278 → ~US$ 85/mês (-70%).**
+
+**Domain mapping sem load balancer: NÃO é opção** — `southamerica-east1` não está na lista de regiões
+suportadas, e o próprio Google marca o recurso como não-production-ready. Ou seja, **produção precisará
+do seu próprio load balancer (+US$ 18/mês)**; reusar o de homologação é inviável (serverless NEG exige
+LB no mesmo projeto). No cutover, a saída para não pagar dois é servir homologação em `*.run.app`
+(custo: mexer no issuer do Keycloak e nos redirect URIs).
+
+**Produção estimada: ≈ US$ 128/mês (~R$ 690)** com a topologia enxuta — **contra o alerta de R$ 50
+configurado, que dispararia no dia 1**. Ou o orçamento sobe, ou a topologia muda.
+**A alavanca de maior valor em produção (decisão de arquitetura, a confirmar):** extrair os 5
+BackgroundServices da API para um **Cloud Run Job + Cloud Scheduler** (3 jobs grátis/mês). Paga-se só o
+tempo de execução (~US$ 0,40/mês em vez de manter a API acordada 24/7), economiza ~US$ 59/mês E resolve
+de forma correta o "quem drena o outbox quando ninguém está usando" — que é o único motivo real de a API
+precisar ficar ligada. Vira spec própria, não ajuste de infra.
