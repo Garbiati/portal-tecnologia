@@ -177,3 +177,14 @@ BackgroundServices da API para um **Cloud Run Job + Cloud Scheduler** (3 jobs gr
 tempo de execução (~US$ 0,40/mês em vez de manter a API acordada 24/7), economiza ~US$ 59/mês E resolve
 de forma correta o "quem drena o outbox quando ninguém está usando" — que é o único motivo real de a API
 precisar ficar ligada. Vira spec própria, não ajuste de infra.
+
+**P-022 — atualização (2026-08-01, aplicado e medido):** o Alessandro rodou o `--cpu-throttling` no
+`portal-identity`. **Validado em produção-de-homologação:** descoberta OIDC, página de login e JWKS
+respondendo; após ~50 s ocioso o login volta em **60 ms** — ou seja, `min=1` mantém a instância
+residente e NÃO há cold start, que era a única preocupação. Efeito: identity de ~US$ 123 → ~US$ 33/mês.
+**Somando ao corte do uptime check `dh-api`: de ~US$ 278 para ~US$ 80/mês (-70%), sem tirar nada do ar.**
+A economia da homologação passa a financiar o ambiente de produção — que era o objetivo.
+**A observar na homologação:** tarefas internas do Keycloak (expiração de sessão, limpeza de token)
+ficam estranguladas entre requisições; com réplica única + sessão em banco costuma passar, mas sessão
+que não expira ou logout estranho = reverter com
+`gcloud run services update portal-identity ... --no-cpu-throttling`.
