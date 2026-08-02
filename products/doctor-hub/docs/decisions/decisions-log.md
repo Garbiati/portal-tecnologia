@@ -1016,3 +1016,30 @@ apagada nem reescrita: volta quando o fluxo de solicitações amadurecer.
 **só Médicos**. Varredura de navegação feita nas telas que ficam visíveis (Demandas + Admin + neutras):
 nenhum outro link de tela visível para tela oculta; os que restam estão dentro de telas já ocultas.
 **Pergunta aberta (UX, do Alessandro):** com um item só, o rótulo continua "Médicos" ou vira "Início"?
+
+### D-254 — A tag é LENTE de relatório/auditoria, nunca porteira: sem isolamento por usuário ou grupo (supera a D-249) (2026-08-02)
+Alessandro, ao pensar o dashboard de escalas: **"por enquanto não vamos nos preocupar com isolamento de
+visibilidade por usuário ou por grupo. Quando eu olhar as escalas, a única coisa que preciso é saber
+quem as criou — se foi uma pessoa ou um grupo — e poder agrupar por isso. É muito mais um filtro de
+visão para gerar relatório do que para dizer o que pode ou não ser feito. Não tem diferença um usuário
+demandas ACIGES e um usuário demandas Portal: eles não têm que ter funcionalidades diferentes."**
+Contexto que ele deu: a ACIGES é uma **empresa de gestão médica** que ajuda a trazer médicos e montar
+escalas; ele precisa enxergar **se estão produzindo**, e depois saber **a fonte** de cada cadastro de
+médico e de cada escala — "até por uma questão de auditoria: quem fez o quê".
+
+**Consequências:**
+1. **Supera a D-249.** Aquela decisão restringiu relatório e export ao Admin com a justificativa de que
+   "a ACIGES é demandas e não deve ver os números dos outros grupos". O dono agora diz que essa
+   preocupação **não existe hoje** — logo a restrição perde o motivo. Papel manda em permissão (D-242
+   segue firme); a tag não gateia nada, nem tela, nem export.
+2. **Uma tela canônica (D-108):** o dashboard de Escalas **absorve** o "Relatórios · Origem". Não podemos
+   ter duas telas listando escalas com filtro de origem — elas divergiriam.
+3. **Auditoria é o propósito de fundo.** A base já está montada: `Escala.CriadoPor` é carimbado
+   server-side (D-247, id opaco) e `Doctor.CriadoPor` passa a ser preenchido pelo cadastro novo (D-250).
+   Somando `Doctor.Origem` (DoctorHub × Teleconsulta), dá para responder "a fonte foi o sync ou foi
+   fulano do grupo X" — que é exatamente a pergunta dele.
+4. **Lacuna conhecida:** os médicos que vieram do snapshot/sync não têm criador (nasceram fora do hub);
+   para eles a fonte é a ORIGEM, não uma pessoa. A tela precisa dizer isso sem mentir.
+
+**Fica pendente (bloqueia o filtro de "situação" E o chip da lista):** o que conta como escala vigente —
+ver a pergunta aberta sobre escala com vigência vencida que ninguém encerrou.
