@@ -1043,3 +1043,38 @@ médico e de cada escala — "até por uma questão de auditoria: quem fez o qu�
 
 **Fica pendente (bloqueia o filtro de "situação" E o chip da lista):** o que conta como escala vigente —
 ver a pergunta aberta sobre escala com vigência vencida que ninguém encerrou.
+
+### D-255 — Grupo é um slug canônico `snake_case`, escolhido numa lista (com "criar novo"); colisão reaproveita (2026-08-03)
+Pedido do Alessandro, olhando o campo livre de "Grupo/empresa de origem" na tela de Usuários:
+**"podemos colocar uma melhoria na usabilidade? Tipo um seletor que traz os existentes, e uma opção de
+criar novo. Vamos sempre colocar em um padrão, tipo snake_case — então mesmo se criar um com espaço, ou
+com maiúscula ou minúscula, padroniza. E se ele tentar criar um que já existe, só adiciona o que existe."**
+
+**O problema que isso resolve:** com campo livre, `ACIGES`, `Aciges` e `Aciges Gestão` viram **três
+grupos** no relatório. A agregação por grupo é o produto todo dessa tag (D-244/D-254) — grupo-fantasma
+por typo não é feiúra de UX, é **número errado no relatório**, e silencioso.
+
+**A decisão:**
+1. **Canonicalização no servidor (autoridade).** Todo valor de grupo vira slug antes de gravar:
+   trim → remove acento (NFD) → minúsculas → toda sequência de caractere fora de `[a-z0-9]` vira `_`
+   → tira `_` das pontas → corta em 40 → tira `_` da ponta de novo. Vazio depois disso = sem grupo.
+   Ex.: `"Portal Telemedicina"` → `portal_telemedicina`; `" ACIGES "` → `aciges`;
+   `"Gestão Médica"` → `gestao_medica`; `"a,b"` → `a_b`.
+   O front replica a função **só para prever o resultado na tela e casar com a lista** — quem manda é
+   o servidor. As duas implementações carregam a MESMA tabela de casos em teste, apontando uma para a
+   outra: se divergirem, um dos dois testes cai.
+2. **Colisão = reaproveita, nunca duplica.** Como o slug é determinístico, digitar `ACIGES` quando já
+   existe `aciges` resolve para o mesmo grupo por construção. Não existe "erro de grupo já existe".
+3. **Seletor com os existentes + "criar novo".** A lista vem de `GET /api/admin/users/grupos` (papel
+   admin), que varre o **diretório inteiro** — não a página carregada na tela (a lista de usuários vem
+   paginada e filtrada pela busca, então derivar dela esconderia grupos e empurraria para "criar novo"
+   um grupo que já existe).
+4. **A vírgula deixa de ser erro.** Ela era barrada porque quebraria agregação/CSV; agora vira `_` na
+   canonicalização, então não há o que barrar. O limite de 40 e a recusa de caractere de controle
+   continuam (aplicados ao slug).
+5. **Sentinela do relatório.** `sem-tag` (`RelatorioEndpoints.GrupoSemTag`) fica **inalcançável por
+   construção** — o hífen vira `_`. Ainda assim recusamos `sem_tag` explicitamente: um grupo com esse
+   nome confundiria a leitura da tela mesmo sem colidir tecnicamente.
+
+**Sem migração de dados:** o atributo `grupo` só passou a persistir em produção hoje (I-013 aplicado
+em 2026-08-03) e **nenhum usuário tem tag ainda** — a regra nasce com o primeiro valor gravado.
