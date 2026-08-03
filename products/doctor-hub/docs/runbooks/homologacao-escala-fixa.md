@@ -19,7 +19,7 @@ antigo ainda está no ar (hard-refresh).
 
 ---
 
-## Cenário 1 — A tag de grupo chega no usuário (D-242/I-012)
+## Cenário 1 — A tag de grupo chega no usuário (D-242/I-013)
 
 1. Admin → **Usuários** → editar um usuário → preencher **Grupo/empresa de origem** = `aciges` → salvar.
 2. Reabrir o usuário: o campo deve estar preenchido (se voltar vazio, o atributo não está declarado no
@@ -92,5 +92,5 @@ vigência retroativa, período invertido, grupo inválido).
 
 ## Referências
 - Decisões: D-242 (tag), D-243 (produção parcial), D-244 (tag resolve no relatório), D-245 (base limpa),
-  D-246 (refino da 1ª entrega) em `../decisions/decisions-log.md`; I-012 no `portal-identity`.
+  D-246 (refino da 1ª entrega) em `../decisions/decisions-log.md`; I-013 no `portal-identity`.
 - Runbook do sync de cadastro (outra frente, pausada): `homologacao-sync-cadastro.md`.

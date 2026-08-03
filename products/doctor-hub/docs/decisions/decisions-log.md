@@ -838,7 +838,7 @@ médicos/escalas e é preciso relatar "o que o grupo X criou" — e também por 
 Alessandro criou"). Decisão textual: **"usuário é um usuário, e tem seus papéis… o grupo é um tipo de
 tag no usuário, não devemos mudar nenhum comportamento, só adicionar um tipo de tag ao usuário para
 identificar terceiros dentro de um tenant"**. Implementação: atributo Keycloak `grupo` (tag LIVRE,
-normalizada lowercase; sem catálogo/entidade) + claim `grupo` no token (I-012 do portal-identity);
+normalizada lowercase; sem catálogo/entidade) + claim `grupo` no token (I-013 do portal-identity);
 colunas `CriadoPor`/`CriadoPorGrupo` em `Escala` e `Doctor`, carimbadas SERVER-SIDE do token na
 criação (nunca aceitas do body). Papéis/permissões: intocados — grupo é só filtro de relatório e,
 futuramente, auditoria. **PROVISÓRIO:** "médicos trazidos pelo grupo" hoje é DERIVADO das escalas que
@@ -864,7 +864,7 @@ Correção do D-242 pelo Alessandro: **"os logs nunca ficam atrelados ao grupo/t
 o usuário é que pode pertencer à tag, para facilitar a geração de reports"**. A primeira implementação
 gravava `CriadoPorGrupo` na escala (snapshot da tag no momento da criação) — ERRADO: cria verdade
 paralela e congela a tag (se o usuário muda de grupo, o histórico mente). Modelo correto: a entidade
-guarda **só `CriadoPor` (usuário)**; a tag vive **só no usuário** (atributo Keycloak `grupo`, I-012) e
+guarda **só `CriadoPor` (usuário)**; a tag vive **só no usuário** (atributo Keycloak `grupo`, I-013) e
 é resolvida **na hora do filtro**: tag → conjunto de usernames → filtra registros por `CriadoPor`.
 Consequências: (a) coluna `criado_por_grupo` some de `escalas`/`doctors`; (b) trocar a tag de um
 usuário re-agrupa o histórico dele automaticamente (é o comportamento desejado — a tag serve para
