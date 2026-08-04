@@ -1078,3 +1078,30 @@ por typo não é feiúra de UX, é **número errado no relatório**, e silencios
 
 **Sem migração de dados:** o atributo `grupo` só passou a persistir em produção hoje (I-013 aplicado
 em 2026-08-03) e **nenhum usuário tem tag ainda** — a regra nasce com o primeiro valor gravado.
+
+### D-256 — Relatórios · Origem entra na jornada de Demandas (implementa a D-254, encerra a D-249) (2026-08-03)
+Alessandro, olhando a tela pronta: **"vamos colocar essa tela no perfil demandas médicas"**.
+
+É a materialização do **D-254** (a tag é lente de relatório/auditoria, nunca porteira) e o fim
+prático da **D-249** — que em 2026-08-01 restringira relatório e export ao Admin com a justificativa
+de que "a ACIGES é demandas e não deve ver os números dos outros grupos". O dono depois disse que essa
+preocupação não existe: **não há diferença de funcionalidade entre um demandas da Portal e um da
+ACIGES**, e quem produz escala precisa enxergar o próprio recorte.
+
+**O que muda:**
+1. **API** — as 3 rotas (`/origem`, `/origem-filtros`, `/escalas.xlsx`) passam de `papel:admin` para
+   `admin-ou-demandas`. **O export vai junto**: é a mesma tela e o mesmo recorte; separar o botão do
+   conteúdo que ele exporta seria teatro. Quem não é admin nem demandas continua fora (403).
+2. **Front** — a tela ganha um conceito novo em `routes.ts`: `tambemPara?: PapelPersona[]`. Uma tela
+   continua PERTENCENDO a uma persona, mas pode ser alcançada por outras, sem virar duas telas
+   (D-108: uma tela canônica por assunto). `admin-relatorios` fica com `tambemPara: ['Demandas']`.
+3. **Menu e guarda usam a MESMA regra** (`personaAlcanca`). Isso não é detalhe: o AppShell tem um
+   guard de "invasão de jornada" que expulsa quem abre tela de outra persona — se ele e o menu
+   divergissem, o item apareceria no menu e o clique jogaria o usuário de volta (D-106, 0 cliques
+   mortos). Teste tranca os dois lados juntos.
+
+**Fronteira que continua valendo:** `tambemPara` é NAVEGAÇÃO, não autorização. Quem decide o acesso ao
+dado é a policy da API — o front nunca é a fonte da verdade de permissão.
+
+**Nota de rumo:** pela D-254, esta tela será ABSORVIDA pelo dashboard de Escalas quando ele existir.
+Abrir a tela atual para Demandas é o passo de agora, não o desenho final.
